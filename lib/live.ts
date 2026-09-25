@@ -58,6 +58,41 @@ export async function weatherGrounding(query: string, context: FanContext): Prom
 export async function clubGrounding(query: string, context: FanContext): Promise<Grounding> {
   const spanish = context.language === 'es';
   const base: Grounding = { route: 'club', context, facts: [], sources: [], cards: [{ title: 'Austin FC schedule', detail: 'Current official fixtures', href: SCHEDULE_URL, label: spanish ? 'Ver calendario' : 'View schedule' }] };
+  if (/join|tryout|academy|recruitment/.test(query.toLowerCase()) && /player|team|club|austin fc/.test(query.toLowerCase())) {
+    const url = 'https://www.austinfc.com/academy/recruitment';
+    base.answer = spanish ? 'Si quieres solicitar una oportunidad como jugador, consulta la página oficial de reclutamiento de la Academia de Austin FC. Las pruebas son por invitación según su guía; el club explica allí cómo enviar tu información.' : 'If you want to be considered as a player, Austin FC’s Academy recruitment page explains how to submit your information. The Academy says trials are by invitation rather than open tryouts.';
+    base.sources = [{ title: 'Austin FC Academy recruitment', url, checkedAt: new Date().toISOString() }];
+    base.cards = [{ title: 'Academy recruitment', detail: 'Official player pathway information', href: url, label: 'Open guide' }];
+    return base;
+  }
+  if (/copa america/i.test(query)) {
+    base.answer = spanish ? 'No pude verificar un evento de Copa América en Q2 Stadium con las fuentes actuales. Revisa el calendario oficial de eventos.' : 'I could not verify a Copa América event at Q2 Stadium from the current sources. Check the official event schedule for confirmed events.';
+    base.sources = [{ title: 'Q2 Stadium events', url: 'https://www.q2stadium.com/events/' }];
+    base.cards = [{ title: 'Q2 Stadium events', detail: 'Confirmed event information', href: 'https://www.q2stadium.com/events/', label: 'View events' }];
+    return base;
+  }
+  if (/roster|players?|squad|goalkeepers?|keepers?|plantilla|jugadores?|porteros?/.test(query.toLowerCase())) {
+    const snapshot = await getKnowledge();
+    const players = snapshot.roster || [];
+    const named = players.find(p => query.toLowerCase().includes(p.name.toLowerCase()));
+    const selected = named ? [named] : /goalkeeper|keeper|portero/.test(query.toLowerCase()) ? players.filter(p => p.position === 'Goalkeeper') : players.slice(0, 8);
+    if (selected.length) {
+      base.answer = (spanish ? 'Plantilla publicada de Austin FC:' : 'Austin FC’s published roster:') + '\n' + selected.map(p => `• #${p.number} ${p.name} — ${p.position}`).join('\n') + (named ? '' : spanish ? '\nAbre la plantilla oficial para ver todos los jugadores.' : '\nOpen the official roster for the full list.');
+      base.sources = [{ title: 'Austin FC roster', url: 'https://www.austinfc.com/roster/', checkedAt: snapshot.checkedAt }];
+      base.cards = selected.slice(0, 3).map(p => ({ title: p.name, detail: `#${p.number} · ${p.position}`, href: p.url, label: spanish ? 'Ver jugador' : 'View player' }));
+      return base;
+    }
+  }
+  if (/news|latest|headlines|noticias|novedades/.test(query.toLowerCase())) {
+    const snapshot = await getKnowledge();
+    const stories = snapshot.news || [];
+    if (stories.length) {
+      base.answer = (spanish ? 'Últimas noticias publicadas por Austin FC:' : 'Latest stories published by Austin FC:') + '\n' + stories.slice(0, 3).map(s => `• ${s.title}`).join('\n');
+      base.sources = stories.slice(0, 3).map(s => ({ title: s.title, url: s.url, checkedAt: snapshot.checkedAt }));
+      base.cards = stories.slice(0, 3).map(s => ({ title: s.title, detail: s.summary.slice(0, 90) + '…', href: s.url, label: spanish ? 'Leer noticia' : 'Read story' }));
+      return base;
+    }
+  }
   if (/next|pr[oó]ximo|siguiente|kickoff|inicio/i.test(query) && /home|casa|q2/i.test(query)) {
     const featured = (await getKnowledge()).featuredMatch;
     const next = schedule.events.find(event => new Date(event.startsAt).getTime() > Date.now());

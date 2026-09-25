@@ -3,7 +3,7 @@ import type { Card, FanContext, Grounding, Source } from './types';
 
 type Doc = { id: string; title: string; body: string; url: string; checkedAt: string; links: { label: string; url: string }[] };
 type Vendor = { name: string; sections: number[]; location: string; description: string; url: string; checkedAt: string };
-export type Snapshot = { version: string; checkedAt: string; documents: Doc[]; vendors: Vendor[]; sources: { url: string; sha256: string }[]; featuredMatch?: { title: string; startsAt: string; url: string; checkedAt: string } | null };
+export type Snapshot = { version: string; checkedAt: string; documents: Doc[]; vendors: Vendor[]; sources: { url: string; sha256: string }[]; featuredMatch?: { title: string; startsAt: string; url: string; checkedAt: string } | null; roster?: { number: number; name: string; position: string; url: string }[]; news?: { title: string; summary: string; url: string }[] };
 export const staticKnowledge = bundled as Snapshot;
 export const MAP_URL = 'https://www.q2stadium.com/stadium-maps/';
 export const TICKET_URL = 'https://www.austinfc.com/tickets/';
@@ -18,7 +18,7 @@ export async function getKnowledge(): Promise<Snapshot> {
     const response = await fetch(pointer, { next: { revalidate: 300 }, signal: AbortSignal.timeout(4000) });
     if (!response.ok) throw new Error('Knowledge unavailable');
     const value = await response.json();
-    if (value.documents?.length < 40 || value.vendors?.length < 15) throw new Error('Knowledge incomplete');
+    if (value.documents?.length < 40 || value.vendors?.length < 15 || value.roster?.length < 15 || value.news?.length < 3) throw new Error('Knowledge incomplete');
     return value as Snapshot;
   } catch { return staticKnowledge; }
 }
@@ -159,7 +159,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     if (matches.length === 0) base.answer = spanish ? 'No encontré una opción publicada que pueda confirmar. Dime qué buscas y tu sección para revisar las opciones oficiales.' : 'I could not verify a published option for that request. Tell me what you want and your section, and I’ll narrow down the official listings.';
     return base;
   }
-  if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|roster|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias)\b/.test(q) && !/\b(weather|rain|forecast|lluvia|llovera?|clima|pronostico)\b/.test(q)) { base.route = 'club'; return base; }
+  if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|roster|players?|goalkeepers?|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias|copa america)\b/.test(q) && !/\b(weather|rain|forecast|lluvia|llovera?|clima|pronostico)\b/.test(q) || /\b(join|tryout|academy)\b.*\b(player|team|club|austin fc)\b/.test(q)) { base.route = 'club'; return base; }
   if (/\b(weather|rain|temperature|forecast|kickoff|lluvia|llovera?|clima|tiempo|pronostico|inicio del partido)\b/.test(q)) { base.route = 'weather'; return base; }
   base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte|red line|mckalla)\b/.test(q) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
   const docs = searchDocs(query, knowledge, 4);

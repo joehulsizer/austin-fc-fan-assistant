@@ -25,4 +25,5 @@ jobs:
           path: |
             evaluation-results.json
             playwright-report/
+            test-results/
             /tmp/austin-server.log

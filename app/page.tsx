@@ -27,7 +27,7 @@ export default function Home(){
   const input=useRef<HTMLTextAreaElement|null>(null);
   useEffect(()=>{try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x?.messages?.length)setMessages(x.messages);if(x?.context)setContext(x.context);}catch{}setHydrated(true);},[]);
   useEffect(()=>{if(hydrated)localStorage.setItem(key,JSON.stringify({messages:messages.slice(-30),context}));},[messages,context,hydrated]);
-  useEffect(()=>bottom.current?.scrollIntoView({behavior:'smooth',block:'end'}),[messages,busy]);
+  useEffect(()=>{bottom.current?.scrollIntoView({behavior:'smooth',block:'end'});},[messages,busy]);
   function reset(){abort.current?.abort();setBusy(false);setMessages([welcome]);setContext({language:'en'});setDraft('');setRetryText(null);setDrawer(false);input.current?.focus();}
   async function send(question?:string,isRetry=false){
     const text=(question??draft).trim();if(!text||busy)return;

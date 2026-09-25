@@ -51,3 +51,8 @@ test('unknown exit location is not fabricated', async () => {
   const answer = result.answer || groundedFallback('Where is the nearest exit from section 123?', result);
   assert.doesNotMatch(answer, /exit (?:is|at|behind) section/i);
 });
+
+test('historical intent mistakes do not send player recruitment or Copa América to concessions', async () => {
+  assert.equal((await ground('How can I join Austin FC as a player?', {})).route, 'club');
+  assert.equal((await ground('Is Copa America at Q2 Stadium?', {})).route, 'club');
+});

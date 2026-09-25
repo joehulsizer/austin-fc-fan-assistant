@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+test.beforeEach(async ({ page }) => { page.on('pageerror', error => console.error('Browser page error:', error.stack || error.message)); });
 
 test('desktop conversation carries section and reset clears it', async ({ page }) => {
   await page.goto('/');

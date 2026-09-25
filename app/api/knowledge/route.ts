@@ -9,6 +9,8 @@ const schema = z.object({
   vendors: z.array(z.object({ name: z.string(), sections: z.array(z.number().int()).min(1), location: z.string(), description: z.string(), url: z.string().url(), checkedAt: z.string() })).min(15),
   mapPins: z.array(z.unknown()),
   featuredMatch: z.object({ title: z.string(), startsAt: z.string(), url: z.string().url(), checkedAt: z.string() }).nullable().optional(),
+  roster: z.array(z.object({ number: z.number().int(), name: z.string(), position: z.string(), url: z.string().url() })).min(15),
+  news: z.array(z.object({ title: z.string(), summary: z.string(), url: z.string().url() })).min(3),
 });
 
 export async function POST(request: Request) {

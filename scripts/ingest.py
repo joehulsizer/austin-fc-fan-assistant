@@ -17,6 +17,8 @@ PAGES = {
     "drinks": "https://www.q2stadium.com/food-and-drink/drink-menu/",
 }
 PREVIEW_URL = "https://www.austinfc.com/news/match-preview-presented-by-lexus-austin-fc-vs-san-diego-fc-september-26-2026"
+ROSTER_URL = "https://www.austinfc.com/roster/"
+NEWS_URL = "https://www.austinfc.com/news/"
 
 
 def clean(value):
@@ -99,13 +101,40 @@ def main():
                               "url": PREVIEW_URL, "checkedAt": checked}
     except Exception:
         pass
+    roster_page = html.fromstring(fetch(ROSTER_URL))
+    roster = []
+    for element in roster_page.xpath('//div[contains(@class,"fm-card__content")]'):
+        heading = element.xpath('.//h2[contains(@class,"fa-text__title")]')
+        if not heading:
+            continue
+        match = re.match(r"#(\d+)\s*-\s*(.+)", clean(heading[0].text_content()))
+        body = clean(" ".join(element.xpath('.//div[contains(@class,"fa-text__body")]//text()')))
+        links = element.xpath('.//a[contains(@title,"Player Page")]/@href')
+        if match and links:
+            roster.append({"number": int(match.group(1)), "name": match.group(2), "position": body.split("Roster Category:")[0].strip(), "url": links[0]})
+    news_page = html.fromstring(fetch(NEWS_URL))
+    news = []
+    for element in news_page.xpath('//a[contains(@class,"fm-card-wrap")]'):
+        heading = element.xpath('.//h2[contains(@class,"fa-text__title")]')
+        href = element.get("href") or ""
+        if not heading or not href.startswith("/news/"):
+            continue
+        title = clean(heading[0].text_content())
+        summary = clean(" ".join(element.xpath('.//div[contains(@class,"fa-text__body")]//text()')))
+        if title and summary and not any(x["title"] == title for x in news):
+            news.append({"title": title, "summary": summary[:600], "url": "https://www.austinfc.com" + href})
+        if len(news) >= 8:
+            break
+    if len(roster) < 15 or len(news) < 3:
+        raise ValueError(f"Incomplete club data: {len(roster)} players, {len(news)} stories")
     snapshot = {"version": checked, "checkedAt": checked, "sources": [{"url": url, "sha256": hashlib.sha256(fetched[key]).hexdigest()}
                                                                    for key, url in PAGES.items()],
-                "documents": docs, "vendors": vendors, "mapPins": map_pins, "featuredMatch": featured_match}
+                "documents": docs, "vendors": vendors, "mapPins": map_pins, "featuredMatch": featured_match,
+                "roster": roster, "news": news}
     out = ROOT / "data" / "knowledge.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(snapshot, ensure_ascii=False, separators=(",", ":")) + "\n")
-    print(json.dumps({"version": checked, "vendors": len(vendors), "documents": len(docs), "mapPins": len(map_pins), "bytes": out.stat().st_size}))
+    print(json.dumps({"version": checked, "vendors": len(vendors), "documents": len(docs), "players": len(roster), "stories": len(news), "mapPins": len(map_pins), "bytes": out.stat().st_size}))
 
 
 if __name__ == "__main__":
