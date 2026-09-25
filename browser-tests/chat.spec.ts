@@ -56,7 +56,7 @@ test('in-site food guide shows the published burger and chicken locations', asyn
   await page.goto('/guide?topic=food');
   await expect(page.getByText('Impossible Good Burger (vegetarian)').first()).toBeVisible();
   await expect(page.getByText('Chicken tenders and wings')).toBeVisible();
-  await expect(page.getByText('Section 135 East Side')).toBeVisible();
+  await expect(page.getByText('Section 135 East Side').first()).toBeVisible();
 });
 
 test('desktop menu starts collapsed and remembers expansion', async ({ page }) => {
