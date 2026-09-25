@@ -16,6 +16,7 @@ PAGES = {
     "parking": "https://www.q2stadium.com/parking/",
     "drinks": "https://www.q2stadium.com/food-and-drink/drink-menu/",
 }
+PREVIEW_URL = "https://www.austinfc.com/news/match-preview-presented-by-lexus-austin-fc-vs-san-diego-fc-september-26-2026"
 
 
 def clean(value):
@@ -87,9 +88,20 @@ def main():
         if "icon-concession" not in classes:
             continue
         map_pins.append({"id": match_id.group(1), "labels": [x[5:] for x in classes if x.startswith("icon-") and x != "icon-concession"]})
+    featured_match = None
+    try:
+        preview = html.fromstring(fetch(PREVIEW_URL))
+        for garbage in preview.xpath('//script|//style'):
+            garbage.drop_tree()
+        preview_text = clean(preview.xpath('//main')[0].text_content())
+        if "Austin FC vs. San Diego FC | September 26, 2026" in preview_text and "7:30 p.m. CT kickoff at Q2 Stadium" in preview_text:
+            featured_match = {"title": "Austin FC vs San Diego FC", "startsAt": "2026-09-26T19:30:00-05:00",
+                              "url": PREVIEW_URL, "checkedAt": checked}
+    except Exception:
+        pass
     snapshot = {"version": checked, "checkedAt": checked, "sources": [{"url": url, "sha256": hashlib.sha256(fetched[key]).hexdigest()}
                                                                    for key, url in PAGES.items()],
-                "documents": docs, "vendors": vendors, "mapPins": map_pins}
+                "documents": docs, "vendors": vendors, "mapPins": map_pins, "featuredMatch": featured_match}
     out = ROOT / "data" / "knowledge.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(snapshot, ensure_ascii=False, separators=(",", ":")) + "\n")

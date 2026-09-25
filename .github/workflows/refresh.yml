@@ -1,0 +1,24 @@
+name: Refresh stadium knowledge
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 11 * * *'
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install lxml==6.0.2
+      - name: Download and validate official Q2 pages
+        run: python scripts/ingest.py
+      - name: Publish checked snapshot
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail-with-body --max-time 60 -sS -X POST https://austin-fc-fan-assistant.vercel.app/api/knowledge \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -H 'Content-Type: application/json' \
+            --data-binary @data/knowledge.json

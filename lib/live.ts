@@ -1,6 +1,7 @@
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import type { FanContext, Grounding } from './types';
+import { getKnowledge } from './knowledge';
 
 const NWS_URL = 'https://api.weather.gov/gridpoints/EWX/157,96/forecast/hourly';
 const WEATHER_SOURCE = 'https://forecast.weather.gov/MapClick.php?lat=30.3877&lon=-97.7194';
@@ -55,6 +56,16 @@ export async function weatherGrounding(query: string, context: FanContext): Prom
 export async function clubGrounding(query: string, context: FanContext): Promise<Grounding> {
   const spanish = context.language === 'es';
   const base: Grounding = { route: 'club', context, facts: [], sources: [], cards: [{ title: 'Austin FC schedule', detail: 'Current official fixtures', href: SCHEDULE_URL, label: spanish ? 'Ver calendario' : 'View schedule' }] };
+  if (/next|pr[oó]ximo|siguiente|kickoff|inicio/i.test(query) && /match|game|home|partido|juego/i.test(query)) {
+    const featured = (await getKnowledge()).featuredMatch;
+    if (featured && new Date(featured.startsAt).getTime() > Date.now()) {
+      const local = new Intl.DateTimeFormat(spanish ? 'es-US' : 'en-US', { timeZone: 'America/Chicago', dateStyle: 'full', timeStyle: 'short' }).format(new Date(featured.startsAt));
+      base.answer = spanish ? `El próximo partido en casa verificado es ${featured.title}, ${local}, en Q2 Stadium. Confirmado con la previa oficial de Austin FC.` : `The next verified Austin FC home match is ${featured.title} on ${local} at Q2 Stadium. Confirmed against Austin FC’s official match preview.`;
+      base.context = { ...context, event: { title: featured.title, startsAt: featured.startsAt, source: featured.url } };
+      base.sources = [{ title: 'Austin FC match preview', url: featured.url, checkedAt: featured.checkedAt }];
+      return base;
+    }
+  }
   try {
     const result = await generateText({
       model: 'openai/gpt-5.4-mini',
@@ -65,7 +76,7 @@ export async function clubGrounding(query: string, context: FanContext): Promise
       maxOutputTokens: 550,
       abortSignal: AbortSignal.timeout(22000),
     });
-    const sources = result.sources.filter(s => s.sourceType === 'url' && /^https:\/\/(www\.)?(austinfc\.com|mlssoccer\.com)\//.test(s.url)).map(s => ({ title: s.title || 'Official club or league source', url: s.url, checkedAt: new Date().toISOString() }));
+    const sources = result.sources.filter(s => 'url' in s && typeof s.url === 'string' && /^https:\/\/(www\.)?(austinfc\.com|mlssoccer\.com)\//.test(s.url)).map(s => ({ title: s.title || 'Official club or league source', url: String(s.url), checkedAt: new Date().toISOString() }));
     if (!sources.length || !result.text.trim()) throw new Error('No verified official source');
     base.answer = result.text;
     base.sources = sources;

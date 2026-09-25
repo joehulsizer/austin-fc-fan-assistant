@@ -3,7 +3,7 @@ import type { Card, FanContext, Grounding, Source } from './types';
 
 type Doc = { id: string; title: string; body: string; url: string; checkedAt: string; links: { label: string; url: string }[] };
 type Vendor = { name: string; sections: number[]; location: string; description: string; url: string; checkedAt: string };
-type Snapshot = { version: string; checkedAt: string; documents: Doc[]; vendors: Vendor[]; sources: { url: string; sha256: string }[] };
+export type Snapshot = { version: string; checkedAt: string; documents: Doc[]; vendors: Vendor[]; sources: { url: string; sha256: string }[]; featuredMatch?: { title: string; startsAt: string; url: string; checkedAt: string } | null };
 export const staticKnowledge = bundled as Snapshot;
 export const MAP_URL = 'https://www.q2stadium.com/stadium-maps/';
 export const TICKET_URL = 'https://www.austinfc.com/tickets/';
