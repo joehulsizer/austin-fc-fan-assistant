@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ground, staticKnowledge } from '../lib/knowledge';
 import { groundedFallback } from '../lib/assistant';
-import { weatherGrounding } from '../lib/live';
+import { cleanClubSearchAnswer, weatherGrounding } from '../lib/live';
 import type { Grounding } from '../lib/types';
 
 test('current vendor source resolves Verde Vegan at 119, not the old map label', async () => {
@@ -88,4 +88,9 @@ test('camera bag guidance uses the current bag policy without inventing an exemp
   assert.match(answer, /prohibits most bags/);
   assert.match(answer, /camera bag has no separate listed exemption/);
   assert.ok(result.sources.some(s => s.url.includes('a-z-policy-guide')));
+});
+
+test('live club search leaves citations in source cards instead of repeating raw URLs', () => {
+  const answer = cleanClubSearchAnswer('Austin FC plays September 26, 2026. ([austinfc.com](https://www.austinfc.com/news/preview?utm_source=openai))\n\nSource URLs:\n- https://www.austinfc.com/news/preview');
+  assert.equal(answer, 'Austin FC plays September 26, 2026.');
 });

@@ -8,6 +8,23 @@ const NWS_URL = 'https://api.weather.gov/gridpoints/EWX/157,96/forecast/hourly';
 const WEATHER_SOURCE = 'https://forecast.weather.gov/MapClick.php?lat=30.3877&lon=-97.7194';
 const SCHEDULE_URL = 'https://www.austinfc.com/schedule/';
 
+export function cleanClubSearchAnswer(text: string): string {
+  return text.split(/\n(?:Source URLs?|Sources?)\s*:/i)[0]
+    .replace(/\s*\(\[[^\]]+\]\(https?:\/\/[^)]+\)\)/g, '')
+    .trim();
+}
+
+function futureDateInAnswer(answer: string): boolean {
+  const iso = answer.match(/\b20\d\d-\d\d-\d\d\b/);
+  const english = answer.match(/\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+20\d\d\b/i);
+  const spanish = answer.match(/\b\d{1,2}\s+de\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+de\s+20\d\d\b/i);
+  const value = iso?.[0] || english?.[0] || spanish?.[0];
+  if (!value) return false;
+  const localized = spanish && !iso && !english ? spanish[0].replace(/(\d{1,2}) de (\w+) de (20\d\d)/i, (_, day: string, month: string, year: string) => `${({ enero: 'January', febrero: 'February', marzo: 'March', abril: 'April', mayo: 'May', junio: 'June', julio: 'July', agosto: 'August', septiembre: 'September', octubre: 'October', noviembre: 'November', diciembre: 'December' } as Record<string, string>)[month.toLowerCase()]} ${day}, ${year}`) : value;
+  const date = new Date(localized);
+  return !Number.isNaN(date.getTime()) && date.getTime() >= Date.now() - 86400000;
+}
+
 export async function weatherGrounding(query: string, context: FanContext): Promise<Grounding> {
   const spanish = context.language === 'es';
   const base: Grounding = { route: 'weather', context, facts: [], sources: [{ title: 'National Weather Service: Q2 Stadium forecast', url: WEATHER_SOURCE, checkedAt: new Date().toISOString() }], cards: [{ title: 'Hourly forecast', detail: 'Q2 Stadium area', href: WEATHER_SOURCE, label: spanish ? 'Ver pronóstico' : 'View forecast' }] };
@@ -118,13 +135,16 @@ export async function clubGrounding(query: string, context: FanContext): Promise
     const sources: { title: string; url: string; checkedAt: string }[] = [];
     for (const item of result.sources) {
       const url = 'url' in item ? String(item.url) : '';
-      if (/^https:\/\/(www\.)?(austinfc\.com|mlssoccer\.com)\//.test(url)) sources.push({ title: item.title || 'Official club or league source', url, checkedAt: new Date().toISOString() });
+      if (/^https:\/\/(www\.)?(austinfc\.com|mlssoccer\.com)\//.test(url)) {
+        const clean = new URL(url); clean.search = ''; clean.hash = '';
+        if (!sources.some(s => s.url === clean.toString())) sources.push({ title: item.title || 'Official club or league source', url: clean.toString(), checkedAt: new Date().toISOString() });
+      }
     }
-    if (!sources.length || !result.text.trim()) throw new Error('No verified official source');
-    base.answer = result.text;
+    const answer = cleanClubSearchAnswer(result.text);
+    if (!sources.length || !answer) throw new Error('No verified official source');
+    if (/\b(next|pr[oó]ximo|siguiente)\b/i.test(query) && !futureDateInAnswer(answer)) throw new Error('No verified future date');
+    base.answer = answer;
     base.sources = sources;
-    const date = result.text.match(/20\d\d-\d\d-\d\d/);
-    if (date && /next|pr[oó]ximo|siguiente/.test(query.toLowerCase()) && new Date(date[0]).getTime() < Date.now() - 86400000) throw new Error('Past event returned');
     return base;
   } catch {
     console.warn(JSON.stringify({ event: 'club_retrieval_failed' }));
