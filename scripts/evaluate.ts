@@ -4,6 +4,7 @@ import { prepare, groundedFallback } from '../lib/assistant';
 type Case = { id:string; kind:string; question:string; route:string; mustMatch:string; sourceDomain:string };
 const cases:Case[]=JSON.parse(readFileSync('data/evaluation.json','utf8'));
 if(cases.length!==120||new Set(cases.map(c=>c.question)).size!==120)throw new Error('Evaluation set must have 120 distinct questions');
+async function main(){
 const results=[];
 for(const test of cases){
   const grounding=await prepare({messages:[{role:'user',content:test.question}],context:{}});
@@ -19,3 +20,5 @@ const report={createdAt:new Date().toISOString(),total:cases.length,passed,accur
 writeFileSync('evaluation-results.json',JSON.stringify(report,null,2));
 console.log(JSON.stringify({total:report.total,passed,accuracy:report.accuracy,criticalFailures:report.criticalFailures,failures:results.filter(r=>!r.pass).map(r=>({id:r.id,route:r.route,content:r.content,source:r.source,answer:r.answer.slice(0,200)}))},null,2));
 if(report.accuracy<.9||criticalFailures.length)process.exit(1);
+}
+main().catch(error=>{console.error(error);process.exit(1);});
