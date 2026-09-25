@@ -90,7 +90,7 @@ test('a long conversation keeps sending the latest question within the API limit
   await page.route('**/api/chat', async route => {
     const body=route.request().postDataJSON();
     lengths.push(body.messages.length);
-    await route.fulfill({status:200,contentType:'application/x-ndjson',body:JSON.stringify({type:'meta',context:body.context,sources:[],cards:[],route:'stadium'})+'\n'+JSON.stringify({type:'delta',text:`Answered ${body.messages.at(-1).content}`})+'\n'});
+    await route.fulfill({status:200,contentType:'application/x-ndjson',body:JSON.stringify({type:'meta',context:body.context,sources:[],cards:[],route:'stadium'})+'\n'+JSON.stringify({type:'delta',text:`Answered **${body.messages.at(-1).content}**`})+'\n'});
   });
   await page.goto('/');
   for(let i=1;i<=10;i++){
@@ -102,4 +102,5 @@ test('a long conversation keeps sending the latest question within the API limit
   expect(lengths).toHaveLength(10);
   expect(Math.max(...lengths)).toBeLessThanOrEqual(16);
   expect(lengths.at(-1)).toBe(16);
+  await expect(page.locator('.message.assistant').last().locator('.message-copy strong')).toHaveText('Question 10');
 });
