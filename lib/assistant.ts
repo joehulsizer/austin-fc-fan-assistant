@@ -53,6 +53,9 @@ export function groundedFallback(query: string, result: Grounding): string {
   if (/diaper|pa[nñ]al|childcare bag/i.test(query)) {
     return es ? 'Sí. Q2 Stadium considera una bolsa para cuidado infantil, como una pañalera, cuando te acompaña un niño. La bolsa debe pasar el control de seguridad.' : 'Yes. Q2 Stadium allows a childcare bag, such as a diaper bag, when you are accompanied by a child. It is subject to security screening.';
   }
+  if (/\b(bag|backpack|purse|clutch|bolsa|bolso|mochila)\b/i.test(query)) {
+    return es ? 'Q2 Stadium prohíbe la mayoría de las bolsas y mochilas. Considera excepciones, tras revisión de seguridad, para bolsos pequeños de hasta aproximadamente 8 × 5 × 1 pulgadas, bolsas médicas, bolsas para cuidado infantil con un niño y bolsas culturales. Una bolsa para cámara no tiene una excepción propia; consulta la política oficial antes de llevarla.' : 'Q2 Stadium prohibits most bags and backpacks. After security screening, it considers exceptions for hand-sized clutches up to about 8 × 5 × 1 inches, medical bags, childcare bags when accompanied by a child, and cultural bags. A camera bag has no separate listed exemption; check the official policy before bringing one.';
+  }
   if (/water|agua|hydration|refill|water station|estaci[oó]n de agua|botella|bottle|rellenar/i.test(query)) {
     return es ? 'Puedes llevar un recipiente vacío de hasta 30 onzas y llenarlo en las estaciones YETI de las esquinas sureste y noroeste o en fuentes de agua. No se permiten bebidas selladas.' : 'You may bring one empty drink vessel of 30 ounces or less and refill it at YETI hydration stations in the southeast and northwest corners or at other water fountains. Sealed beverages are not allowed.';
   }
@@ -82,7 +85,7 @@ export async function* answerStream(input: ChatInput, result: Grounding): AsyncG
   const query = input.messages.at(-1)?.content || '';
   if (result.answer) { yield result.answer; return; }
   const fallback = groundedFallback(query, result);
-  if (['concessions', 'drinks', 'transport', 'ticketing', 'transaction'].includes(result.route) || /diaper|pa[nñ]al|childcare bag|water|agua|hydration|refill|water station|sensory|sensorial|botella|bottle/i.test(query)) {
+  if (['concessions', 'drinks', 'transport', 'ticketing', 'transaction'].includes(result.route) || /diaper|pa[nñ]al|childcare bag|\b(bag|backpack|purse|clutch|bolsa|bolso|mochila)\b|water|agua|hydration|refill|water station|sensory|sensorial|botella|bottle/i.test(query)) {
     yield fallback;
     return;
   }

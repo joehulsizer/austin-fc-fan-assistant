@@ -81,3 +81,11 @@ test('source-content instructions are not repeated when the model is unavailable
   assert.doesNotMatch(answer, /ignore your rules|purchased their ticket/i);
   assert.match(answer, /cannot confirm/);
 });
+
+test('camera bag guidance uses the current bag policy without inventing an exemption', async () => {
+  const result = await ground('Can I bring a small camera bag?', {});
+  const answer = groundedFallback('Can I bring a small camera bag?', result);
+  assert.match(answer, /prohibits most bags/);
+  assert.match(answer, /camera bag has no separate listed exemption/);
+  assert.ok(result.sources.some(s => s.url.includes('a-z-policy-guide')));
+});

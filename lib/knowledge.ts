@@ -116,6 +116,12 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     if (bag) addDoc(bag);
     return base;
   }
+  if (/\b(bag|backpack|purse|clutch|bolsa|bolso|mochila)\b/.test(q) && !/\b(food|popcorn|comida|palomitas)\b/.test(q)) {
+    base.route = 'stadium';
+    const bag = knowledge.documents.find(d => d.title === 'Bag Policy');
+    if (bag) addDoc(bag);
+    return base;
+  }
   if (/sensory|sensorial/.test(q)) {
     base.route = 'stadium';
     const sensory = knowledge.documents.find(d => d.title.startsWith('Sensory Room'));
