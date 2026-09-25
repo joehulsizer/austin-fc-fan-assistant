@@ -27,7 +27,7 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   const section = query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin)\s*#?\s*(\d{3})\b/i);
   if (section) context.section = Number(section[1]);
   if (/\b(vegan|vegab|vegano|vegana)\b/i.test(query)) context.dietary = 'vegan';
-  else if (/\b(vegetarian|vegetariano|vegetariana)\b/i.test(query)) context.dietary = 'vegetarian';
+  else if (/\b(vegetarian|vegetariano|vegetariana|veggie)\b/i.test(query)) context.dietary = 'vegetarian';
   else if (/\b(gluten|celiac|celiaco|celíaco)\b/i.test(query)) context.dietary = 'gluten-aware';
   if (/[¿¡]|\b(d[oó]nde|comida|boleto|entrada|estadio|puedo|para|c[oó]mo|quiero|tren|estacionamiento)\b/i.test(query)) context.language = 'es';
   else if (/\b(english|in english)\b/i.test(query)) context.language = 'en';
@@ -102,11 +102,23 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
   const q = normalize(query);
   const base: Grounding = { route: 'general', context, facts: [], sources: [], cards: [] };
   const addDoc = (d: Doc) => { base.facts.push(`${d.title}: ${d.body.slice(0, 2400)}`); base.sources.push(source(d.title, d.url, d.checkedAt)); };
-  if (/\b(buy|purchase|sell|transfer for me|book|comprar|compra|comprame|c[oó]mprame)\b/.test(q) && /\b(ticket|tickets|boleto|boletos|entrada|entradas)\b/.test(q)) {
+  if (/\b(buy|purchase|sell|transfer for me|book|comprar|compra|comprame|comprarme)\b/.test(q) && /\b(ticket|tickets|boleto|boletos|entrada|entradas)\b/.test(q)) {
     base.route = 'transaction';
     base.answer = spanish ? 'No puedo comprar ni transferir boletos por ti. Puedes hacerlo en el servicio oficial de boletos de Austin FC. Si necesitas ayuda con una transferencia, te explico los pasos.' : 'I can’t buy or transfer a ticket for you. Use Austin FC’s official ticket service for purchases and your Austin FC or SeatGeek app for transfers. I can walk you through the steps.';
     base.sources = [source('Austin FC tickets', TICKET_URL)];
     base.cards = [card('Official tickets', 'Buy and manage tickets', TICKET_URL, spanish ? 'Abrir boletos' : 'Open tickets')];
+    return base;
+  }
+  if (/diaper|pa[nñ]al|childcare bag/.test(q)) {
+    base.route = 'stadium';
+    const bag = knowledge.documents.find(d => d.title === 'Bag Policy');
+    if (bag) addDoc(bag);
+    return base;
+  }
+  if (/sensory|sensorial/.test(q)) {
+    base.route = 'stadium';
+    const sensory = knowledge.documents.find(d => d.title.startsWith('Sensory Room'));
+    if (sensory) addDoc(sensory);
     return base;
   }
   if (/\b(water|agua|hydration|refill|refillable|hydration station|fuente de agua|rellenar|botella)\b/.test(q) && !/\b(buy|purchase|bottled|comprar)\b/.test(q)) {
@@ -116,7 +128,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     base.cards = [card('Stadium amenities', 'Hydration stations and water fountains', MAP_URL, spanish ? 'Ver mapa' : 'View map')];
     return base;
   }
-  if (/\b(drink|beer|wine|water|beverage|soda|cocktail|margarita|bebida|cerveza|vino|agua|refresco)\b/.test(q)) {
+  if (/\b(drink|beer|wine|water|beverage|soda|cocktail|margarita|bebida|cerveza|vino|agua|refresco|bar)\b/.test(q)) {
     base.route = 'drinks';
     const vendors = knowledge.vendors.filter(v => /Bar|Draft|Wine|Heineken|Michelob/.test(v.name)).sort((a, b) => rankVendor(a, context.section) - rankVendor(b, context.section)).slice(0, 5);
     for (const v of vendors) { base.facts.push(`${v.name}: ${v.location}. ${v.description}`); base.cards.push(card(v.name, v.location, MAP_URL, spanish ? 'Ver mapa' : 'View map')); }
@@ -124,10 +136,10 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     if (!context.section) base.facts.push('Ask for the fan section before suggesting a nearby area.');
     return base;
   }
-  if (/\b(food|eat|vegan|vegab|vegetarian|gluten|concession|nachos|pizza|taco|bao|shawarma|barbecue|bbq|comida|comer|vegano|vegetariano|sin gluten)\b/.test(q) || (context.dietary && /\b(near|nearby|closest|options|about|what else|where|d[oó]nde|que mas)\b/.test(q))) {
+  if (/\b(food|eat|vegan|vegab|vegetarian|veggie|celiac|celiaco|gluten|concession|nachos|pizza|taco|bao|shawarma|barbecue|bbq|comida|comer|vegano|vegetariano|vegetariana|sin gluten)\b/.test(q) || (context.dietary && /\b(near|nearby|closest|options|about|what else|where|d[oó]nde|que mas)\b/.test(q))) {
     base.route = 'concessions';
     let matches = knowledge.vendors.filter(v => {
-      const named = normalize(v.name + ' ' + v.description).includes(q.replace(/^(where|do|can|i|find|is|the|a|an|at|in|section|food|comida|near|me|what|about|are|vegan|vegetarian|gluten|options|donde|hay|para|mi|quiero|quieres|un|una|de|el|la)\s+/g, '').trim());
+      const named = q.includes(normalize(v.name)) || normalize(v.name + ' ' + v.description).includes(q.replace(/^(where|do|can|i|find|is|the|a|an|at|in|section|food|comida|near|me|what|about|are|vegan|vegetarian|gluten|options|donde|hay|para|mi|quiero|quieres|un|una|de|el|la)\s+/g, '').trim());
       const diet = DIET[v.name];
       return context.dietary ? Boolean(diet?.[context.dietary === 'gluten-aware' ? 'glutenAware' : context.dietary]) : named || /food|comida|eat|comer|concession/.test(q);
     });
@@ -145,8 +157,8 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     if (matches.length === 0) base.answer = spanish ? 'No encontré una opción publicada que pueda confirmar. Dime qué buscas y tu sección para revisar las opciones oficiales.' : 'I could not verify a published option for that request. Tell me what you want and your section, and I’ll narrow down the official listings.';
     return base;
   }
-  if (/\b(weather|rain|temperature|forecast|kickoff|lluvia|llover|clima|tiempo|pronostico)\b/.test(q)) { base.route = 'weather'; return base; }
-  if (/\b(next match|next game|next home|schedule|opponent|kickoff|roster|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineaci[oó]n|noticias)\b/.test(q)) { base.route = 'club'; return base; }
+  if (/\b(weather|rain|temperature|forecast|kickoff|lluvia|llovera?|clima|tiempo|pronostico|inicio del partido)\b/.test(q)) { base.route = 'weather'; return base; }
+  if (/\b(next match|next game|next home|next.*q2|schedule|opponent|kickoff|roster|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias)\b/.test(q)) { base.route = 'club'; return base; }
   base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte)\b/.test(q) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
   const docs = searchDocs(query, knowledge, 4);
   docs.forEach(addDoc);

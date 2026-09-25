@@ -1,0 +1,962 @@
+[
+  {
+    "id": "vegan-01",
+    "kind": "vegan",
+    "question": "I'm in section 123. Where can I get vegan food?",
+    "route": "concessions",
+    "mustMatch": "119",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegan-02",
+    "kind": "vegan",
+    "question": "Vegan options near section 123?",
+    "route": "concessions",
+    "mustMatch": "119",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegan-03",
+    "kind": "vegan",
+    "question": "Anything vegab by section 123?",
+    "route": "concessions",
+    "mustMatch": "119",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegan-04",
+    "kind": "vegan",
+    "question": "section 123 vegan food please",
+    "route": "concessions",
+    "mustMatch": "119",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegan-05",
+    "kind": "vegan",
+    "question": "Where is Verde Vegan from section 123?",
+    "route": "concessions",
+    "mustMatch": "119",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegan-06",
+    "kind": "vegan",
+    "question": "¿Comida vegana cerca de la sección 123?",
+    "route": "concessions",
+    "mustMatch": "119",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegan-07",
+    "kind": "vegan",
+    "question": "Estoy en sección 123, ¿hay comida vegana?",
+    "route": "concessions",
+    "mustMatch": "119",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegan-08",
+    "kind": "vegan",
+    "question": "Vegan at section 119?",
+    "route": "concessions",
+    "mustMatch": "119",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegan-09",
+    "kind": "vegan",
+    "question": "Is there vegan food near section 125?",
+    "route": "concessions",
+    "mustMatch": "119",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegan-10",
+    "kind": "vegan",
+    "question": "I sit in sectoin 123, need vegan food",
+    "route": "concessions",
+    "mustMatch": "119",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegetarian-01",
+    "kind": "vegetarian",
+    "question": "Vegetarian food near section 123?",
+    "route": "concessions",
+    "mustMatch": "122",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegetarian-02",
+    "kind": "vegetarian",
+    "question": "Where are vegetarian tacos?",
+    "route": "concessions",
+    "mustMatch": "122",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegetarian-03",
+    "kind": "vegetarian",
+    "question": "I'm in section 122 and vegetarian",
+    "route": "concessions",
+    "mustMatch": "122",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegetarian-04",
+    "kind": "vegetarian",
+    "question": "¿Dónde puedo encontrar comida vegetariana?",
+    "route": "concessions",
+    "mustMatch": "122",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegetarian-05",
+    "kind": "vegetarian",
+    "question": "Comida vegetariana en sección 123",
+    "route": "concessions",
+    "mustMatch": "122",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegetarian-06",
+    "kind": "vegetarian",
+    "question": "Any vegetarian food at Q2?",
+    "route": "concessions",
+    "mustMatch": "122",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegetarian-07",
+    "kind": "vegetarian",
+    "question": "What can a vegetarian eat near section 121?",
+    "route": "concessions",
+    "mustMatch": "122",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegetarian-08",
+    "kind": "vegetarian",
+    "question": "vegetarian options at section 124",
+    "route": "concessions",
+    "mustMatch": "122",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegetarian-09",
+    "kind": "vegetarian",
+    "question": "Are there veggie options?",
+    "route": "concessions",
+    "mustMatch": "122",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "vegetarian-10",
+    "kind": "vegetarian",
+    "question": "I want vegetarian concessions",
+    "route": "concessions",
+    "mustMatch": "122",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "gluten-01",
+    "kind": "gluten",
+    "question": "Gluten free food at Q2?",
+    "route": "concessions",
+    "mustMatch": "gluten|cel[ií]ac",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "gluten-02",
+    "kind": "gluten",
+    "question": "Gluten-aware options near section 123?",
+    "route": "concessions",
+    "mustMatch": "gluten|cel[ií]ac",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "gluten-03",
+    "kind": "gluten",
+    "question": "Can you guarantee allergy-safe gluten free food?",
+    "route": "concessions",
+    "mustMatch": "gluten|cel[ií]ac",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "gluten-04",
+    "kind": "gluten",
+    "question": "Is there food avoiding gluten?",
+    "route": "concessions",
+    "mustMatch": "gluten|cel[ií]ac",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "gluten-05",
+    "kind": "gluten",
+    "question": "What gluten options are published?",
+    "route": "concessions",
+    "mustMatch": "gluten|cel[ií]ac",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "gluten-06",
+    "kind": "gluten",
+    "question": "Sin gluten cerca de sección 123",
+    "route": "concessions",
+    "mustMatch": "gluten|cel[ií]ac",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "gluten-07",
+    "kind": "gluten",
+    "question": "Soy celíaco, ¿dónde puedo comer?",
+    "route": "concessions",
+    "mustMatch": "gluten|cel[ií]ac",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "gluten-08",
+    "kind": "gluten",
+    "question": "Gluten free nachos?",
+    "route": "concessions",
+    "mustMatch": "gluten|cel[ií]ac",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "gluten-09",
+    "kind": "gluten",
+    "question": "What about celiac-safe meals?",
+    "route": "concessions",
+    "mustMatch": "gluten|cel[ií]ac",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "gluten-10",
+    "kind": "gluten",
+    "question": "I need gluten aware food",
+    "route": "concessions",
+    "mustMatch": "gluten|cel[ií]ac",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "drinks-01",
+    "kind": "drinks",
+    "question": "What about drinks?",
+    "route": "drinks",
+    "mustMatch": "bar",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "drinks-02",
+    "kind": "drinks",
+    "question": "Beer near section 123?",
+    "route": "drinks",
+    "mustMatch": "bar",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "drinks-03",
+    "kind": "drinks",
+    "question": "Where can I get a drink in section 123?",
+    "route": "drinks",
+    "mustMatch": "bar",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "drinks-04",
+    "kind": "drinks",
+    "question": "Wine bar at Q2?",
+    "route": "drinks",
+    "mustMatch": "bar",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "drinks-05",
+    "kind": "drinks",
+    "question": "Any beer by section 120?",
+    "route": "drinks",
+    "mustMatch": "bar",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "drinks-06",
+    "kind": "drinks",
+    "question": "¿Dónde hay cerveza cerca de la sección 123?",
+    "route": "drinks",
+    "mustMatch": "bar",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "drinks-07",
+    "kind": "drinks",
+    "question": "Bebidas en sección 125",
+    "route": "drinks",
+    "mustMatch": "bar",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "drinks-08",
+    "kind": "drinks",
+    "question": "I want a soda near 123",
+    "route": "drinks",
+    "mustMatch": "bar",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "drinks-09",
+    "kind": "drinks",
+    "question": "Is there a bar near section 125?",
+    "route": "drinks",
+    "mustMatch": "bar",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "drinks-10",
+    "kind": "drinks",
+    "question": "Where is the YETI Bar?",
+    "route": "drinks",
+    "mustMatch": "bar",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "diaper-01",
+    "kind": "diaper",
+    "question": "Can I bring a diaper bag?",
+    "route": "stadium",
+    "mustMatch": "bag|bolsa|pañalera",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "diaper-02",
+    "kind": "diaper",
+    "question": "Are diaper bags allowed?",
+    "route": "stadium",
+    "mustMatch": "bag|bolsa|pañalera",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "diaper-03",
+    "kind": "diaper",
+    "question": "May I enter with a childcare bag?",
+    "route": "stadium",
+    "mustMatch": "bag|bolsa|pañalera",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "diaper-04",
+    "kind": "diaper",
+    "question": "Diaper bag policy please",
+    "route": "stadium",
+    "mustMatch": "bag|bolsa|pañalera",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "diaper-05",
+    "kind": "diaper",
+    "question": "I'm with a baby; can I bring a diaper bag?",
+    "route": "stadium",
+    "mustMatch": "bag|bolsa|pañalera",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "diaper-06",
+    "kind": "diaper",
+    "question": "¿Puedo llevar una bolsa de pañales?",
+    "route": "stadium",
+    "mustMatch": "bag|bolsa|pañalera",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "diaper-07",
+    "kind": "diaper",
+    "question": "¿Permiten una pañalera?",
+    "route": "stadium",
+    "mustMatch": "bag|bolsa|pañalera",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "diaper-08",
+    "kind": "diaper",
+    "question": "Do you screen childcare bags?",
+    "route": "stadium",
+    "mustMatch": "bag|bolsa|pañalera",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "diaper-09",
+    "kind": "diaper",
+    "question": "What if I bring a diaper bag with my kid?",
+    "route": "stadium",
+    "mustMatch": "bag|bolsa|pañalera",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "diaper-10",
+    "kind": "diaper",
+    "question": "Is a diaper bag a bag-policy exception?",
+    "route": "stadium",
+    "mustMatch": "bag|bolsa|pañalera",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "train-01",
+    "kind": "train",
+    "question": "How do I get to the stadium by train?",
+    "route": "transport",
+    "mustMatch": "McKalla",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "train-02",
+    "kind": "train",
+    "question": "Which rail stop serves Q2?",
+    "route": "transport",
+    "mustMatch": "McKalla",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "train-03",
+    "kind": "train",
+    "question": "Train to Austin FC?",
+    "route": "transport",
+    "mustMatch": "McKalla",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "train-04",
+    "kind": "train",
+    "question": "Does the Red Line go to the stadium?",
+    "route": "transport",
+    "mustMatch": "McKalla",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "train-05",
+    "kind": "train",
+    "question": "Where is McKalla Station?",
+    "route": "transport",
+    "mustMatch": "McKalla",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "train-06",
+    "kind": "train",
+    "question": "¿Cómo llego en tren a Q2 Stadium?",
+    "route": "transport",
+    "mustMatch": "McKalla",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "train-07",
+    "kind": "train",
+    "question": "¿Qué estación de tren uso?",
+    "route": "transport",
+    "mustMatch": "McKalla",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "train-08",
+    "kind": "train",
+    "question": "Can I take CapMetro rail?",
+    "route": "transport",
+    "mustMatch": "McKalla",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "train-09",
+    "kind": "train",
+    "question": "Public transit by train please",
+    "route": "transport",
+    "mustMatch": "McKalla",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "train-10",
+    "kind": "train",
+    "question": "Is there a rail station east of Q2?",
+    "route": "transport",
+    "mustMatch": "McKalla",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "transfer-01",
+    "kind": "transfer",
+    "question": "How do I transfer my ticket?",
+    "route": "ticketing",
+    "mustMatch": "app",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "transfer-02",
+    "kind": "transfer",
+    "question": "Can I transfer a ticket on SeatGeek?",
+    "route": "ticketing",
+    "mustMatch": "app",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "transfer-03",
+    "kind": "transfer",
+    "question": "Ticket transfer instructions",
+    "route": "ticketing",
+    "mustMatch": "app",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "transfer-04",
+    "kind": "transfer",
+    "question": "Where do I send my digital ticket?",
+    "route": "ticketing",
+    "mustMatch": "app",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "transfer-05",
+    "kind": "transfer",
+    "question": "How can the recipient get my ticket?",
+    "route": "ticketing",
+    "mustMatch": "app",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "transfer-06",
+    "kind": "transfer",
+    "question": "¿Cómo puedo transferir mi boleto?",
+    "route": "ticketing",
+    "mustMatch": "app",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "transfer-07",
+    "kind": "transfer",
+    "question": "Transferir entrada desde la app",
+    "route": "ticketing",
+    "mustMatch": "app",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "transfer-08",
+    "kind": "transfer",
+    "question": "My ticket transfer button is missing",
+    "route": "ticketing",
+    "mustMatch": "app",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "transfer-09",
+    "kind": "transfer",
+    "question": "Can I share my Austin FC ticket?",
+    "route": "ticketing",
+    "mustMatch": "app",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "transfer-10",
+    "kind": "transfer",
+    "question": "Help me transfer tickets to a friend",
+    "route": "ticketing",
+    "mustMatch": "app",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "purchase-01",
+    "kind": "purchase",
+    "question": "Can you buy the ticket for me?",
+    "route": "transaction",
+    "mustMatch": "ticket|boleto|entrada",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "purchase-02",
+    "kind": "purchase",
+    "question": "Purchase a ticket for me",
+    "route": "transaction",
+    "mustMatch": "ticket|boleto|entrada",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "purchase-03",
+    "kind": "purchase",
+    "question": "Book my match ticket",
+    "route": "transaction",
+    "mustMatch": "ticket|boleto|entrada",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "purchase-04",
+    "kind": "purchase",
+    "question": "Buy two tickets right now",
+    "route": "transaction",
+    "mustMatch": "ticket|boleto|entrada",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "purchase-05",
+    "kind": "purchase",
+    "question": "Can you sell me a ticket?",
+    "route": "transaction",
+    "mustMatch": "ticket|boleto|entrada",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "purchase-06",
+    "kind": "purchase",
+    "question": "Compra un boleto por mí",
+    "route": "transaction",
+    "mustMatch": "ticket|boleto|entrada",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "purchase-07",
+    "kind": "purchase",
+    "question": "¿Puedes comprarme las entradas?",
+    "route": "transaction",
+    "mustMatch": "ticket|boleto|entrada",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "purchase-08",
+    "kind": "purchase",
+    "question": "Please buy me a ticket",
+    "route": "transaction",
+    "mustMatch": "ticket|boleto|entrada",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "purchase-09",
+    "kind": "purchase",
+    "question": "Buy my game tickets",
+    "route": "transaction",
+    "mustMatch": "ticket|boleto|entrada",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "purchase-10",
+    "kind": "purchase",
+    "question": "Can you purchase Austin FC tickets for us?",
+    "route": "transaction",
+    "mustMatch": "ticket|boleto|entrada",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "sensory-01",
+    "kind": "sensory",
+    "question": "Where is the sensory room?",
+    "route": "stadium",
+    "mustMatch": "125",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "sensory-02",
+    "kind": "sensory",
+    "question": "Do you have a sensory room?",
+    "route": "stadium",
+    "mustMatch": "125",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "sensory-03",
+    "kind": "sensory",
+    "question": "Sensory space for my child?",
+    "route": "stadium",
+    "mustMatch": "125",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "sensory-04",
+    "kind": "sensory",
+    "question": "Need a quiet sensory room",
+    "route": "stadium",
+    "mustMatch": "125",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "sensory-05",
+    "kind": "sensory",
+    "question": "Which section is the sensory room behind?",
+    "route": "stadium",
+    "mustMatch": "125",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "sensory-06",
+    "kind": "sensory",
+    "question": "¿Dónde está la sala sensorial?",
+    "route": "stadium",
+    "mustMatch": "125",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "sensory-07",
+    "kind": "sensory",
+    "question": "¿Hay espacio sensorial?",
+    "route": "stadium",
+    "mustMatch": "125",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "sensory-08",
+    "kind": "sensory",
+    "question": "Can I get a sensory kit?",
+    "route": "stadium",
+    "mustMatch": "125",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "sensory-09",
+    "kind": "sensory",
+    "question": "Where do I go for sensory support?",
+    "route": "stadium",
+    "mustMatch": "125",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "sensory-10",
+    "kind": "sensory",
+    "question": "Sensory room near section 125?",
+    "route": "stadium",
+    "mustMatch": "125",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "water-01",
+    "kind": "water",
+    "question": "Where can I refill my water bottle?",
+    "route": "stadium",
+    "mustMatch": "30",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "water-02",
+    "kind": "water",
+    "question": "Can I bring an empty water bottle?",
+    "route": "stadium",
+    "mustMatch": "30",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "water-03",
+    "kind": "water",
+    "question": "Water stations at Q2?",
+    "route": "stadium",
+    "mustMatch": "30",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "water-04",
+    "kind": "water",
+    "question": "Where are YETI hydration stations?",
+    "route": "stadium",
+    "mustMatch": "30",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "water-05",
+    "kind": "water",
+    "question": "Can I take a 30 ounce empty bottle?",
+    "route": "stadium",
+    "mustMatch": "30",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "water-06",
+    "kind": "water",
+    "question": "¿Puedo traer una botella vacía de agua?",
+    "route": "stadium",
+    "mustMatch": "30",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "water-07",
+    "kind": "water",
+    "question": "¿Dónde puedo rellenar mi botella?",
+    "route": "stadium",
+    "mustMatch": "30",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "water-08",
+    "kind": "water",
+    "question": "Hydration station near northwest corner?",
+    "route": "stadium",
+    "mustMatch": "30",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "water-09",
+    "kind": "water",
+    "question": "Are sealed water bottles allowed?",
+    "route": "stadium",
+    "mustMatch": "30",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "water-10",
+    "kind": "water",
+    "question": "What is the refill policy for water?",
+    "route": "stadium",
+    "mustMatch": "30",
+    "sourceDomain": "q2stadium.com"
+  },
+  {
+    "id": "weather-01",
+    "kind": "weather",
+    "question": "Will it rain at kickoff?",
+    "route": "weather",
+    "mustMatch": "match|partido",
+    "sourceDomain": "weather.gov"
+  },
+  {
+    "id": "weather-02",
+    "kind": "weather",
+    "question": "Weather at kickoff?",
+    "route": "weather",
+    "mustMatch": "match|partido",
+    "sourceDomain": "weather.gov"
+  },
+  {
+    "id": "weather-03",
+    "kind": "weather",
+    "question": "What's the forecast for kickoff?",
+    "route": "weather",
+    "mustMatch": "match|partido",
+    "sourceDomain": "weather.gov"
+  },
+  {
+    "id": "weather-04",
+    "kind": "weather",
+    "question": "Is it hot at kickoff?",
+    "route": "weather",
+    "mustMatch": "match|partido",
+    "sourceDomain": "weather.gov"
+  },
+  {
+    "id": "weather-05",
+    "kind": "weather",
+    "question": "Need rain forecast at kickoff",
+    "route": "weather",
+    "mustMatch": "match|partido",
+    "sourceDomain": "weather.gov"
+  },
+  {
+    "id": "weather-06",
+    "kind": "weather",
+    "question": "¿Lloverá al inicio del partido?",
+    "route": "weather",
+    "mustMatch": "match|partido",
+    "sourceDomain": "weather.gov"
+  },
+  {
+    "id": "weather-07",
+    "kind": "weather",
+    "question": "Clima a la hora de inicio del partido",
+    "route": "weather",
+    "mustMatch": "match|partido",
+    "sourceDomain": "weather.gov"
+  },
+  {
+    "id": "weather-08",
+    "kind": "weather",
+    "question": "Forecast for match kickoff?",
+    "route": "weather",
+    "mustMatch": "match|partido",
+    "sourceDomain": "weather.gov"
+  },
+  {
+    "id": "weather-09",
+    "kind": "weather",
+    "question": "Will I need a raincoat at kickoff?",
+    "route": "weather",
+    "mustMatch": "match|partido",
+    "sourceDomain": "weather.gov"
+  },
+  {
+    "id": "weather-10",
+    "kind": "weather",
+    "question": "Temperature at kickoff?",
+    "route": "weather",
+    "mustMatch": "match|partido",
+    "sourceDomain": "weather.gov"
+  },
+  {
+    "id": "next_match-01",
+    "kind": "next_match",
+    "question": "When is the next Austin FC home match?",
+    "route": "club",
+    "mustMatch": "San Diego",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "next_match-02",
+    "kind": "next_match",
+    "question": "Who do we play next at Q2?",
+    "route": "club",
+    "mustMatch": "San Diego",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "next_match-03",
+    "kind": "next_match",
+    "question": "Next home game?",
+    "route": "club",
+    "mustMatch": "San Diego",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "next_match-04",
+    "kind": "next_match",
+    "question": "What time is the next home match?",
+    "route": "club",
+    "mustMatch": "San Diego",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "next_match-05",
+    "kind": "next_match",
+    "question": "When do Austin FC play next at home?",
+    "route": "club",
+    "mustMatch": "San Diego",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "next_match-06",
+    "kind": "next_match",
+    "question": "¿Cuándo es el próximo partido en casa?",
+    "route": "club",
+    "mustMatch": "San Diego",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "next_match-07",
+    "kind": "next_match",
+    "question": "¿Quién es el rival del siguiente partido en casa?",
+    "route": "club",
+    "mustMatch": "San Diego",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "next_match-08",
+    "kind": "next_match",
+    "question": "Next match at Q2 Stadium?",
+    "route": "club",
+    "mustMatch": "San Diego",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "next_match-09",
+    "kind": "next_match",
+    "question": "Is the next home game against San Diego?",
+    "route": "club",
+    "mustMatch": "San Diego",
+    "sourceDomain": "austinfc.com"
+  },
+  {
+    "id": "next_match-10",
+    "kind": "next_match",
+    "question": "Tell me the next Austin FC home match and kickoff",
+    "route": "club",
+    "mustMatch": "San Diego",
+    "sourceDomain": "austinfc.com"
+  }
+]

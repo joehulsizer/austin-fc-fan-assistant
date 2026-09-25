@@ -8,9 +8,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
       - run: npm run build
+      - run: npm run test
+      - run: npm run eval
+      - run: npx playwright install --with-deps chromium
+      - name: Browser acceptance checks
+        run: |
+          npm run start > /tmp/austin-server.log 2>&1 &
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:3000/api/health >/dev/null && break; sleep 1; done
+          npm run test:browser
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: package-lock
-          path: package-lock.json
+          name: verification-results
+          path: |
+            evaluation-results.json
+            playwright-report/
+            /tmp/austin-server.log

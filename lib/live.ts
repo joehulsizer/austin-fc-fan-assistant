@@ -56,7 +56,7 @@ export async function weatherGrounding(query: string, context: FanContext): Prom
 export async function clubGrounding(query: string, context: FanContext): Promise<Grounding> {
   const spanish = context.language === 'es';
   const base: Grounding = { route: 'club', context, facts: [], sources: [], cards: [{ title: 'Austin FC schedule', detail: 'Current official fixtures', href: SCHEDULE_URL, label: spanish ? 'Ver calendario' : 'View schedule' }] };
-  if (/next|pr[oó]ximo|siguiente|kickoff|inicio/i.test(query) && /match|game|home|partido|juego/i.test(query)) {
+  if (/next|pr[oó]ximo|siguiente|kickoff|inicio/i.test(query) && /match|game|home|partido|juego|q2/i.test(query)) {
     const featured = (await getKnowledge()).featuredMatch;
     if (featured && new Date(featured.startsAt).getTime() > Date.now()) {
       const local = new Intl.DateTimeFormat(spanish ? 'es-US' : 'en-US', { timeZone: 'America/Chicago', dateStyle: 'full', timeStyle: 'short' }).format(new Date(featured.startsAt));
