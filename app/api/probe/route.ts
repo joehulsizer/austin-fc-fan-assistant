@@ -16,7 +16,7 @@ export async function POST(req:Request){
       const r=await fetch('https://api.weather.gov/gridpoints/EWX/157,96/forecast',{headers:{'User-Agent':'AustinFCFanAssistant (https://austin-fc-fan-assistant.vercel.app)'},signal:AbortSignal.timeout(20000)});
       const d=await r.json(); return Response.json({ok:r.ok,updated:d.properties?.updated,first:d.properties?.periods?.[0]});
     }
-    const result=await generateText({model:kind==='free'?'inclusionai/ling-3.0-flash-vl-free':'openai/gpt-5.4-mini',prompt:kind==='search'?'Search the official Austin FC website for the next home match relative to '+new Date().toISOString()+'. Cite the official page.':'Say: Austin fan assistant is connected.',tools:kind==='search'?{web_search:openai.tools.webSearch({filters:{allowedDomains:['austinfc.com','mlssoccer.com']}})}:undefined,maxOutputTokens:600});
+    const result=await generateText({model:kind==='free'?'inclusionai/ling-3.0-flash-sante-free':'openai/gpt-5.4-mini',prompt:kind==='search'?'Search the official Austin FC website for the next home match relative to '+new Date().toISOString()+'. Cite the official page.':'Say: Austin fan assistant is connected.',tools:kind==='search'?{web_search:openai.tools.webSearch({filters:{allowedDomains:['austinfc.com','mlssoccer.com']}})}:undefined,maxOutputTokens:600});
     return Response.json({ok:true,text:result.text,sources:result.sources,usage:result.usage});
   }catch(e){return Response.json({ok:false,error:e instanceof Error?e.message:'Probe failed'},{status:502});}
 }

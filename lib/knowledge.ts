@@ -128,7 +128,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     base.cards = [card('Stadium amenities', 'Hydration stations and water fountains', MAP_URL, spanish ? 'Ver mapa' : 'View map')];
     return base;
   }
-  if (/\b(drink|beer|wine|water|beverage|soda|cocktail|margarita|bebida|cerveza|vino|agua|refresco|bar)\b/.test(q)) {
+  if (/\b(drinks?|beers?|wine|water|beverages?|soda|cocktail|margarita|bebidas?|cerveza|vino|agua|refresco|bar)\b/.test(q)) {
     base.route = 'drinks';
     const vendors = knowledge.vendors.filter(v => /Bar|Draft|Wine|Heineken|Michelob/.test(v.name)).sort((a, b) => rankVendor(a, context.section) - rankVendor(b, context.section)).slice(0, 5);
     for (const v of vendors) { base.facts.push(`${v.name}: ${v.location}. ${v.description}`); base.cards.push(card(v.name, v.location, MAP_URL, spanish ? 'Ver mapa' : 'View map')); }
@@ -148,7 +148,8 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     matches = matches.slice(0, 6);
     for (const v of matches) {
       const diet = DIET[v.name];
-      base.facts.push(`${v.name}: ${v.location}. ${v.description} ${context.dietary && diet ? diet[context.dietary === 'gluten-aware' ? 'glutenAware' : context.dietary] || '' : ''}`);
+      const dietaryDetail = context.dietary && diet ? diet[context.dietary === 'gluten-aware' ? 'glutenAware' : context.dietary] : undefined;
+      base.facts.push(`${v.name}: ${v.location}. ${dietaryDetail || v.description}`);
       base.cards.push(card(v.name, v.location, MAP_URL, spanish ? 'Ver mapa' : 'View map'));
     }
     base.sources = [source('Q2 Stadium vendors', 'https://www.q2stadium.com/food-and-drink/our-vendors/', knowledge.checkedAt), source('Q2 Stadium policy and dietary guide', POLICY_URL, knowledge.checkedAt), source('Official stadium map', MAP_URL, knowledge.checkedAt)];
@@ -158,7 +159,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     return base;
   }
   if (/\b(weather|rain|temperature|forecast|kickoff|lluvia|llovera?|clima|tiempo|pronostico|inicio del partido)\b/.test(q)) { base.route = 'weather'; return base; }
-  if (/\b(next match|next game|next home|next.*q2|schedule|opponent|kickoff|roster|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias)\b/.test(q)) { base.route = 'club'; return base; }
+  if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|kickoff|roster|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias)\b/.test(q)) { base.route = 'club'; return base; }
   base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte)\b/.test(q) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
   const docs = searchDocs(query, knowledge, 4);
   docs.forEach(addDoc);
