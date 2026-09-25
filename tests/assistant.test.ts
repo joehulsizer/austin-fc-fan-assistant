@@ -32,6 +32,15 @@ test('purchasing is refused and linked to official tickets', async () => {
   assert.ok(result.cards.some(c => c.href.startsWith('https://www.austinfc.com/')));
 });
 
+test('recipient ticket follow-up uses the mobile-ticket guide rather than unrelated policies', async () => {
+  const result = await ground('How can the recipient get my ticket?', {});
+  const answer = result.answer || groundedFallback('How can the recipient get my ticket?', result);
+  assert.equal(result.route, 'ticketing');
+  assert.match(answer, /app/);
+  assert.ok(result.sources.some(s => s.url.includes('austinfc.com/tickets/mobile-ticketing')));
+  assert.ok(!result.sources.some(s => /re.entry|seatgeek ticket hq/i.test(s.title)));
+});
+
 test('dietary claim stays gluten aware and never promises allergy safety', async () => {
   const result = await ground('Gluten free options near section 123?', {});
   const answer = groundedFallback('Gluten free options near section 123?', result);

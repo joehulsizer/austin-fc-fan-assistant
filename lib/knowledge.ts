@@ -192,6 +192,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
   const transportIds = /\b(parking|park|estacionamiento)\b/.test(q) ? ['parking','policy-ada-accessibility'] : /\b(what time|when|arrive|early)\b/.test(q) ? ['directions','policy-capital-metro','policy-gate-opening-times'] : ['directions','policy-capital-metro'];
   const docs = base.route === 'transport'
     ? knowledge.documents.filter(d => transportIds.includes(d.id))
+    : base.route === 'ticketing' && /transfer|send|share|recipient|transferir|enviar/.test(q) ? []
     : searchDocs(query, knowledge, 4);
   docs.forEach(addDoc);
   if (base.route === 'ticketing') {
@@ -200,6 +201,6 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     base.sources.push(source(transferring ? 'Austin FC mobile ticketing' : 'Austin FC tickets', transferring ? MOBILE_TICKET_URL : TICKET_URL));
   }
   if (base.route === 'transport') { base.cards.push(card('Plan your trip', 'CapMetro event service', TRANSIT_URL)); base.sources.push(source('CapMetro event service', TRANSIT_URL)); if(context.origin === 'ut-austin') base.sources.push(source('CapMetro Rapid 803 route', 'https://www.capmetro.org/rapid/route803', knowledge.checkedAt)); }
-  if (docs.length === 0) base.answer = spanish ? 'No encontré una respuesta confirmada en las fuentes oficiales. Prueba con una pregunta más específica o consulta al personal de Guest Services.' : 'I couldn’t verify that from the current official sources. Try a more specific question or ask Guest Services at the stadium.';
+  if (docs.length === 0 && base.route === 'stadium') base.answer = spanish ? 'No encontré una respuesta confirmada en las fuentes oficiales. Prueba con una pregunta más específica o consulta al personal de Guest Services.' : 'I couldn’t verify that from the current official sources. Try a more specific question or ask Guest Services at the stadium.';
   return base;
 }

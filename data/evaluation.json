@@ -517,7 +517,7 @@
     "question": "How can the recipient get my ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-06",
