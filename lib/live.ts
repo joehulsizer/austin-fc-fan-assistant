@@ -2,6 +2,7 @@ import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import type { FanContext, Grounding } from './types';
 import { getKnowledge } from './knowledge';
+import schedule from '@/data/club-schedule.json';
 
 const NWS_URL = 'https://api.weather.gov/gridpoints/EWX/157,96/forecast/hourly';
 const WEATHER_SOURCE = 'https://forecast.weather.gov/MapClick.php?lat=30.3877&lon=-97.7194';
@@ -48,6 +49,7 @@ export async function weatherGrounding(query: string, context: FanContext): Prom
     base.facts = [base.answer];
     return base;
   } catch {
+    console.warn(JSON.stringify({ event: 'weather_retrieval_failed' }));
     base.answer = spanish ? 'El pronóstico en vivo no está disponible ahora. Consulta el National Weather Service directamente e inténtalo de nuevo en unos minutos.' : 'The live forecast is unavailable right now. Check the National Weather Service directly and try again in a few minutes.';
     return base;
   }
@@ -56,13 +58,15 @@ export async function weatherGrounding(query: string, context: FanContext): Prom
 export async function clubGrounding(query: string, context: FanContext): Promise<Grounding> {
   const spanish = context.language === 'es';
   const base: Grounding = { route: 'club', context, facts: [], sources: [], cards: [{ title: 'Austin FC schedule', detail: 'Current official fixtures', href: SCHEDULE_URL, label: spanish ? 'Ver calendario' : 'View schedule' }] };
-  if (/next|pr[oó]ximo|siguiente|kickoff|inicio/i.test(query) && /match|game|home|partido|juego|q2|austin fc/i.test(query)) {
+  if (/next|pr[oó]ximo|siguiente|kickoff|inicio/i.test(query) && /home|casa|q2/i.test(query)) {
     const featured = (await getKnowledge()).featuredMatch;
-    if (featured && new Date(featured.startsAt).getTime() > Date.now()) {
-      const local = new Intl.DateTimeFormat(spanish ? 'es-US' : 'en-US', { timeZone: 'America/Chicago', dateStyle: 'full', timeStyle: 'short' }).format(new Date(featured.startsAt));
-      base.answer = spanish ? `El próximo partido en casa verificado es ${featured.title}, ${local}, en Q2 Stadium. Confirmado con la previa oficial de Austin FC.` : `The next verified Austin FC home match is ${featured.title} on ${local} at Q2 Stadium. Confirmed against Austin FC’s official match preview.`;
-      base.context = { ...context, event: { title: featured.title, startsAt: featured.startsAt, source: featured.url } };
-      base.sources = [{ title: 'Austin FC match preview', url: featured.url, checkedAt: featured.checkedAt }];
+    const next = schedule.events.find(event => new Date(event.startsAt).getTime() > Date.now());
+    const match = featured && new Date(featured.startsAt).getTime() > Date.now() && (!next || featured.startsAt === next.startsAt) ? featured : next && { ...next, url: schedule.source, checkedAt: schedule.checkedAt };
+    if (match) {
+      const local = new Intl.DateTimeFormat(spanish ? 'es-US' : 'en-US', { timeZone: 'America/Chicago', dateStyle: 'full', timeStyle: 'short' }).format(new Date(match.startsAt));
+      base.answer = spanish ? `El próximo partido en casa publicado es ${match.title}, ${local}, en Q2 Stadium. Confirma la hora en el calendario oficial antes de viajar.` : `The next published Austin FC home match is ${match.title} on ${local} at Q2 Stadium. Confirm the kickoff time on the official schedule before traveling.`;
+      base.context = { ...context, event: { title: match.title, startsAt: match.startsAt, source: match.url } };
+      base.sources = [{ title: featured && match.url === featured.url ? 'Austin FC match preview' : 'Austin FC published season schedule', url: match.url, checkedAt: match.checkedAt }];
       return base;
     }
   }
@@ -88,6 +92,7 @@ export async function clubGrounding(query: string, context: FanContext): Promise
     if (date && /next|pr[oó]ximo|siguiente/.test(query.toLowerCase()) && new Date(date[0]).getTime() < Date.now() - 86400000) throw new Error('Past event returned');
     return base;
   } catch {
+    console.warn(JSON.stringify({ event: 'club_retrieval_failed' }));
     base.answer = spanish ? 'No pude verificar en vivo el próximo partido o la información actual del club. Consulta el calendario oficial de Austin FC; no quiero darte una fecha o rival desactualizados.' : 'I could not verify live match or current club information right now. Please use Austin FC’s official schedule; I don’t want to give you an outdated date or opponent.';
     base.sources = [{ title: 'Austin FC schedule', url: SCHEDULE_URL }];
     return base;

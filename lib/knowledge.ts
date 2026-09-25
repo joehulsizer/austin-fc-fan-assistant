@@ -7,6 +7,7 @@ export type Snapshot = { version: string; checkedAt: string; documents: Doc[]; v
 export const staticKnowledge = bundled as Snapshot;
 export const MAP_URL = 'https://www.q2stadium.com/stadium-maps/';
 export const TICKET_URL = 'https://www.austinfc.com/tickets/';
+export const MOBILE_TICKET_URL = 'https://www.austinfc.com/tickets/mobile-ticketing';
 export const TRANSIT_URL = 'https://www.capmetro.org/special-events/Q2';
 const POLICY_URL = 'https://www.q2stadium.com/a-z-policy-guide/';
 
@@ -158,12 +159,16 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     if (matches.length === 0) base.answer = spanish ? 'No encontré una opción publicada que pueda confirmar. Dime qué buscas y tu sección para revisar las opciones oficiales.' : 'I could not verify a published option for that request. Tell me what you want and your section, and I’ll narrow down the official listings.';
     return base;
   }
+  if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|roster|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias)\b/.test(q) && !/\b(weather|rain|forecast|lluvia|llovera?|clima|pronostico)\b/.test(q)) { base.route = 'club'; return base; }
   if (/\b(weather|rain|temperature|forecast|kickoff|lluvia|llovera?|clima|tiempo|pronostico|inicio del partido)\b/.test(q)) { base.route = 'weather'; return base; }
-  if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|kickoff|roster|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias)\b/.test(q)) { base.route = 'club'; return base; }
-  base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte)\b/.test(q) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
+  base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte|red line|mckalla)\b/.test(q) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
   const docs = searchDocs(query, knowledge, 4);
   docs.forEach(addDoc);
-  if (base.route === 'ticketing') { base.cards.push(card('Austin FC tickets', 'Official purchase and ticket management', TICKET_URL)); base.sources.push(source('Austin FC tickets', TICKET_URL)); }
+  if (base.route === 'ticketing') {
+    const transferring = /transfer|send|share|recipient|transferir|enviar/.test(q);
+    base.cards.push(card(transferring ? 'Mobile ticketing guide' : 'Austin FC tickets', transferring ? 'Access, send, and manage tickets' : 'Official purchase and ticket management', transferring ? MOBILE_TICKET_URL : TICKET_URL));
+    base.sources.push(source(transferring ? 'Austin FC mobile ticketing' : 'Austin FC tickets', transferring ? MOBILE_TICKET_URL : TICKET_URL));
+  }
   if (base.route === 'transport') { base.cards.push(card('Plan your trip', 'CapMetro event service', TRANSIT_URL)); base.sources.push(source('CapMetro event service', TRANSIT_URL)); }
   if (docs.length === 0) base.answer = spanish ? 'No encontré una respuesta confirmada en las fuentes oficiales. Prueba con una pregunta más específica o consulta al personal de Guest Services.' : 'I couldn’t verify that from the current official sources. Try a more specific question or ask Guest Services at the stadium.';
   return base;

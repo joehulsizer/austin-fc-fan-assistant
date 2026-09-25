@@ -11,7 +11,9 @@ export default async function SourcesPage(){
     {title:'Current services',links:[
       {url:'https://www.capmetro.org/special-events/Q2'},
       {url:'https://www.austinfc.com/schedule/'},
+      {url:'https://images.mlssoccer.com/image/upload/v1763667074/assets/atx/2026_AustinFC_Schedule_PrintColor_lyhkf3.pdf'},
       {url:'https://www.austinfc.com/tickets/'},
+      {url:'https://www.austinfc.com/tickets/mobile-ticketing'},
       {url:'https://forecast.weather.gov/MapClick.php?lat=30.3877&lon=-97.7194'},
     ]},
   ];

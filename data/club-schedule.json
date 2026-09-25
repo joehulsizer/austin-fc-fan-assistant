@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-09-25T06:00:00Z",
+  "source": "https://images.mlssoccer.com/image/upload/v1763667074/assets/atx/2026_AustinFC_Schedule_PrintColor_lyhkf3.pdf",
+  "events": [
+    {"title":"Austin FC vs San Diego FC","startsAt":"2026-09-26T19:30:00-05:00"},
+    {"title":"Austin FC vs Nashville SC","startsAt":"2026-10-10T19:30:00-05:00"},
+    {"title":"Austin FC vs Vancouver Whitecaps FC","startsAt":"2026-10-17T19:30:00-05:00"},
+    {"title":"Austin FC vs Real Salt Lake","startsAt":"2026-10-28T19:30:00-05:00"},
+    {"title":"Austin FC vs Portland Timbers","startsAt":"2026-11-07T18:00:00-06:00"}
+  ]
+}

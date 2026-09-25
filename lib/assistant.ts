@@ -44,8 +44,8 @@ export function groundedFallback(query: string, result: Grounding): string {
     const section = !result.context.section ? (es ? '\nDime tu sección para sugerir una zona aproximada.' : '\nTell me your section and I can suggest a broad area.') : '';
     return `${intro}\n${list}${caveat}${section}`;
   }
-  if (result.route === 'ticketing' && /transfer|transferir/i.test(query)) {
-    return es ? 'Los boletos son digitales y se pueden transferir al destinatario desde la app de Austin FC o SeatGeek. Abre tu boleto, busca la opción de transferencia y sigue las instrucciones de la app. SeatGeek Ticket HQ puede ayudarte si no aparece la opción.' : 'Tickets are digital. Open your ticket in the Austin FC or SeatGeek app, choose Transfer, and follow the app’s instructions for the recipient. SeatGeek Ticket HQ can help if the option is missing.';
+  if (result.route === 'ticketing' && /transfer|transferir|send|share|recipient/i.test(query)) {
+    return es ? 'En la app de Austin FC y Q2 Stadium, abre el boleto del partido, pulsa “Send”, escribe el correo o teléfono del destinatario, selecciona cuántos boletos vas a enviar y pulsa “Send Tickets”. Si no puedes acceder, consulta la guía oficial de boletos móviles.' : 'In the Austin FC & Q2 Stadium app, open the match ticket, tap “Send,” enter the recipient’s email or phone number, choose the ticket quantity, and tap “Send Tickets.” The official mobile ticketing guide has the steps if you need help accessing the ticket.';
   }
   if (/diaper|pa[nñ]al|childcare bag/i.test(query)) {
     return es ? 'Sí. Q2 Stadium considera una bolsa para cuidado infantil, como una pañalera, cuando te acompaña un niño. La bolsa debe pasar el control de seguridad.' : 'Yes. Q2 Stadium allows a childcare bag, such as a diaper bag, when you are accompanied by a child. It is subject to security screening.';
@@ -53,7 +53,7 @@ export function groundedFallback(query: string, result: Grounding): string {
   if (/water|agua|hydration|refill|water station|estaci[oó]n de agua|botella|rellenar/i.test(query)) {
     return es ? 'Puedes llevar un recipiente vacío de hasta 30 onzas y llenarlo en las estaciones YETI de las esquinas sureste y noroeste o en fuentes de agua. No se permiten bebidas selladas.' : 'You may bring one empty drink vessel of 30 ounces or less and refill it at YETI hydration stations in the southeast and northwest corners or at other water fountains. Sealed beverages are not allowed.';
   }
-  if (result.route === 'transport' && /train|tren|rail|metro/i.test(query)) {
+  if (result.route === 'transport' && /train|tren|rail|metro|red line|mckalla/i.test(query)) {
     return es ? 'Toma la línea Red Line de CapMetro hasta McKalla Station, al lado este de Q2 Stadium. Confirma el horario del día del partido en CapMetro; desde la estación sigue las señales hacia el estadio.' : 'Take CapMetro’s Red Line to McKalla Station on the east side of Q2 Stadium. Check the event-day train schedule with CapMetro, then follow the signs from the station to the stadium.';
   }
   if (result.route === 'stadium' && /sensory|sensorial/i.test(query)) {
@@ -82,6 +82,10 @@ Verified facts:\n${result.facts.join('\n').slice(0, 6500)}\nPrior conversation:\
     try {
       const stream = streamText({ model, system, prompt: query, maxOutputTokens: 350, abortSignal: AbortSignal.timeout(26000) });
       for await (const delta of stream.textStream) { emitted = true; yield delta; }
+      if (emitted) {
+        const usage = await stream.usage;
+        console.info(JSON.stringify({ event: 'model_usage', model, inputTokens: usage.inputTokens, outputTokens: usage.outputTokens, totalTokens: usage.totalTokens }));
+      }
       if (emitted) return;
     } catch {
       if (emitted) return;
