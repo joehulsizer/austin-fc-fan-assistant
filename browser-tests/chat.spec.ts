@@ -69,7 +69,7 @@ test('share creates a read-only link and explains who can see it', async ({ page
   await page.getByRole('button', { name: 'Share chat' }).click();
   await expect(page.getByText('Anyone with the link can read it.')).toBeVisible();
   await page.getByRole('button', { name: 'Create share link' }).click();
-  await expect(page.getByRole('alert')).toContainText('Ask a question');
+  await expect(page.locator('.share-error')).toContainText('Ask a question');
   await page.getByRole('button', { name: 'Close share panel' }).click();
   await page.getByRole('button', { name: /Food near me/i }).click();
   await expect(page.locator('.message.assistant').last()).toContainText('119', { timeout: 20000 });
