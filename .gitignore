@@ -8,3 +8,5 @@ playwright-report/
 *.tsbuildinfo
 data/raw/
 .vercel
+evaluation-results.json
+live-evaluation-results.json

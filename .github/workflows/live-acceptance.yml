@@ -1,0 +1,25 @@
+name: Production acceptance
+on: workflow_dispatch
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test 120 public production conversations
+        run: python scripts/evaluate_live.py
+      - name: Publish versioned evaluation result
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail-with-body --max-time 60 -sS -X POST https://austin-fc-fan-assistant.vercel.app/api/evaluations \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -H 'Content-Type: application/json' \
+            --data-binary @live-evaluation-results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-evaluation-results
+          path: live-evaluation-results.json

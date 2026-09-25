@@ -159,7 +159,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     if (matches.length === 0) base.answer = spanish ? 'No encontré una opción publicada que pueda confirmar. Dime qué buscas y tu sección para revisar las opciones oficiales.' : 'I could not verify a published option for that request. Tell me what you want and your section, and I’ll narrow down the official listings.';
     return base;
   }
-  if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|roster|players?|goalkeepers?|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias|copa america)\b/.test(q) && !/\b(weather|rain|forecast|lluvia|llovera?|clima|pronostico)\b/.test(q) || /\b(join|tryout|academy)\b.*\b(player|team|club|austin fc)\b/.test(q)) { base.route = 'club'; return base; }
+  if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|roster|players?|goalkeepers?|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias|porteros?|jugadores?|copa america)\b/.test(q) && !/\b(weather|rain|forecast|lluvia|llovera?|clima|pronostico)\b/.test(q) || /\b(join|tryout|academy)\b.*\b(player|team|club|austin fc)\b/.test(q)) { base.route = 'club'; return base; }
   if (/\b(weather|rain|temperature|forecast|kickoff|lluvia|llovera?|clima|tiempo|pronostico|inicio del partido)\b/.test(q)) { base.route = 'weather'; return base; }
   base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte|red line|mckalla)\b/.test(q) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
   const docs = searchDocs(query, knowledge, 4);
