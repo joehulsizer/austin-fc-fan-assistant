@@ -56,6 +56,12 @@ export function groundedFallback(query: string, result: Grounding): string {
   if (result.route === 'transport' && /train|tren|rail|metro|red line|mckalla/i.test(query)) {
     return es ? 'Toma la línea Red Line de CapMetro hasta McKalla Station, al lado este de Q2 Stadium. Confirma el horario del día del partido en CapMetro; desde la estación sigue las señales hacia el estadio.' : 'Take CapMetro’s Red Line to McKalla Station on the east side of Q2 Stadium. Check the event-day train schedule with CapMetro, then follow the signs from the station to the stadium.';
   }
+  if (result.route === 'transport' && /parking|park|estacionamiento|aparcamiento/i.test(query)) {
+    return es ? 'Q2 Stadium recomienda comprar el estacionamiento con anticipación en su página oficial. Hay opciones dentro y fuera del estadio; ten listo el pase móvil al llegar. La disponibilidad y los horarios varían según el evento, así que confirma el lote antes de salir.' : 'Q2 Stadium recommends buying parking in advance through its official parking page. On-site and off-site lots are listed there; have your mobile parking pass ready when you arrive. Check your lot’s availability and event-day hours before leaving.';
+  }
+  if (result.route === 'transport' && /rideshare|uber|lyft|taxi|viaje compartido/i.test(query)) {
+    return es ? 'Para llegar en Uber o taxi, Q2 Stadium indica la zona de Delta Drive, al este del estadio, con acceso por Metric Boulevard. Sigue las instrucciones de recogida específicas del evento al salir.' : 'For Uber or taxi drop-off, Q2 Stadium lists Delta Drive on the east side, accessed from Metric Boulevard. Follow event-day pickup instructions when leaving; pickup arrangements can differ from drop-off.';
+  }
   if (result.route === 'stadium' && /sensory|sensorial/i.test(query)) {
     return es ? 'La sala sensorial está en la explanada principal, detrás de la sección 125, junto a Guest Services. También puedes pedir un kit sensorial en Guest Services.' : 'The sensory room is on the main concourse behind section 125, next to Guest Services. Sensory kits are available from Guest Services too.';
   }

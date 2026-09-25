@@ -56,3 +56,18 @@ test('historical intent mistakes do not send player recruitment or Copa América
   assert.equal((await ground('How can I join Austin FC as a player?', {})).route, 'club');
   assert.equal((await ground('Is Copa America at Q2 Stadium?', {})).route, 'club');
 });
+
+test('parking guidance does not repeat the malformed lot-hours text', async () => {
+  const result = await ground('Where can I park at Q2 Stadium?', {});
+  const answer = groundedFallback('Where can I park at Q2 Stadium?', result);
+  assert.equal(result.route, 'transport');
+  assert.match(answer, /parking in advance/);
+  assert.doesNotMatch(answer, /-3 hours/);
+  assert.ok(result.sources.some(s => s.url.includes('q2stadium.com/parking/')));
+});
+
+test('Spanish goalkeeper questions route to current roster', async () => {
+  const result = await ground('¿Quién es el portero de Austin FC?', {});
+  assert.equal(result.route, 'club');
+  assert.equal(result.context.language, 'es');
+});
