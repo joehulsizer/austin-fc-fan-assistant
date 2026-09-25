@@ -110,6 +110,17 @@ export async function clubGrounding(query: string, context: FanContext): Promise
       return base;
     }
   }
+  if (/\b(next|pr[oó]ximo|siguiente)\b/i.test(query) && /\b(match|game|fixture|partido)\b/i.test(query)) {
+    const featured = (await getKnowledge()).featuredMatch;
+    const until = featured ? new Date(featured.startsAt).getTime() - Date.now() : -1;
+    if (featured && until > 0 && until <= 72 * 3600 * 1000) {
+      const local = new Intl.DateTimeFormat(spanish ? 'es-US' : 'en-US', { timeZone: 'America/Chicago', dateStyle: 'full', timeStyle: 'short' }).format(new Date(featured.startsAt));
+      base.answer = spanish ? `El próximo partido publicado de Austin FC es ${featured.title}, ${local}, en Q2 Stadium. Confirma la hora antes de viajar.` : `The next published Austin FC match is ${featured.title} on ${local} at Q2 Stadium. Confirm kickoff before traveling.`;
+      base.context = { ...context, event: { title: featured.title, startsAt: featured.startsAt, source: featured.url } };
+      base.sources = [{ title: 'Austin FC match preview', url: featured.url, checkedAt: featured.checkedAt }];
+      return base;
+    }
+  }
   if (/next|pr[oó]ximo|siguiente|kickoff|inicio/i.test(query) && /home|casa|q2/i.test(query)) {
     const featured = (await getKnowledge()).featuredMatch;
     const next = schedule.events.find(event => new Date(event.startsAt).getTime() > Date.now());

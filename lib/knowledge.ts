@@ -119,7 +119,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     const ranked = MENU_HIGHLIGHTS.filter(item => item.category === (isBurger ? 'burger' : 'chicken')).sort((a,b) => rankVendor({sections:[Number(a.location.match(/\d{3}/)?.[0])],name:a.name,location:a.location,description:'',url:'',checkedAt:''}, context.section) - rankVendor({sections:[Number(b.location.match(/\d{3}/)?.[0])],name:b.name,location:b.location,description:'',url:'',checkedAt:''}, context.section));
     base.facts = ranked.map(item => `${item.name}: ${item.item}, ${item.location}.`);
     base.cards = ranked.map(item => card(item.name, `${item.item} · ${item.location}`, MAP_URL));
-    base.sources = [source('Q2 Stadium food and dietary guide', POLICY_URL, knowledge.checkedAt), source('Q2 Stadium vendors', 'https://www.q2stadium.com/food-and-drink/our-vendors/', knowledge.checkedAt), source('Official stadium map', MAP_URL, knowledge.checkedAt)];
+    base.sources = [source('Q2 Stadium food and dietary guide', POLICY_URL, knowledge.checkedAt), ...(!isBurger ? [source('Q2 Stadium vendors', 'https://www.q2stadium.com/food-and-drink/our-vendors/', knowledge.checkedAt)] : []), source('Official stadium map', MAP_URL, knowledge.checkedAt)];
     const note = isBurger ? 'The published burger is vegetarian; I cannot confirm a beef or vegan burger from this guide.' : 'Menus can change on matchday; check at the stand.';
     base.answer = `${isBurger ? 'Published burger option:' : 'Published chicken options:'}\n${base.facts.map(f => `• ${f}`).join('\n')}\n${note}`;
     return base;
