@@ -27,6 +27,7 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   const context: FanContext = { ...previous };
   const section = query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin)\s*#?\s*(\d{3})\b/i);
   if (section) context.section = Number(section[1]);
+  if (/\b(university of texas|ut austin|ut campus|student center)\b/i.test(query)) context.origin = 'ut-austin';
   if (/\b(vegan|vegab|vegano|vegana)\b/i.test(query)) context.dietary = 'vegan';
   else if (/\b(vegetarian|vegetariano|vegetariana|veggie)\b/i.test(query)) context.dietary = 'vegetarian';
   else if (/\b(gluten|celiac|celiaco|celíaco)\b/i.test(query)) context.dietary = 'gluten-aware';
@@ -69,7 +70,8 @@ const DIET: Record<string, { vegan?: string; vegetarian?: string; glutenAware?: 
 
 export function searchDocs(query: string, knowledge: Snapshot, count = 4): Doc[] {
   const normalized = normalize(query);
-  const words = normalized.split(/\s+/).filter(w => w.length > 2);
+  const stop = new Set(['the','and','for','from','where','what','when','there','here','with','can','you','how','are','get','find','stadium','austin','q2','some','about','those','they','them','want','need','please','could','would']);
+  const words = normalized.split(/\s+/).filter(w => w.length > 2 && !stop.has(w));
   const aliases: Record<string, string> = {
     diaper: 'bag childcare', mochila: 'bag', bolsa: 'bag', bolso: 'bag',
     train: 'rail metro capmetro', tren: 'rail metro capmetro', estacionamiento: 'parking',
@@ -103,6 +105,20 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
   const q = normalize(query);
   const base: Grounding = { route: 'general', context, facts: [], sources: [], cards: [] };
   const addDoc = (d: Doc) => { base.facts.push(`${d.title}: ${d.body.slice(0, 2400)}`); base.sources.push(source(d.title, d.url, d.checkedAt)); };
+  if (/\b(burgers?|hamburgers?|chicken|wings?|tenders?)\b/.test(q)) {
+    base.route = 'concessions';
+    const isBurger = /\b(burgers?|hamburgers?)\b/.test(q);
+    const menu = isBurger
+      ? [{ name: 'Grillove', location: 'Section 101', item: 'Impossible Good Burger (vegetarian)' }, { name: 'Oak Hill Grill', location: 'Section 129', item: 'Impossible Good Burger (vegetarian)' }]
+      : [{ name: 'Pluckers', location: 'Section 135 East Side', item: 'chicken tenders and wings' }, { name: 'Bao’d Up', location: 'Section 101 SE Corner', item: 'teriyaki chicken bao' }, { name: 'Shawarma Point', location: 'Section 127', item: 'Chicken Shawarma Salad' }];
+    const ranked = menu.sort((a,b) => rankVendor({sections:[Number(a.location.match(/\d{3}/)?.[0])],name:a.name,location:a.location,description:'',url:'',checkedAt:''}, context.section) - rankVendor({sections:[Number(b.location.match(/\d{3}/)?.[0])],name:b.name,location:b.location,description:'',url:'',checkedAt:''}, context.section));
+    base.facts = ranked.map(item => `${item.name}: ${item.item}, ${item.location}.`);
+    base.cards = ranked.map(item => card(item.name, `${item.item} · ${item.location}`, MAP_URL));
+    base.sources = [source('Q2 Stadium food and dietary guide', POLICY_URL, knowledge.checkedAt), source('Q2 Stadium vendors', 'https://www.q2stadium.com/food-and-drink/our-vendors/', knowledge.checkedAt), source('Official stadium map', MAP_URL, knowledge.checkedAt)];
+    const note = isBurger ? 'The published burger is vegetarian; I cannot confirm a beef or vegan burger from this guide.' : 'Menus can change on matchday; check at the stand.';
+    base.answer = `${isBurger ? 'Published burger option:' : 'Published chicken options:'}\n${base.facts.map(f => `• ${f}`).join('\n')}\n${note}`;
+    return base;
+  }
   if (/\b(buy|purchase|sell|transfer for me|book|comprar|compra|comprame|comprarme)\b/.test(q) && /\b(ticket|tickets|boleto|boletos|entrada|entradas)\b/.test(q)) {
     base.route = 'transaction';
     base.answer = spanish ? 'No puedo comprar ni transferir boletos por ti. Puedes hacerlo en el servicio oficial de boletos de Austin FC. Si necesitas ayuda con una transferencia, te explico los pasos.' : 'I can’t buy or transfer a ticket for you. Use Austin FC’s official ticket service for purchases and your Austin FC or SeatGeek app for transfers. I can walk you through the steps.';
@@ -167,15 +183,18 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
   }
   if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|roster|players?|goalkeepers?|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias|porteros?|jugadores?|copa america)\b/.test(q) && !/\b(weather|rain|forecast|lluvia|llovera?|clima|pronostico)\b/.test(q) || /\b(join|tryout|academy)\b.*\b(player|team|club|austin fc)\b/.test(q)) { base.route = 'club'; return base; }
   if (/\b(weather|rain|temperature|forecast|kickoff|lluvia|llovera?|clima|tiempo|pronostico|inicio del partido)\b/.test(q)) { base.route = 'weather'; return base; }
-  base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte|red line|mckalla)\b/.test(q) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
-  const docs = searchDocs(query, knowledge, 4);
+  base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte|red line|mckalla|directions|getting there|coming from|how do i get there|how do i get to the stadium|how do i get to q2|how do i get there and what time|student center)\b/.test(q) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
+  const transportIds = /\b(parking|park|estacionamiento)\b/.test(q) ? ['parking','policy-ada-accessibility'] : /\b(what time|when|arrive|early)\b/.test(q) ? ['directions','policy-capital-metro','policy-gate-opening-times'] : ['directions','policy-capital-metro'];
+  const docs = base.route === 'transport'
+    ? knowledge.documents.filter(d => transportIds.includes(d.id))
+    : searchDocs(query, knowledge, 4);
   docs.forEach(addDoc);
   if (base.route === 'ticketing') {
     const transferring = /transfer|send|share|recipient|transferir|enviar/.test(q);
     base.cards.push(card(transferring ? 'Mobile ticketing guide' : 'Austin FC tickets', transferring ? 'Access, send, and manage tickets' : 'Official purchase and ticket management', transferring ? MOBILE_TICKET_URL : TICKET_URL));
     base.sources.push(source(transferring ? 'Austin FC mobile ticketing' : 'Austin FC tickets', transferring ? MOBILE_TICKET_URL : TICKET_URL));
   }
-  if (base.route === 'transport') { base.cards.push(card('Plan your trip', 'CapMetro event service', TRANSIT_URL)); base.sources.push(source('CapMetro event service', TRANSIT_URL)); }
+  if (base.route === 'transport') { base.cards.push(card('Plan your trip', 'CapMetro event service', TRANSIT_URL)); base.sources.push(source('CapMetro event service', TRANSIT_URL)); if(context.origin === 'ut-austin') base.sources.push(source('CapMetro Rapid 803 route', 'https://www.capmetro.org/rapid/route803', knowledge.checkedAt)); }
   if (docs.length === 0) base.answer = spanish ? 'No encontré una respuesta confirmada en las fuentes oficiales. Prueba con una pregunta más específica o consulta al personal de Guest Services.' : 'I couldn’t verify that from the current official sources. Try a more specific question or ask Guest Services at the stadium.';
   return base;
 }

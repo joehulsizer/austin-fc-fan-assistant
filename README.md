@@ -6,6 +6,8 @@ A mobile-first stadium assistant for concessions, transportation, stadium polici
 
 The interface keeps information browsing inside the site: [in-site guides](https://austin-fc-fan-assistant.vercel.app/guide?topic=sources) contain the copied Q2 stadium map, published vendor locations, section directory, policies, transit guidance, schedule, roster, news, ticket steps, and current weather. [Questions to try](https://austin-fc-fan-assistant.vercel.app/try) separates knowledge-base, model-assisted, and live-weather examples. Official provider addresses remain in the API metadata for traceability, but fan-facing guide and source cards route to local pages. Transactions remain outside the preview.
 
+The desktop menu opens as a compact icon rail and can be expanded with its top button; that choice persists in the browser. **Share chat** creates a read-only snapshot in the public Blob store and copies an unguessable `/share/...` link. Anyone with that link can see the snapshot, so fans should avoid including private information. Further conversation does not change an existing snapshot; use **Create updated copy** for a new link.
+
 ## Operations
 
 - Hosting and builds: Vercel project `austin-fc-fan-assistant` under Joe's projects, connected to this GitHub repository. Pushing to `main` runs the cloud build and deploy.

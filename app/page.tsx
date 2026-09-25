@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, MapPin, RotateCcw, Send, Square, ThumbsDown, ThumbsUp, Ticket, Train, Utensils, CloudSun, Menu, X } from 'lucide-react';
+import { ArrowRight, MapPin, RotateCcw, Send, Square, ThumbsDown, ThumbsUp, Ticket, Train, Utensils, CloudSun, Menu, X, MessageCircle, BookOpen, CircleHelp, PanelLeftClose, PanelLeftOpen, Share2, Copy, Check } from 'lucide-react';
 import type { Card, FanContext, Source } from '@/lib/types';
 import { internalGuideHref } from '@/lib/internal-links';
 import './style.css';
@@ -20,25 +20,41 @@ export default function Home(){
   const [draft,setDraft]=useState('');
   const [busy,setBusy]=useState(false);
   const [drawer,setDrawer]=useState(false);
+  const [collapsed,setCollapsed]=useState(true);
+  const [shareOpen,setShareOpen]=useState(false);
+  const [shareUrl,setShareUrl]=useState('');
+  const [shareBusy,setShareBusy]=useState(false);
+  const [shareCopied,setShareCopied]=useState(false);
+  const [shareError,setShareError]=useState('');
   const [hydrated,setHydrated]=useState(false);
   const [retryText,setRetryText]=useState<string|null>(null);
   const [feedbackText,setFeedbackText]=useState('');
   const abort=useRef<AbortController|null>(null);
   const bottom=useRef<HTMLDivElement|null>(null);
   const input=useRef<HTMLTextAreaElement|null>(null);
-  useEffect(()=>{try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x?.messages?.length)setMessages(x.messages);if(x?.context)setContext(x.context);}catch{}const suggested=new URLSearchParams(window.location.search).get('ask');if(suggested)setDraft(suggested.slice(0,1500));setHydrated(true);},[]);
+  useEffect(()=>{try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x?.messages?.length)setMessages(x.messages);if(x?.context)setContext(x.context);if(localStorage.getItem('austin-fc-menu-collapsed')==='false')setCollapsed(false);}catch{}const suggested=new URLSearchParams(window.location.search).get('ask');if(suggested)setDraft(suggested.slice(0,1500));setHydrated(true);},[]);
   useEffect(()=>{if(hydrated)localStorage.setItem(key,JSON.stringify({messages:messages.slice(-30),context}));},[messages,context,hydrated]);
   useEffect(()=>{bottom.current?.scrollIntoView({behavior:'smooth',block:'end'});},[messages,busy]);
-  function reset(){abort.current?.abort();setBusy(false);setMessages([welcome]);setContext({language:'en'});setDraft('');setRetryText(null);setDrawer(false);input.current?.focus();}
+  function reset(){abort.current?.abort();setBusy(false);setMessages([welcome]);setContext({language:'en'});setDraft('');setRetryText(null);setDrawer(false);setShareOpen(false);setShareUrl('');input.current?.focus();}
+  function toggleMenu(){setCollapsed(value=>{localStorage.setItem('austin-fc-menu-collapsed',String(!value));return !value;});}
+  async function copyShare(url:string){try{await navigator.clipboard.writeText(url);setShareCopied(true);}catch{setShareCopied(false);}}
+  async function createShare(){
+    const snapshot=messages.filter(m=>m.id!=='welcome'&&!m.error&&m.content.trim()).slice(-24).map(({role,content,sources,cards})=>({role,content,sources,cards}));
+    if(!snapshot.some(m=>m.role==='user')||!snapshot.some(m=>m.role==='assistant')){setShareError('Ask a question and wait for an answer before sharing.');return;}
+    setShareBusy(true);setShareError('');setShareCopied(false);
+    try{const response=await fetch('/api/share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:snapshot})});const result=await response.json();if(!response.ok||!result.path)throw new Error(result.error||'Could not create share link.');const url=new URL(result.path,window.location.origin).href;setShareUrl(url);await copyShare(url);}
+    catch(error){setShareError(error instanceof Error?error.message:'Could not create share link.');}
+    finally{setShareBusy(false);}
+  }
   async function send(question?:string,isRetry=false){
     const text=(question??draft).trim();if(!text||busy)return;
     const history=messages.filter(m=>m.id!=='welcome'&&!m.error);
     const conversation=isRetry?history:[...history,{id:crypto.randomUUID(),role:'user' as const,content:text}];
     const id=crypto.randomUUID();setMessages([welcome,...conversation,{id,role:'assistant',content:''}]);
-    setDraft('');setBusy(true);setRetryText(null);setDrawer(false);
+    setDraft('');setBusy(true);setRetryText(null);setDrawer(false);setShareUrl('');setShareCopied(false);
     const controller=new AbortController();abort.current=controller;
     try{
-      const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversation.map(({role,content})=>({role,content})),context}),signal:controller.signal});
+      const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversation.slice(-16).map(({role,content})=>({role,content})),context}),signal:controller.signal});
       if(!response.ok||!response.body)throw new Error('Service unavailable');
       const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='';
       while(true){
@@ -65,14 +81,15 @@ export default function Home(){
     }catch{setMessages(old=>old.map(m=>m.id===id?{...m,feedbackOpen:true,feedbackSaved:false}:m));}
   }
   return <div className="app">
-    <aside className={'sidebar '+(drawer?'open':'')}>
-      <div className="brand"><div className="brand-icon">AFC</div><div><strong>AUSTIN FC</strong><small>FAN ASSISTANT</small></div><button className="mobile menu-close" onClick={()=>setDrawer(false)} aria-label="Close menu"><X size={20}/></button></div>
-      <nav><div className="nav-label">YOUR MATCHDAY</div><button className="nav-link selected" onClick={()=>setDrawer(false)}>Ask the assistant</button><a className="nav-link" href="/guide?topic=sources">Sources & freshness</a><a className="nav-link" href="/try">Questions to try</a><div className="nav-divider"/><div className="nav-label">IN-SITE GUIDE</div><a className="nav-link" href="/guide?topic=sections"><MapPin size={17}/>Section guide <ArrowRight size={12}/></a><a className="nav-link" href="/guide?topic=club"><Ticket size={17}/>Match schedule <ArrowRight size={12}/></a><a className="nav-link" href="/guide?topic=travel"><Train size={17}/>Getting to Q2 <ArrowRight size={12}/></a></nav>
-      <div className="sidebar-footer"><div className="context-box"><strong>Your visit</strong><span>{context.section?'Section '+context.section:'Section not set'}</span>{context.dietary&&<span>{context.dietary}</span>}<span>{context.language==='es'?'Español':'English'}</span></div><button className="reset" onClick={reset}><RotateCcw size={15}/>Start over / Reset</button><small>Independent demo. Confirm match details with official providers.</small></div>
+    <aside className={'sidebar '+(drawer?'open':collapsed?'collapsed':'')}>
+      <div className="brand"><div className="brand-icon">AFC</div><div className="brand-copy"><strong>AUSTIN FC</strong><small>FAN ASSISTANT</small></div><button className="desktop-collapse" onClick={toggleMenu} aria-label={collapsed?'Expand menu':'Collapse menu'} title={collapsed?'Expand menu':'Collapse menu'}>{collapsed?<PanelLeftOpen size={18}/>:<PanelLeftClose size={18}/>}</button><button className="mobile menu-close" onClick={()=>setDrawer(false)} aria-label="Close menu"><X size={20}/></button></div>
+      <nav><div className="nav-label">YOUR MATCHDAY</div><button className="nav-link selected" onClick={()=>setDrawer(false)} aria-label="Ask the assistant" title="Ask the assistant"><MessageCircle size={17}/><span className="nav-text">Ask the assistant</span></button><a className="nav-link" href="/guide?topic=sources" aria-label="Sources & freshness" title="Sources & freshness"><BookOpen size={17}/><span className="nav-text">Sources & freshness</span></a><a className="nav-link" href="/try" aria-label="Questions to try" title="Questions to try"><CircleHelp size={17}/><span className="nav-text">Questions to try</span></a><div className="nav-divider"/><div className="nav-label">IN-SITE GUIDE</div><a className="nav-link" href="/guide?topic=sections" aria-label="Section guide" title="Section guide"><MapPin size={17}/><span className="nav-text">Section guide</span><ArrowRight className="nav-arrow" size={12}/></a><a className="nav-link" href="/guide?topic=club" aria-label="Match schedule" title="Match schedule"><Ticket size={17}/><span className="nav-text">Match schedule</span><ArrowRight className="nav-arrow" size={12}/></a><a className="nav-link" href="/guide?topic=travel" aria-label="Getting to Q2" title="Getting to Q2"><Train size={17}/><span className="nav-text">Getting to Q2</span><ArrowRight className="nav-arrow" size={12}/></a></nav>
+      <div className="sidebar-footer"><div className="context-box"><strong>Your visit</strong><span>{context.section?'Section '+context.section:'Section not set'}</span>{context.dietary&&<span>{context.dietary}</span>}<span>{context.language==='es'?'Español':'English'}</span></div><button className="reset" onClick={reset} aria-label="Start over / Reset" title="Start over / Reset"><RotateCcw size={15}/><span className="reset-label">Start over / Reset</span></button><small>Independent demo. Confirm match details with official providers.</small></div>
     </aside>
     {drawer&&<button className="scrim" aria-label="Close menu" onClick={()=>setDrawer(false)}/>}
     <main className="main">
-      <header className="topbar"><button className="mobile menu-open" onClick={()=>setDrawer(true)} aria-label="Open menu"><Menu size={21}/></button><div className="top-title"><i/>Austin FC Fan Assistant <span>PREVIEW</span></div><a href="/guide?topic=sources">Our sources <ArrowRight size={15}/></a></header>
+      <header className="topbar"><button className="mobile menu-open" onClick={()=>setDrawer(true)} aria-label="Open menu"><Menu size={21}/></button><div className="top-title"><i/>Austin FC Fan Assistant <span>PREVIEW</span></div><div className="top-actions"><a href="/guide?topic=sources">Our sources <ArrowRight size={15}/></a><button className="share-trigger" onClick={()=>setShareOpen(value=>!value)} aria-expanded={shareOpen} aria-label="Share chat"><Share2 size={16}/><span>Share chat</span></button></div>
+      {shareOpen&&<div className="share-panel" role="dialog" aria-label="Share conversation"><div className="share-panel-head"><strong>Share this chat</strong><button onClick={()=>setShareOpen(false)} aria-label="Close share panel"><X size={17}/></button></div><p>Create a read-only copy of this conversation. Anyone with the link can read it. New messages won’t appear in the copy.</p>{shareUrl?<><label htmlFor="share-link">Share link</label><div className="share-link-row"><input id="share-link" readOnly value={shareUrl} onFocus={e=>e.currentTarget.select()}/><button onClick={()=>copyShare(shareUrl)} aria-label="Copy share link">{shareCopied?<Check size={17}/>:<Copy size={17}/>}</button></div><small>{shareCopied?'Link copied.':'Select or copy the link to send it.'}</small><button className="share-create secondary" onClick={createShare} disabled={shareBusy}>Create updated copy</button></>:<button className="share-create" onClick={createShare} disabled={shareBusy||busy}>{shareBusy?'Creating link…':'Create share link'}</button>}{shareError&&<div className="share-error" role="alert">{shareError}</div>}</div>}</header>
       <div className="scroll"><div className="conversation">
         {messages.length===1&&<div className="hero"><div className="eyebrow">HERE FOR EVERY MATCHDAY</div><h1>Need a hand at <em>Q2?</em></h1><p>From the first train to the final whistle, find the information you need, right when you need it.</p></div>}
         <div className="messages" aria-live="polite">{messages.map(m=><div key={m.id} className={'message '+m.role}><div className="avatar">{m.role==='assistant'?'AF':'YOU'}</div><div className="message-main"><strong>{m.role==='assistant'?'Austin FC Fan Assistant':'You'}</strong><div className={'message-copy '+(m.error?'error':'')}>{m.content||(busy&&m.id===messages.at(-1)?.id?'Thinking…':'')}</div>

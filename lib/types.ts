@@ -2,6 +2,7 @@ export type FanContext = {
   section?: number;
   dietary?: 'vegan' | 'vegetarian' | 'gluten-aware';
   language?: 'en' | 'es';
+  origin?: 'ut-austin';
   event?: { title: string; startsAt?: string; source?: string };
 };
 
@@ -19,4 +20,3 @@ export type Grounding = {
   cards: Card[];
   answer?: string;
 };
-

@@ -5,7 +5,11 @@ import type { ChatInput, Grounding } from './types';
 
 export async function prepare(input: ChatInput): Promise<Grounding> {
   const query = input.messages.at(-1)?.content?.trim() || '';
-  let result = await ground(query, input.context);
+  const previousFood = [...input.messages.slice(0,-1)].reverse().find(m => m.role === 'user' && /\b(burger|hamburger|chicken|wings|tenders|vegan|vegetarian|pizza|taco)\b/i.test(m.content));
+  const followUp = /\b(where (are|is) (those|they|them|it)|where can i find (those|them|it))\b/i.test(query);
+  const item = previousFood?.content.match(/\b(burger|hamburger|chicken|wings|tenders|vegan|vegetarian|pizza|taco)\b/i)?.[0];
+  const retrievalQuery = followUp && item ? `${query} ${item}` : query;
+  let result = await ground(retrievalQuery, input.context);
   if (result.route === 'weather') result = await weatherGrounding(query, result.context);
   if (result.route === 'club') result = await clubGrounding(query, result.context);
   return result;
@@ -71,8 +75,14 @@ export function groundedFallback(query: string, result: Grounding): string {
   if (result.route === 'transport' && /bus|autob[uú]s|cam[ií]on/i.test(query)) {
     return es ? 'CapMetro ofrece rutas de autobús para llegar a Q2 Stadium, incluida la Rapid 803. Revisa el horario del evento y planifica el viaje en el enlace oficial de CapMetro.' : 'CapMetro serves Q2 Stadium by bus, including Rapid 803. Check the event-day schedule and plan your trip using the official CapMetro link below.';
   }
+  if (result.route === 'transport' && result.context.origin === 'ut-austin') {
+    const eventTime = result.context.event?.startsAt ? new Date(result.context.event.startsAt) : undefined;
+    const validEvent = eventTime && !Number.isNaN(eventTime.getTime()) && eventTime.getTime() > Date.now();
+    const gateTime = validEvent ? new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',hour:'numeric',minute:'2-digit'}).format(new Date(eventTime.getTime()-90*60000)) : undefined;
+    return `From the UT Austin campus, take northbound CapMetro Rapid 803 toward Q2 Stadium. It serves the UT area and stops in front of the stadium; use CapMetro’s trip planner to confirm the closest campus stop and your actual departure. ${gateTime ? `For ${result.context.event?.title}, gates generally open around ${gateTime} (90 minutes before kickoff), subject to change. Aim to reach Q2 around then, and check the live trip planner before leaving.` : 'Tell me which match or kickoff time and I can suggest an arrival window.'}`;
+  }
   if (result.route === 'transport') {
-    return es ? 'Consulta la guía oficial de transporte de Q2 Stadium y los horarios de CapMetro en los enlaces de abajo para planificar tu llegada.' : 'Use the official Q2 Stadium directions and CapMetro event schedules linked below to plan your arrival.';
+    return es ? 'CapMetro ofrece la ruta Rapid 803 hasta Q2 Stadium y la línea Red Line hasta McKalla Station. Usa el planificador de CapMetro para elegir la parada y hora de salida desde tu ubicación; los horarios cambian según el evento.' : 'CapMetro Rapid 803 stops in front of Q2 Stadium, and the Red Line serves McKalla Station on the east side. Use CapMetro’s trip planner to choose the stop and departure from your location; event-day schedules can change.';
   }
   if (result.route === 'stadium' && /sensory|sensorial/i.test(query)) {
     return es ? 'La sala sensorial está en la explanada principal, detrás de la sección 125, junto a Guest Services. También puedes pedir un kit sensorial en Guest Services.' : 'The sensory room is on the main concourse behind section 125, next to Guest Services. Sensory kits are available from Guest Services too.';

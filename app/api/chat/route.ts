@@ -4,7 +4,7 @@ import { answerStream, prepare } from '@/lib/assistant';
 export const maxDuration = 120;
 const inputSchema = z.object({
   messages: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().max(1500) })).min(1).max(16),
-  context: z.object({ section: z.number().int().min(101).max(400).optional(), dietary: z.enum(['vegan', 'vegetarian', 'gluten-aware']).optional(), language: z.enum(['en', 'es']).optional(), event: z.object({ title: z.string().max(150), startsAt: z.string().max(40).optional(), source: z.string().url().optional() }).optional() }).default({}),
+  context: z.object({ section: z.number().int().min(101).max(400).optional(), dietary: z.enum(['vegan', 'vegetarian', 'gluten-aware']).optional(), language: z.enum(['en', 'es']).optional(), origin: z.enum(['ut-austin']).optional(), event: z.object({ title: z.string().max(150), startsAt: z.string().max(40).optional(), source: z.string().url().optional() }).optional() }).default({}),
 });
 
 export async function POST(request: Request) {

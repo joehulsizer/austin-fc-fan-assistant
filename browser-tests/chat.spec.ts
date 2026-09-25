@@ -51,3 +51,48 @@ test('in-site policy guide fits on a phone', async ({ page }) => {
   expect(overflow).toBe(false);
   expect(await page.locator('a[href^="http"]').count()).toBe(0);
 });
+
+test('desktop menu starts collapsed and remembers expansion', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Expand menu' })).toBeVisible();
+  await expect(page.locator('.sidebar')).toHaveClass(/collapsed/);
+  await page.getByRole('button', { name: 'Expand menu' }).click();
+  await expect(page.getByRole('button', { name: 'Collapse menu' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Sources & freshness' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Collapse menu' })).toBeVisible();
+});
+
+test('share creates a read-only link and explains who can see it', async ({ page }) => {
+  await page.route('**/api/share', async route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ path: '/share/11111111-1111-4111-8111-111111111111' }) }));
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Share chat' }).click();
+  await expect(page.getByText('Anyone with the link can read it.')).toBeVisible();
+  await page.getByRole('button', { name: 'Create share link' }).click();
+  await expect(page.getByRole('alert')).toContainText('Ask a question');
+  await page.getByRole('button', { name: 'Close share panel' }).click();
+  await page.getByRole('button', { name: /Food near me/i }).click();
+  await expect(page.locator('.message.assistant').last()).toContainText('119', { timeout: 20000 });
+  await page.getByRole('button', { name: 'Share chat' }).click();
+  await page.getByRole('button', { name: 'Create share link' }).click();
+  await expect(page.getByLabel('Share link')).toHaveValue(/\/share\/11111111-1111-4111-8111-111111111111/);
+});
+
+test('a long conversation keeps sending the latest question within the API limit', async ({ page }) => {
+  const lengths:number[]=[];
+  await page.route('**/api/chat', async route => {
+    const body=route.request().postDataJSON();
+    lengths.push(body.messages.length);
+    await route.fulfill({status:200,contentType:'application/x-ndjson',body:JSON.stringify({type:'meta',context:body.context,sources:[],cards:[],route:'stadium'})+'\n'+JSON.stringify({type:'delta',text:`Answered ${body.messages.at(-1).content}`})+'\n'});
+  });
+  await page.goto('/');
+  for(let i=1;i<=10;i++){
+    await page.getByLabel('Ask a question').fill(`Question ${i}`);
+    await page.getByRole('button',{name:'Send message'}).click();
+    await expect(page.locator('.message.assistant').last()).toContainText(`Answered Question ${i}`);
+    await expect(page.getByLabel('Ask a question')).toBeEnabled();
+  }
+  expect(lengths).toHaveLength(10);
+  expect(Math.max(...lengths)).toBeLessThanOrEqual(16);
+  expect(lengths.at(-1)).toBe(16);
+});
