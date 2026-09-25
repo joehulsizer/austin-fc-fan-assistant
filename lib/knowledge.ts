@@ -15,10 +15,10 @@ export async function getKnowledge(): Promise<Snapshot> {
   const pointer = process.env.KNOWLEDGE_BLOB_URL;
   if (!pointer) return staticKnowledge;
   try {
-    const response = await fetch(pointer, { next: { revalidate: 300 }, signal: AbortSignal.timeout(4000) });
+    const response = await fetch(pointer, { next: { revalidate: 60 }, signal: AbortSignal.timeout(4000) });
     if (!response.ok) throw new Error('Knowledge unavailable');
     const value = await response.json();
-    if (value.documents?.length < 40 || value.vendors?.length < 15 || value.roster?.length < 15 || value.news?.length < 3) throw new Error('Knowledge incomplete');
+    if ((value.documents?.length ?? 0) < 40 || (value.vendors?.length ?? 0) < 15 || (value.roster?.length ?? 0) < 15 || (value.news?.length ?? 0) < 3) throw new Error('Knowledge incomplete');
     return value as Snapshot;
   } catch { return staticKnowledge; }
 }
