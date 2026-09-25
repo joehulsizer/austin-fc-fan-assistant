@@ -1,15 +1,24 @@
 import { streamText } from 'ai';
-import { ground, sectionZone } from './knowledge';
+import { getKnowledge, ground, sectionZone } from './knowledge';
 import { clubGrounding, weatherGrounding } from './live';
 import type { ChatInput, Grounding } from './types';
 
 export async function prepare(input: ChatInput): Promise<Grounding> {
   const query = input.messages.at(-1)?.content?.trim() || '';
+  let priorContext = input.context;
+  if (!priorContext.origin && input.messages.slice(0,-1).some(m => m.role === 'user' && /\b(university of texas|ut austin|ut campus|student center)\b/i.test(m.content))) priorContext = { ...priorContext, origin: 'ut-austin' };
+  if (!priorContext.event && /\b(there|stadium|q2|kickoff|match|game|what time|when)\b/i.test(query)) {
+    const featured = (await getKnowledge()).featuredMatch;
+    const opponent = featured?.title.split(/ vs\.? /i).at(-1);
+    if (featured && opponent && new Date(featured.startsAt).getTime() > Date.now() && input.messages.slice(0,-1).some(m => m.role === 'assistant' && m.content.toLowerCase().includes(opponent.toLowerCase()) && /\b(next|upcoming|pr[oó]ximo)\b/i.test(m.content))) {
+      priorContext = { ...priorContext, event: { title: featured.title, startsAt: featured.startsAt, source: featured.url } };
+    }
+  }
   const previousFood = [...input.messages.slice(0,-1)].reverse().find(m => m.role === 'user' && /\b(burger|hamburger|chicken|wings|tenders|vegan|vegetarian|pizza|taco)\b/i.test(m.content));
   const followUp = /\b(where (are|is) (those|they|them|it)|where can i find (those|them|it))\b/i.test(query);
   const item = previousFood?.content.match(/\b(burger|hamburger|chicken|wings|tenders|vegan|vegetarian|pizza|taco)\b/i)?.[0];
   const retrievalQuery = followUp && item ? `${query} ${item}` : query;
-  let result = await ground(retrievalQuery, input.context);
+  let result = await ground(retrievalQuery, priorContext);
   if (result.route === 'weather') result = await weatherGrounding(query, result.context);
   if (result.route === 'club') result = await clubGrounding(query, result.context);
   return result;

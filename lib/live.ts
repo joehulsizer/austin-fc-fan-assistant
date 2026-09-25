@@ -145,6 +145,19 @@ export async function clubGrounding(query: string, context: FanContext): Promise
     if (/\b(next|pr[oó]ximo|siguiente)\b/i.test(query) && !futureDateInAnswer(answer)) throw new Error('No verified future date');
     base.answer = answer;
     base.sources = sources;
+    if (/\b(next|pr[oó]ximo|siguiente)\b/i.test(query)) {
+      const featured = (await getKnowledge()).featuredMatch;
+      if (featured && new Date(featured.startsAt).getTime() > Date.now()) {
+        const opponent = featured.title.split(/ vs\.? /i).at(-1) || '';
+        const date = new Date(featured.startsAt);
+        const month = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', month: 'long' }).format(date);
+        const day = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', day: 'numeric' }).format(date);
+        if (opponent && answer.toLowerCase().includes(opponent.toLowerCase()) && answer.includes(month) && new RegExp(`\\b${day}\\b`).test(answer)) {
+          base.context = { ...context, event: { title: featured.title, startsAt: featured.startsAt, source: featured.url } };
+          if (!base.sources.some(s => s.url === featured.url)) base.sources.push({ title: 'Austin FC match preview', url: featured.url, checkedAt: featured.checkedAt });
+        }
+      }
+    }
     return base;
   } catch {
     console.warn(JSON.stringify({ event: 'club_retrieval_failed' }));
