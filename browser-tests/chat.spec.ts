@@ -52,6 +52,13 @@ test('in-site policy guide fits on a phone', async ({ page }) => {
   expect(await page.locator('a[href^="http"]').count()).toBe(0);
 });
 
+test('in-site food guide shows the published burger and chicken locations', async ({ page }) => {
+  await page.goto('/guide?topic=food');
+  await expect(page.getByText('Impossible Good Burger (vegetarian)').first()).toBeVisible();
+  await expect(page.getByText('Chicken tenders and wings')).toBeVisible();
+  await expect(page.getByText('Section 135 East Side')).toBeVisible();
+});
+
 test('desktop menu starts collapsed and remembers expansion', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('button', { name: 'Expand menu' })).toBeVisible();

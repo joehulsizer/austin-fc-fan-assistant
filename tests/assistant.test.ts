@@ -103,6 +103,7 @@ test('official information cards resolve to local guide pages', () => {
   assert.match(internalGuideHref('https://www.q2stadium.com/a-z-policy-guide/', 'Bag Policy'), /^\/guide\?topic=policies&find=Bag/);
   assert.equal(internalGuideHref('https://forecast.weather.gov/MapClick.php?lat=30.3877'), '/guide?topic=weather');
   assert.equal(internalGuideHref('https://www.mlssoccer.com/news/some-match-story'), '/guide?topic=club');
+  assert.equal(internalGuideHref('https://www.q2stadium.com/a-z-policy-guide/', 'Q2 Stadium food and dietary guide'), '/guide?topic=policies&find=Food%20and%20Beverage');
 });
 
 test('published burger and chicken items include their actual sections', async () => {

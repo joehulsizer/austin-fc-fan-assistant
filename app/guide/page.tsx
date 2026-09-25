@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Clock3, MapPin, Search } from 'lucide-react';
-import { getKnowledge, sectionZone } from '@/lib/knowledge';
+import { getKnowledge, MENU_HIGHLIGHTS, sectionZone } from '@/lib/knowledge';
 import { weatherGrounding } from '@/lib/live';
 import schedule from '@/data/club-schedule.json';
 import '../style.css';
@@ -41,6 +41,8 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
 
       {topic === 'food' && <section>
         <div className="guide-callout">Published locations are listed below. Ask the chat about a diet and your section for an approximate area. “Avoiding gluten” is a published menu label, not an allergy guarantee.</div>
+        <h2 className="guide-subhead">Published burger and chicken options</h2><div className="guide-grid">{MENU_HIGHLIGHTS.map(item => <article className="guide-card" key={item.name}><div className="guide-card-top"><MapPin size={17}/><span>{item.location}</span></div><h2>{item.name}</h2><p>{item.item}</p><small>Q2 Stadium food and dietary guide / vendor directory · checked {checked} CT</small></article>)}</div>
+        <h2 className="guide-subhead">Vendor directory</h2>
         <div className="guide-grid">{data.vendors.map(v => <article className="guide-card" key={v.name}><div className="guide-card-top"><MapPin size={17}/><span>{v.location}</span></div><h2>{v.name}</h2><p>{v.description}</p><small>Q2 Stadium vendor listing · checked {date(v.checkedAt)} CT</small></article>)}</div>
       </section>}
 

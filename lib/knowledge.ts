@@ -68,6 +68,14 @@ const DIET: Record<string, { vegan?: string; vegetarian?: string; glutenAware?: 
   'Eastside Eats': { vegetarian: 'Cheese nachos, popcorn or soft pretzels listed in the stadium guide', vegan: 'Popcorn is listed vegan', glutenAware: 'Cheese nachos or popcorn are listed as avoiding gluten' },
 };
 
+export const MENU_HIGHLIGHTS = [
+  { name: 'Grillove', location: 'Section 101', item: 'Impossible Good Burger (vegetarian)', category: 'burger' },
+  { name: 'Oak Hill Grill', location: 'Section 129', item: 'Impossible Good Burger (vegetarian)', category: 'burger' },
+  { name: 'Pluckers', location: 'Section 135 East Side', item: 'Chicken tenders and wings', category: 'chicken' },
+  { name: 'Bao’d Up', location: 'Section 101 SE Corner', item: 'Teriyaki chicken bao', category: 'chicken' },
+  { name: 'Shawarma Point', location: 'Section 127', item: 'Chicken Shawarma Salad', category: 'chicken' },
+] as const;
+
 export function searchDocs(query: string, knowledge: Snapshot, count = 4): Doc[] {
   const normalized = normalize(query);
   const stop = new Set(['the','and','for','from','where','what','when','there','here','with','can','you','how','are','get','find','stadium','austin','q2','some','about','those','they','them','want','need','please','could','would']);
@@ -108,10 +116,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
   if (/\b(burgers?|hamburgers?|chicken|wings?|tenders?)\b/.test(q)) {
     base.route = 'concessions';
     const isBurger = /\b(burgers?|hamburgers?)\b/.test(q);
-    const menu = isBurger
-      ? [{ name: 'Grillove', location: 'Section 101', item: 'Impossible Good Burger (vegetarian)' }, { name: 'Oak Hill Grill', location: 'Section 129', item: 'Impossible Good Burger (vegetarian)' }]
-      : [{ name: 'Pluckers', location: 'Section 135 East Side', item: 'chicken tenders and wings' }, { name: 'Bao’d Up', location: 'Section 101 SE Corner', item: 'teriyaki chicken bao' }, { name: 'Shawarma Point', location: 'Section 127', item: 'Chicken Shawarma Salad' }];
-    const ranked = menu.sort((a,b) => rankVendor({sections:[Number(a.location.match(/\d{3}/)?.[0])],name:a.name,location:a.location,description:'',url:'',checkedAt:''}, context.section) - rankVendor({sections:[Number(b.location.match(/\d{3}/)?.[0])],name:b.name,location:b.location,description:'',url:'',checkedAt:''}, context.section));
+    const ranked = MENU_HIGHLIGHTS.filter(item => item.category === (isBurger ? 'burger' : 'chicken')).sort((a,b) => rankVendor({sections:[Number(a.location.match(/\d{3}/)?.[0])],name:a.name,location:a.location,description:'',url:'',checkedAt:''}, context.section) - rankVendor({sections:[Number(b.location.match(/\d{3}/)?.[0])],name:b.name,location:b.location,description:'',url:'',checkedAt:''}, context.section));
     base.facts = ranked.map(item => `${item.name}: ${item.item}, ${item.location}.`);
     base.cards = ranked.map(item => card(item.name, `${item.item} · ${item.location}`, MAP_URL));
     base.sources = [source('Q2 Stadium food and dietary guide', POLICY_URL, knowledge.checkedAt), source('Q2 Stadium vendors', 'https://www.q2stadium.com/food-and-drink/our-vendors/', knowledge.checkedAt), source('Official stadium map', MAP_URL, knowledge.checkedAt)];
