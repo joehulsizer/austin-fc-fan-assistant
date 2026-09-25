@@ -75,7 +75,7 @@ test('share creates a read-only link and explains who can see it', async ({ page
   await expect(page.locator('.message.assistant').last()).toContainText('119', { timeout: 20000 });
   await page.getByRole('button', { name: 'Share chat' }).click();
   await page.getByRole('button', { name: 'Create share link' }).click();
-  await expect(page.getByLabel('Share link')).toHaveValue(/\/share\/11111111-1111-4111-8111-111111111111/);
+  await expect(page.getByRole('textbox', { name: 'Share link' })).toHaveValue(/\/share\/11111111-1111-4111-8111-111111111111/);
 });
 
 test('a long conversation keeps sending the latest question within the API limit', async ({ page }) => {
