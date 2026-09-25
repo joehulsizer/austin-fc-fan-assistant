@@ -26,3 +26,17 @@ test('mobile Spanish question remains usable without horizontal overflow', async
   await page.getByRole('button', { name: 'Open menu' }).click();
   await expect(page.getByRole('link', { name: 'Sources & freshness' })).toBeVisible();
 });
+
+test('question examples and source cards open in-site content', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: /See questions that test/i }).click();
+  await expect(page.getByRole('heading', { name: 'Questions to try' })).toBeVisible();
+  await page.getByRole('link', { name: /I’m in section 123/i }).click();
+  await expect(page.getByLabel('Ask a question')).toHaveValue('I’m in section 123. Where can I get vegan food?');
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.locator('.message.assistant').last()).toContainText('119', { timeout: 20000 });
+  await page.locator('.card').first().click();
+  await expect(page).toHaveURL(/\/guide\?topic=sections/);
+  await expect(page.getByRole('heading', { name: 'Section guide' })).toBeVisible();
+  expect(await page.locator('a[href^="http"]').count()).toBe(0);
+});

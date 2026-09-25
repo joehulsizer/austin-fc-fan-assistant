@@ -4,6 +4,7 @@ import { ground, staticKnowledge } from '../lib/knowledge';
 import { groundedFallback } from '../lib/assistant';
 import { cleanClubSearchAnswer, weatherGrounding } from '../lib/live';
 import type { Grounding } from '../lib/types';
+import { internalGuideHref } from '../lib/internal-links';
 
 test('current vendor source resolves Verde Vegan at 119, not the old map label', async () => {
   const result = await ground('I am in section 123. Where is vegan food?', {});
@@ -93,4 +94,11 @@ test('camera bag guidance uses the current bag policy without inventing an exemp
 test('live club search leaves citations in source cards instead of repeating raw URLs', () => {
   const answer = cleanClubSearchAnswer('Austin FC plays September 26, 2026. ([austinfc.com](https://www.austinfc.com/news/preview?utm_source=openai))\n\nSource URLs:\n- https://www.austinfc.com/news/preview');
   assert.equal(answer, 'Austin FC plays September 26, 2026.');
+});
+
+test('official information cards resolve to local guide pages', () => {
+  assert.equal(internalGuideHref('https://www.q2stadium.com/stadium-maps/'), '/guide?topic=sections');
+  assert.equal(internalGuideHref('https://www.austinfc.com/tickets/mobile-ticketing'), '/guide?topic=tickets');
+  assert.match(internalGuideHref('https://www.q2stadium.com/a-z-policy-guide/', 'Bag Policy'), /^\/guide\?topic=policies&find=Bag/);
+  assert.equal(internalGuideHref('https://forecast.weather.gov/MapClick.php?lat=30.3877'), '/guide?topic=weather');
 });

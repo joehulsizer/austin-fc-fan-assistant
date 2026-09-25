@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, ExternalLink, MapPin, RotateCcw, Send, Square, ThumbsDown, ThumbsUp, Ticket, Train, Utensils, CloudSun, Menu, X } from 'lucide-react';
+import { ArrowRight, MapPin, RotateCcw, Send, Square, ThumbsDown, ThumbsUp, Ticket, Train, Utensils, CloudSun, Menu, X } from 'lucide-react';
 import type { Card, FanContext, Source } from '@/lib/types';
+import { internalGuideHref } from '@/lib/internal-links';
 import './style.css';
 
 type Message = { id:string; role:'user'|'assistant'; content:string; sources?:Source[]; cards?:Card[]; route?:string; rating?:'up'|'down'; feedbackOpen?:boolean; feedbackSaved?:boolean; error?:boolean };
@@ -25,7 +26,7 @@ export default function Home(){
   const abort=useRef<AbortController|null>(null);
   const bottom=useRef<HTMLDivElement|null>(null);
   const input=useRef<HTMLTextAreaElement|null>(null);
-  useEffect(()=>{try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x?.messages?.length)setMessages(x.messages);if(x?.context)setContext(x.context);}catch{}setHydrated(true);},[]);
+  useEffect(()=>{try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x?.messages?.length)setMessages(x.messages);if(x?.context)setContext(x.context);}catch{}const suggested=new URLSearchParams(window.location.search).get('ask');if(suggested)setDraft(suggested.slice(0,1500));setHydrated(true);},[]);
   useEffect(()=>{if(hydrated)localStorage.setItem(key,JSON.stringify({messages:messages.slice(-30),context}));},[messages,context,hydrated]);
   useEffect(()=>{bottom.current?.scrollIntoView({behavior:'smooth',block:'end'});},[messages,busy]);
   function reset(){abort.current?.abort();setBusy(false);setMessages([welcome]);setContext({language:'en'});setDraft('');setRetryText(null);setDrawer(false);input.current?.focus();}
@@ -66,21 +67,21 @@ export default function Home(){
   return <div className="app">
     <aside className={'sidebar '+(drawer?'open':'')}>
       <div className="brand"><div className="brand-icon">AFC</div><div><strong>AUSTIN FC</strong><small>FAN ASSISTANT</small></div><button className="mobile menu-close" onClick={()=>setDrawer(false)} aria-label="Close menu"><X size={20}/></button></div>
-      <nav><div className="nav-label">YOUR MATCHDAY</div><button className="nav-link selected" onClick={()=>setDrawer(false)}>Ask the assistant</button><a className="nav-link" href="/sources">Sources & freshness</a><div className="nav-divider"/><div className="nav-label">QUICK LINKS</div><a className="nav-link" target="_blank" rel="noopener noreferrer" href="https://www.q2stadium.com/stadium-maps/"><MapPin size={17}/>Stadium map <ExternalLink size={12}/></a><a className="nav-link" target="_blank" rel="noopener noreferrer" href="https://www.austinfc.com/schedule/"><Ticket size={17}/>Match schedule <ExternalLink size={12}/></a><a className="nav-link" target="_blank" rel="noopener noreferrer" href="https://www.q2stadium.com/directions/"><Train size={17}/>Getting to Q2 <ExternalLink size={12}/></a></nav>
+      <nav><div className="nav-label">YOUR MATCHDAY</div><button className="nav-link selected" onClick={()=>setDrawer(false)}>Ask the assistant</button><a className="nav-link" href="/guide?topic=sources">Sources & freshness</a><a className="nav-link" href="/try">Questions to try</a><div className="nav-divider"/><div className="nav-label">IN-SITE GUIDE</div><a className="nav-link" href="/guide?topic=sections"><MapPin size={17}/>Section guide <ArrowRight size={12}/></a><a className="nav-link" href="/guide?topic=club"><Ticket size={17}/>Match schedule <ArrowRight size={12}/></a><a className="nav-link" href="/guide?topic=travel"><Train size={17}/>Getting to Q2 <ArrowRight size={12}/></a></nav>
       <div className="sidebar-footer"><div className="context-box"><strong>Your visit</strong><span>{context.section?'Section '+context.section:'Section not set'}</span>{context.dietary&&<span>{context.dietary}</span>}<span>{context.language==='es'?'Español':'English'}</span></div><button className="reset" onClick={reset}><RotateCcw size={15}/>Start over / Reset</button><small>Independent demo. Confirm match details with official providers.</small></div>
     </aside>
     {drawer&&<button className="scrim" aria-label="Close menu" onClick={()=>setDrawer(false)}/>}
     <main className="main">
-      <header className="topbar"><button className="mobile menu-open" onClick={()=>setDrawer(true)} aria-label="Open menu"><Menu size={21}/></button><div className="top-title"><i/>Austin FC Fan Assistant <span>PREVIEW</span></div><a href="/sources">Our sources <ArrowRight size={15}/></a></header>
+      <header className="topbar"><button className="mobile menu-open" onClick={()=>setDrawer(true)} aria-label="Open menu"><Menu size={21}/></button><div className="top-title"><i/>Austin FC Fan Assistant <span>PREVIEW</span></div><a href="/guide?topic=sources">Our sources <ArrowRight size={15}/></a></header>
       <div className="scroll"><div className="conversation">
         {messages.length===1&&<div className="hero"><div className="eyebrow">HERE FOR EVERY MATCHDAY</div><h1>Need a hand at <em>Q2?</em></h1><p>From the first train to the final whistle, find the information you need, right when you need it.</p></div>}
         <div className="messages" aria-live="polite">{messages.map(m=><div key={m.id} className={'message '+m.role}><div className="avatar">{m.role==='assistant'?'AF':'YOU'}</div><div className="message-main"><strong>{m.role==='assistant'?'Austin FC Fan Assistant':'You'}</strong><div className={'message-copy '+(m.error?'error':'')}>{m.content||(busy&&m.id===messages.at(-1)?.id?'Thinking…':'')}</div>
-          {!!m.cards?.length&&<div className="cards">{m.cards.slice(0,4).map((c,i)=><a key={i} href={c.href} target="_blank" rel="noopener noreferrer" className="card"><strong>{c.title}</strong><small>{c.detail}</small><b>{c.label} <ArrowRight size={14}/></b></a>)}</div>}
-          {!!m.sources?.length&&<div className="sources"><span>Sources</span>{m.sources.slice(0,4).map((s,i)=><a key={i} href={s.url} target="_blank" rel="noopener noreferrer" title={s.checkedAt?'Checked '+new Date(s.checkedAt).toLocaleString():undefined}>{s.title} <ExternalLink size={11}/>{s.checkedAt&&<time>checked {new Date(s.checkedAt).toLocaleDateString()}</time>}</a>)}</div>}
+          {!!m.cards?.length&&<div className="cards">{m.cards.slice(0,4).map((c,i)=><a key={i} href={internalGuideHref(c.href,c.title)} className="card"><strong>{c.title}</strong><small>{c.detail}</small><b>View here <ArrowRight size={14}/></b></a>)}</div>}
+          {!!m.sources?.length&&<div className="sources"><span>Sources</span>{m.sources.slice(0,4).map((s,i)=><a key={i} href={internalGuideHref(s.url,s.title)} title={s.checkedAt?'Checked '+new Date(s.checkedAt).toLocaleString():undefined}>{s.title} <ArrowRight size={11}/>{s.checkedAt&&<time>checked {new Date(s.checkedAt).toLocaleDateString()}</time>}</a>)}</div>}
           {m.role==='assistant'&&m.id!=='welcome'&&!busy&&!m.error&&<div className="feedback">Helpful? <button aria-label="Helpful answer" className={m.rating==='up'?'active':''} onClick={()=>rate(m.id,'up')}><ThumbsUp size={15}/></button><button aria-label="Unhelpful answer" className={m.rating==='down'?'active':''} onClick={()=>rate(m.id,'down')}><ThumbsDown size={15}/></button>{m.feedbackSaved&&<span>Saved</span>}</div>}
           {m.feedbackOpen&&<form className="feedback-form" onSubmit={e=>{e.preventDefault();rate(m.id,'down',feedbackText);}}><label htmlFor={'feedback-'+m.id}>What could be better? (optional)</label><textarea id={'feedback-'+m.id} maxLength={700} value={feedbackText} onChange={e=>setFeedbackText(e.target.value)}/><button type="submit">Send feedback</button></form>}
         </div></div>)}</div>
-        {messages.length===1&&<div className="suggestions"><div className="nav-label">TRY ASKING</div><div className="suggestion-grid">{suggestions.map(({icon:Icon,label,text})=><button key={label} onClick={()=>send(text)}><Icon size={22}/><strong>{label}</strong><span>{text}</span><ArrowRight className="corner" size={16}/></button>)}</div></div>}
+        {messages.length===1&&<div className="suggestions"><div className="nav-label">TRY ASKING</div><div className="suggestion-grid">{suggestions.map(({icon:Icon,label,text})=><button key={label} onClick={()=>send(text)}><Icon size={22}/><strong>{label}</strong><span>{text}</span><ArrowRight className="corner" size={16}/></button>)}</div><a className="all-questions" href="/try">See questions that test the knowledge base and model <ArrowRight size={15}/></a></div>}
         {retryText&&<button className="retry" onClick={()=>send(retryText,true)}><RotateCcw size={15}/>Retry last question</button>}
         <div ref={bottom}/>
       </div></div>
