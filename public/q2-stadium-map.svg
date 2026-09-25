@@ -639,7 +639,7 @@
 			<g class="level-1">
 				<rect id="South_East" x="938.13" y="725.91" class="map-primary" width="66.4" height="226.61"/>
 			</g>
-			<g class="level-1"">
+			<g class="level-1">
 				<rect x="155.04" y="157.74" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -57.4859 197.0009)" class="map-primary" width="108.03" height="20.3"/>
 				<g id="label_gate-lt" class="map-light3">
 					<path class="map-light" d="M146.28,187.95l1.4-1.4,6.94,1.99-4.47-4.47,1.31-1.31,6.93,6.93-1.31,1.31-7.19-2.06,4.63,4.63-1.31,1.31-6.93-6.93Z"/>

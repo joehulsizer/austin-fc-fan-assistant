@@ -10,6 +10,8 @@ jobs:
           node-version: '22'
       - run: npm ci --no-audit --no-fund
       - run: npm run build
+      - name: Validate embedded stadium map
+        run: python3 -c "import xml.etree.ElementTree as ET; ET.parse('public/q2-stadium-map.svg')"
       - run: npm run test
       - run: npm run eval
       - run: npx playwright install --with-deps chromium
