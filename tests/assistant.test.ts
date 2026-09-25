@@ -101,4 +101,5 @@ test('official information cards resolve to local guide pages', () => {
   assert.equal(internalGuideHref('https://www.austinfc.com/tickets/mobile-ticketing'), '/guide?topic=tickets');
   assert.match(internalGuideHref('https://www.q2stadium.com/a-z-policy-guide/', 'Bag Policy'), /^\/guide\?topic=policies&find=Bag/);
   assert.equal(internalGuideHref('https://forecast.weather.gov/MapClick.php?lat=30.3877'), '/guide?topic=weather');
+  assert.equal(internalGuideHref('https://www.mlssoccer.com/news/some-match-story'), '/guide?topic=club');
 });

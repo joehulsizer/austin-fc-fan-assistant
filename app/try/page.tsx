@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import '../style.css';
 import '../guide/guide.css';
 
 const groups = [

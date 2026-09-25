@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Clock3, MapPin, Search } from 'lucide-react';
 import { getKnowledge, sectionZone } from '@/lib/knowledge';
 import { weatherGrounding } from '@/lib/live';
 import schedule from '@/data/club-schedule.json';
+import '../style.css';
 import './guide.css';
 
 const sections = [

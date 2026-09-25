@@ -40,3 +40,12 @@ test('question examples and source cards open in-site content', async ({ page })
   await expect(page.getByRole('heading', { name: 'Section guide' })).toBeVisible();
   expect(await page.locator('a[href^="http"]').count()).toBe(0);
 });
+
+test('in-site policy guide fits on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/guide?topic=policies&find=Bag%20Policy');
+  await expect(page.getByRole('heading', { name: 'Bag Policy' })).toBeVisible();
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 2);
+  expect(overflow).toBe(false);
+  expect(await page.locator('a[href^="http"]').count()).toBe(0);
+});

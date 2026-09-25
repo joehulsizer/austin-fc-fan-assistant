@@ -13,6 +13,9 @@ export function internalGuideHref(url: string, title = ''): string {
     : /roster|players\/|news|academy|schedule|events|\.pdf$/.test(path) ? 'club'
     : /policy/.test(path) ? 'policies'
     : /vendor|food|drink/.test(name) ? 'food'
+    : host.includes('austinfc.com') || host.includes('mlssoccer.com') ? 'club'
+    : host.includes('capmetro.org') ? 'travel'
+    : host.includes('q2stadium.com') ? 'policies'
     : 'sources';
   if (topic === 'policies' && !/policy and dietary|q2 stadium policy/i.test(name) && title) {
     return `/guide?topic=policies&find=${encodeURIComponent(title)}`;
