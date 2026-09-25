@@ -40,7 +40,7 @@ export function groundedFallback(query: string, result: Grounding): string {
   if (/diaper|pa[nñ]al|childcare bag/i.test(query)) {
     return es ? 'Sí. Q2 Stadium considera una bolsa para cuidado infantil, como una pañalera, cuando te acompaña un niño. La bolsa debe pasar el control de seguridad.' : 'Yes. Q2 Stadium allows a childcare bag, such as a diaper bag, when you are accompanied by a child. It is subject to security screening.';
   }
-  if (/hydration|refill|water station|estaci[oó]n de agua/i.test(query)) {
+  if (/water|agua|hydration|refill|water station|estaci[oó]n de agua|botella|rellenar/i.test(query)) {
     return es ? 'Puedes llevar un recipiente vacío de hasta 30 onzas y llenarlo en las estaciones YETI de las esquinas sureste y noroeste o en fuentes de agua. No se permiten bebidas selladas.' : 'You may bring one empty drink vessel of 30 ounces or less and refill it at YETI hydration stations in the southeast and northwest corners or at other water fountains. Sealed beverages are not allowed.';
   }
   if (result.route === 'transport' && /train|tren|rail|metro/i.test(query)) {
@@ -58,7 +58,7 @@ export async function* answerStream(input: ChatInput, result: Grounding): AsyncG
   const query = input.messages.at(-1)?.content || '';
   if (result.answer) { yield result.answer; return; }
   const fallback = groundedFallback(query, result);
-  if (['concessions', 'drinks', 'transport', 'ticketing', 'transaction'].includes(result.route) || /diaper|pa[nñ]al|childcare bag|hydration|refill|water station|sensory|sensorial/i.test(query)) {
+  if (['concessions', 'drinks', 'transport', 'ticketing', 'transaction'].includes(result.route) || /diaper|pa[nñ]al|childcare bag|water|agua|hydration|refill|water station|sensory|sensorial|botella/i.test(query)) {
     yield fallback;
     return;
   }

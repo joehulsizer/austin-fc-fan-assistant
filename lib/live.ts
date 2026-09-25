@@ -76,7 +76,11 @@ export async function clubGrounding(query: string, context: FanContext): Promise
       maxOutputTokens: 550,
       abortSignal: AbortSignal.timeout(22000),
     });
-    const sources = result.sources.filter(s => 'url' in s && typeof s.url === 'string' && /^https:\/\/(www\.)?(austinfc\.com|mlssoccer\.com)\//.test(s.url)).map(s => ({ title: s.title || 'Official club or league source', url: String(s.url), checkedAt: new Date().toISOString() }));
+    const sources: { title: string; url: string; checkedAt: string }[] = [];
+    for (const item of result.sources) {
+      const url = 'url' in item ? String(item.url) : '';
+      if (/^https:\/\/(www\.)?(austinfc\.com|mlssoccer\.com)\//.test(url)) sources.push({ title: item.title || 'Official club or league source', url, checkedAt: new Date().toISOString() });
+    }
     if (!sources.length || !result.text.trim()) throw new Error('No verified official source');
     base.answer = result.text;
     base.sources = sources;

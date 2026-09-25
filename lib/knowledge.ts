@@ -109,6 +109,13 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     base.cards = [card('Official tickets', 'Buy and manage tickets', TICKET_URL, spanish ? 'Abrir boletos' : 'Open tickets')];
     return base;
   }
+  if (/\b(water|agua|hydration|refill|refillable|hydration station|fuente de agua|rellenar|botella)\b/.test(q) && !/\b(buy|purchase|bottled|comprar)\b/.test(q)) {
+    base.route = 'stadium';
+    const water = knowledge.documents.find(d => d.title === 'Water');
+    if (water) addDoc(water);
+    base.cards = [card('Stadium amenities', 'Hydration stations and water fountains', MAP_URL, spanish ? 'Ver mapa' : 'View map')];
+    return base;
+  }
   if (/\b(drink|beer|wine|water|beverage|soda|cocktail|margarita|bebida|cerveza|vino|agua|refresco)\b/.test(q)) {
     base.route = 'drinks';
     const vendors = knowledge.vendors.filter(v => /Bar|Draft|Wine|Heineken|Michelob/.test(v.name)).sort((a, b) => rankVendor(a, context.section) - rankVendor(b, context.section)).slice(0, 5);
