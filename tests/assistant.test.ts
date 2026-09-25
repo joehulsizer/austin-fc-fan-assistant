@@ -38,6 +38,7 @@ test('recipient ticket follow-up uses the mobile-ticket guide rather than unrela
   assert.equal(result.route, 'ticketing');
   assert.match(answer, /app/);
   assert.ok(result.sources.some(s => s.url.includes('austinfc.com/tickets/mobile-ticketing')));
+  assert.ok(result.sources.some(s => s.title === 'Will Call' && s.url.includes('q2stadium.com')));
   assert.ok(!result.sources.some(s => /re.entry|seatgeek ticket hq/i.test(s.title)));
 });
 

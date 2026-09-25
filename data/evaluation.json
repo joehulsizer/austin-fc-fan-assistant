@@ -485,7 +485,7 @@
     "question": "How do I transfer my ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-02",
@@ -493,7 +493,7 @@
     "question": "Can I transfer a ticket on SeatGeek?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-03",
@@ -501,7 +501,7 @@
     "question": "Ticket transfer instructions",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-04",
@@ -509,7 +509,7 @@
     "question": "Where do I send my digital ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-05",
@@ -525,7 +525,7 @@
     "question": "¿Cómo puedo transferir mi boleto?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-07",
@@ -533,7 +533,7 @@
     "question": "Transferir entrada desde la app",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-08",
@@ -541,7 +541,7 @@
     "question": "My ticket transfer button is missing",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-09",
@@ -549,7 +549,7 @@
     "question": "Can I share my Austin FC ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-10",
@@ -557,7 +557,7 @@
     "question": "Help me transfer tickets to a friend",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "purchase-01",

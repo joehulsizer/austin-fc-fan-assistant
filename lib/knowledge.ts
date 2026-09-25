@@ -199,6 +199,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     const transferring = /transfer|send|share|recipient|transferir|enviar/.test(q);
     base.cards.push(card(transferring ? 'Mobile ticketing guide' : 'Austin FC tickets', transferring ? 'Access, send, and manage tickets' : 'Official purchase and ticket management', transferring ? MOBILE_TICKET_URL : TICKET_URL));
     base.sources.push(source(transferring ? 'Austin FC mobile ticketing' : 'Austin FC tickets', transferring ? MOBILE_TICKET_URL : TICKET_URL));
+    if (transferring && knowledge.documents.some(d => d.title === 'Will Call')) base.sources.push(source('Will Call', POLICY_URL, knowledge.checkedAt));
   }
   if (base.route === 'transport') { base.cards.push(card('Plan your trip', 'CapMetro event service', TRANSIT_URL)); base.sources.push(source('CapMetro event service', TRANSIT_URL)); if(context.origin === 'ut-austin') base.sources.push(source('CapMetro Rapid 803 route', 'https://www.capmetro.org/rapid/route803', knowledge.checkedAt)); }
   if (docs.length === 0 && base.route === 'stadium') base.answer = spanish ? 'No encontré una respuesta confirmada en las fuentes oficiales. Prueba con una pregunta más específica o consulta al personal de Guest Services.' : 'I couldn’t verify that from the current official sources. Try a more specific question or ask Guest Services at the stadium.';

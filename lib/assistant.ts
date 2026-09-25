@@ -58,7 +58,7 @@ export function groundedFallback(query: string, result: Grounding): string {
     return `${intro}\n${list}${caveat}${section}`;
   }
   if (result.route === 'ticketing' && /transfer|transferir|send|share|recipient/i.test(query)) {
-    return es ? 'En la app de Austin FC y Q2 Stadium, abre el boleto del partido, pulsa “Send”, escribe el correo o teléfono del destinatario, selecciona cuántos boletos vas a enviar y pulsa “Send Tickets”. Si no puedes acceder, consulta la guía oficial de boletos móviles.' : 'In the Austin FC & Q2 Stadium app, open the match ticket, tap “Send,” enter the recipient’s email or phone number, choose the ticket quantity, and tap “Send Tickets.” The official mobile ticketing guide has the steps if you need help accessing the ticket.';
+    return es ? 'Q2 Stadium indica que puedes transferir boletos digitales desde las apps de Austin FC o SeatGeek. En la app de Austin FC y Q2 Stadium, abre el boleto del partido, pulsa “Send”, escribe el correo o teléfono del destinatario, selecciona cuántos boletos vas a enviar y pulsa “Send Tickets”.' : 'Q2 Stadium says digital tickets can be transferred through the Austin FC or SeatGeek apps. In the Austin FC & Q2 Stadium app, open the match ticket, tap “Send,” enter the recipient’s email or phone number, choose the ticket quantity, and tap “Send Tickets.”';
   }
   if (result.route === 'ticketing') {
     return es ? 'Para comprar, abrir o gestionar tus boletos, usa la página oficial de Austin FC o la app de Austin FC y Q2 Stadium. No tengo acceso a tu cuenta; el enlace oficial está abajo.' : 'For buying, accessing, or managing tickets, use the official Austin FC ticket page or the Austin FC & Q2 Stadium app. I cannot access your account; the official link is below.';
