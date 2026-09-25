@@ -122,7 +122,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     if (sensory) addDoc(sensory);
     return base;
   }
-  if (/\b(water|agua|hydration|refill|refillable|hydration station|fuente de agua|rellenar|botella)\b/.test(q) && !/\b(buy|purchase|bottled|comprar)\b/.test(q)) {
+  if (/\b(water|agua|hydration|refill|refillable|hydration station|fuente de agua|rellenar|botella|bottle)\b/.test(q) && !/\b(buy|purchase|bottled|comprar)\b/.test(q)) {
     base.route = 'stadium';
     const water = knowledge.documents.find(d => d.title === 'Water');
     if (water) addDoc(water);
