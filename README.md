@@ -4,7 +4,7 @@ Public test site: **https://austin-fc-fan-assistant.vercel.app/**
 
 A mobile-first stadium assistant for concessions, transportation, stadium policies, accessibility, ticketing guidance, weather, and Austin FC information. It answers common requests directly from a checked knowledge snapshot and uses a separately hosted language model for flexible questions. Codex is the development tool, **not** the model that runs the deployed chatbot. The assistant cannot purchase tickets or access a fan's private account.
 
-The interface keeps information browsing inside the site: [in-site guides](https://austin-fc-fan-assistant.vercel.app/guide?topic=sources) contain published vendor locations, section directory, policies, transit guidance, schedule, roster, news, ticket steps, and current weather. [Questions to try](https://austin-fc-fan-assistant.vercel.app/try) separates knowledge-base, model-assisted, and live-weather examples. Official provider addresses remain in the API metadata for traceability, but fan-facing guide and source cards route to local pages. Transactions remain outside the preview.
+The interface keeps information browsing inside the site: [in-site guides](https://austin-fc-fan-assistant.vercel.app/guide?topic=sources) contain the copied Q2 stadium map, published vendor locations, section directory, policies, transit guidance, schedule, roster, news, ticket steps, and current weather. [Questions to try](https://austin-fc-fan-assistant.vercel.app/try) separates knowledge-base, model-assisted, and live-weather examples. Official provider addresses remain in the API metadata for traceability, but fan-facing guide and source cards route to local pages. Transactions remain outside the preview.
 
 ## Operations
 

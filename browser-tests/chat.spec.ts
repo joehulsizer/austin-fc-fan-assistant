@@ -38,6 +38,7 @@ test('question examples and source cards open in-site content', async ({ page })
   await page.locator('.card').first().click();
   await expect(page).toHaveURL(/\/guide\?topic=sections/);
   await expect(page.getByRole('heading', { name: 'Section guide' })).toBeVisible();
+  await expect(page.getByRole('img', { name: /Published Q2 Stadium section/i })).toBeVisible();
   expect(await page.locator('a[href^="http"]').count()).toBe(0);
 });
 
