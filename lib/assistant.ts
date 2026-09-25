@@ -47,6 +47,9 @@ export function groundedFallback(query: string, result: Grounding): string {
   if (result.route === 'ticketing' && /transfer|transferir|send|share|recipient/i.test(query)) {
     return es ? 'En la app de Austin FC y Q2 Stadium, abre el boleto del partido, pulsa “Send”, escribe el correo o teléfono del destinatario, selecciona cuántos boletos vas a enviar y pulsa “Send Tickets”. Si no puedes acceder, consulta la guía oficial de boletos móviles.' : 'In the Austin FC & Q2 Stadium app, open the match ticket, tap “Send,” enter the recipient’s email or phone number, choose the ticket quantity, and tap “Send Tickets.” The official mobile ticketing guide has the steps if you need help accessing the ticket.';
   }
+  if (result.route === 'ticketing') {
+    return es ? 'Para comprar, abrir o gestionar tus boletos, usa la página oficial de Austin FC o la app de Austin FC y Q2 Stadium. No tengo acceso a tu cuenta; el enlace oficial está abajo.' : 'For buying, accessing, or managing tickets, use the official Austin FC ticket page or the Austin FC & Q2 Stadium app. I cannot access your account; the official link is below.';
+  }
   if (/diaper|pa[nñ]al|childcare bag/i.test(query)) {
     return es ? 'Sí. Q2 Stadium considera una bolsa para cuidado infantil, como una pañalera, cuando te acompaña un niño. La bolsa debe pasar el control de seguridad.' : 'Yes. Q2 Stadium allows a childcare bag, such as a diaper bag, when you are accompanied by a child. It is subject to security screening.';
   }
@@ -62,12 +65,17 @@ export function groundedFallback(query: string, result: Grounding): string {
   if (result.route === 'transport' && /rideshare|uber|lyft|taxi|viaje compartido/i.test(query)) {
     return es ? 'Para llegar en Uber o taxi, Q2 Stadium indica la zona de Delta Drive, al este del estadio, con acceso por Metric Boulevard. Sigue las instrucciones de recogida específicas del evento al salir.' : 'For Uber or taxi drop-off, Q2 Stadium lists Delta Drive on the east side, accessed from Metric Boulevard. Follow event-day pickup instructions when leaving; pickup arrangements can differ from drop-off.';
   }
+  if (result.route === 'transport' && /bus|autob[uú]s|cam[ií]on/i.test(query)) {
+    return es ? 'CapMetro ofrece rutas de autobús para llegar a Q2 Stadium, incluida la Rapid 803. Revisa el horario del evento y planifica el viaje en el enlace oficial de CapMetro.' : 'CapMetro serves Q2 Stadium by bus, including Rapid 803. Check the event-day schedule and plan your trip using the official CapMetro link below.';
+  }
+  if (result.route === 'transport') {
+    return es ? 'Consulta la guía oficial de transporte de Q2 Stadium y los horarios de CapMetro en los enlaces de abajo para planificar tu llegada.' : 'Use the official Q2 Stadium directions and CapMetro event schedules linked below to plan your arrival.';
+  }
   if (result.route === 'stadium' && /sensory|sensorial/i.test(query)) {
     return es ? 'La sala sensorial está en la explanada principal, detrás de la sección 125, junto a Guest Services. También puedes pedir un kit sensorial en Guest Services.' : 'The sensory room is on the main concourse behind section 125, next to Guest Services. Sensory kits are available from Guest Services too.';
   }
   if (!facts.length) return es ? 'No pude confirmar la respuesta en las fuentes oficiales actuales. Consulta el enlace de la fuente o pregunta al personal de Guest Services.' : 'I couldn’t confirm that in the current official sources. Check the linked source or ask Guest Services.';
-  const first = facts[0].replace(/^[^:]{1,80}:\s*/, '').slice(0, 700);
-  return `${first}${first.length >= 700 ? '…' : ''}`;
+  return es ? 'Encontré información oficial relacionada, pero no puedo confirmar una respuesta concreta ahora. Revisa las fuentes enlazadas o consulta a Guest Services.' : 'I found related official guidance but cannot confirm a specific answer right now. Check the linked sources or ask Guest Services.';
 }
 
 export async function* answerStream(input: ChatInput, result: Grounding): AsyncGenerator<string> {
