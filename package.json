@@ -1,0 +1,9 @@
+{
+  "name": "austin-fc-fan-assistant",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {"dev":"next dev","build":"next build","start":"next start","typecheck":"tsc --noEmit","test":"tsx --test tests/*.test.ts","test:browser":"playwright test","eval":"tsx scripts/evaluate.ts"},
+  "dependencies": {"next":"16.3.6","react":"19.3.0","react-dom":"19.3.0","ai":"6.0.291","@ai-sdk/openai":"3.0.118","@vercel/blob":"2.8.0","zod":"4.6.5","react-markdown":"10.1.0","lucide-react":"0.468.0"},
+  "devDependencies": {"typescript":"5.9.3","@types/node":"22.19.15","@types/react":"19.3.0","@types/react-dom":"19.2.3","tsx":"4.23.15","@playwright/test":"1.63.0"},
+  "engines":{"node":">=22"}
+}
