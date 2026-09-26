@@ -159,7 +159,7 @@ test('shared chat strips internal fields and rejects oversized content', () => {
 });
 
 test('a real six-card concessions answer can be shared', async () => {
-  const question = 'I am vegan but do not know my section. Where can I get food?';
+  const question = 'What food is available near section 119?';
   const result = await ground(question, {});
   assert.equal(result.cards.length, 6);
   const snapshot = shareInputSchema.parse({ messages: [
