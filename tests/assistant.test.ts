@@ -157,3 +157,14 @@ test('shared chat strips internal fields and rejects oversized content', () => {
   assert.doesNotMatch(JSON.stringify(input), /privateToken|never publish|concessions|rating|context/);
   assert.throws(() => shareInputSchema.parse({ messages: [{ role: 'user', content: 'x'.repeat(7001) }] }));
 });
+
+test('a real six-card concessions answer can be shared', async () => {
+  const question = 'I am vegan but do not know my section. Where can I get food?';
+  const result = await ground(question, {});
+  assert.equal(result.cards.length, 6);
+  const snapshot = shareInputSchema.parse({ messages: [
+    { role: 'user', content: question },
+    { role: 'assistant', content: 'Here are the published options.', sources: result.sources, cards: result.cards },
+  ] });
+  assert.equal(snapshot.messages[1].cards?.length, 6);
+});

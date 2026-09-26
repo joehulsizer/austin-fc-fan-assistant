@@ -40,7 +40,7 @@ export default function Home(){
   function toggleMenu(){setCollapsed(value=>{localStorage.setItem('austin-fc-menu-collapsed',String(!value));return !value;});}
   async function copyShare(url:string){try{await navigator.clipboard.writeText(url);setShareCopied(true);}catch{setShareCopied(false);}}
   async function createShare(){
-    const snapshot=messages.filter(m=>m.id!=='welcome'&&!m.error&&m.content.trim()).slice(-24).map(({role,content,sources,cards})=>({role,content,sources,cards}));
+    const snapshot=messages.filter(m=>m.id!=='welcome'&&!m.error&&m.content.trim()).slice(-24).map(({role,content,sources,cards})=>({role,content,sources:sources?.slice(0,4),cards:cards?.slice(0,4)}));
     if(!snapshot.some(m=>m.role==='user')||!snapshot.some(m=>m.role==='assistant')){setShareError('Ask a question and wait for an answer before sharing.');return;}
     setShareBusy(true);setShareError('');setShareCopied(false);
     try{const response=await fetch('/api/share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:snapshot})});const result=await response.json();if(!response.ok||!result.path)throw new Error(result.error||'Could not create share link.');const url=new URL(result.path,window.location.origin).href;setShareUrl(url);await copyShare(url);}
