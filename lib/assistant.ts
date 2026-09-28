@@ -1,26 +1,32 @@
 import { streamText } from 'ai';
-import { getKnowledge, ground, sectionZone } from './knowledge';
+import { detectContext, ground, sectionZone } from './knowledge';
 import { clubGrounding, weatherGrounding } from './live';
+import { fixtureMentioned } from './schedule';
 import type { ChatInput, Grounding } from './types';
 
 export async function prepare(input: ChatInput): Promise<Grounding> {
   const query = input.messages.at(-1)?.content?.trim() || '';
   let priorContext = input.context;
-  if (!priorContext.origin && input.messages.slice(0,-1).some(m => m.role === 'user' && /\b(university of texas|ut austin|ut campus|student center)\b/i.test(m.content))) priorContext = { ...priorContext, origin: 'ut-austin' };
-  if (!priorContext.event && /\b(there|stadium|q2|kickoff|match|game|what time|when)\b/i.test(query)) {
-    const featured = (await getKnowledge()).featuredMatch;
-    const opponent = featured?.title.split(/ vs\.? /i).at(-1);
-    if (featured && opponent && new Date(featured.startsAt).getTime() > Date.now() && input.messages.slice(0,-1).some(m => m.role === 'assistant' && m.content.toLowerCase().includes(opponent.toLowerCase()) && /\b(next|upcoming|pr[oó]ximo)\b/i.test(m.content))) {
-      priorContext = { ...priorContext, event: { title: featured.title, startsAt: featured.startsAt, source: featured.url } };
-    }
+  for (const message of input.messages.slice(0, -1)) {
+    if (message.role === 'user') priorContext = detectContext(message.content, priorContext);
   }
-  const previousFood = [...input.messages.slice(0,-1)].reverse().find(m => m.role === 'user' && /\b(burger|hamburger|chicken|wings|tenders|vegan|vegetarian|pizza|taco)\b/i.test(m.content));
-  const followUp = /\b(where (are|is) (those|they|them|it)|where can i find (those|them|it))\b/i.test(query);
-  const item = previousFood?.content.match(/\b(burger|hamburger|chicken|wings|tenders|vegan|vegetarian|pizza|taco)\b/i)?.[0];
-  const retrievalQuery = followUp && item ? `${query} ${item}` : query;
+  if (priorContext.event?.startsAt && new Date(priorContext.event.startsAt).getTime() < Date.now()) {
+    priorContext = { ...priorContext, event: undefined };
+  }
+  const mentioned = fixtureMentioned(query);
+  if (mentioned && /\b(match|game|kickoff|partido|there|stadium|q2|weather|rain|lluvia)\b/i.test(query)) {
+    priorContext = { ...priorContext, event: { title: mentioned.title, startsAt: mentioned.startsAt, source: mentioned.url || 'https://www.austinfc.com/schedule/' } };
+  }
+  const followUp = /\b(where (?:are|is) (?:those|they|them|it)|where can i find (?:those|them|it)|what about (?:that|it)|is (?:that|it) (?:vegan|vegetarian)|and (?:those|them))\b/i.test(query);
+  const retrievalQuery = followUp && priorContext.food ? `${query} ${priorContext.food}`
+    : priorContext.topic === 'ticketing' && /\b(recipient|accept|receive|forward)\b/i.test(query) ? `${query} ticket transfer`
+    : priorContext.topic === 'transport' && /\b(leave|arrive|how long|what time)\b/i.test(query) ? `${query} travel to q2`
+    : /\b(player|team|club)\b/i.test(query) && input.messages.slice(0,-1).some(m => m.role === 'user' && /\btryouts?\b/i.test(m.content)) ? `${query} tryout`
+    : query;
   let result = await ground(retrievalQuery, priorContext);
   if (result.route === 'weather') result = await weatherGrounding(query, result.context);
-  if (result.route === 'club') result = await clubGrounding(query, result.context);
+  if (result.route === 'club') result = await clubGrounding(retrievalQuery, result.context);
+  result.context = { ...result.context, topic: result.route };
   return result;
 }
 
@@ -58,6 +64,9 @@ export function groundedFallback(query: string, result: Grounding): string {
     return `${intro}\n${list}${caveat}${section}`;
   }
   if (result.route === 'ticketing' && /transfer|transferir|send|share|recipient/i.test(query)) {
+    if (/recipient|receive|accept|get (?:my|the) ticket/i.test(query)) {
+      return es ? 'Si vas a recibir un boleto, pide al remitente que confirme el correo o teléfono usado. En la app de Austin FC y Q2 Stadium, abre “My Tickets”, luego “Manage My Tickets” e inicia sesión en SeatGeek para revisar los boletos del partido. No puedo ver si la transferencia se completó; si no aparece, contacta al servicio oficial de boletos.' : 'If you are receiving a ticket, ask the sender to confirm the email or phone number used. In the Austin FC & Q2 Stadium app, open “My Tickets,” then “Manage My Tickets,” and sign in to SeatGeek to check the match tickets. I cannot see whether a transfer completed; contact official ticket support if it does not appear.';
+    }
     return es ? 'Q2 Stadium indica que puedes transferir boletos digitales desde las apps de Austin FC o SeatGeek. En la app de Austin FC y Q2 Stadium, abre el boleto del partido, pulsa “Send”, escribe el correo o teléfono del destinatario, selecciona cuántos boletos vas a enviar y pulsa “Send Tickets”.' : 'Q2 Stadium says digital tickets can be transferred through the Austin FC or SeatGeek apps. In the Austin FC & Q2 Stadium app, open the match ticket, tap “Send,” enter the recipient’s email or phone number, choose the ticket quantity, and tap “Send Tickets.”';
   }
   if (result.route === 'ticketing') {
@@ -84,11 +93,19 @@ export function groundedFallback(query: string, result: Grounding): string {
   if (result.route === 'transport' && /bus|autob[uú]s|cam[ií]on/i.test(query)) {
     return es ? 'CapMetro ofrece rutas de autobús para llegar a Q2 Stadium, incluida la Rapid 803. Revisa el horario del evento y planifica el viaje en el enlace oficial de CapMetro.' : 'CapMetro serves Q2 Stadium by bus, including Rapid 803. Check the event-day schedule and plan your trip using the official CapMetro link below.';
   }
-  if (result.route === 'transport' && result.context.origin === 'ut-austin') {
+  if (result.route === 'transport' && result.context.origin === 'UT Austin') {
     const eventTime = result.context.event?.startsAt ? new Date(result.context.event.startsAt) : undefined;
     const validEvent = eventTime && !Number.isNaN(eventTime.getTime()) && eventTime.getTime() > Date.now();
     const gateTime = validEvent ? new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',hour:'numeric',minute:'2-digit'}).format(new Date(eventTime.getTime()-90*60000)) : undefined;
     return `From the UT Austin campus, take northbound CapMetro Rapid 803 toward Q2 Stadium. It serves the UT area and stops in front of the stadium; use CapMetro’s trip planner to confirm the closest campus stop and your actual departure. ${gateTime ? `For ${result.context.event?.title}, gates generally open around ${gateTime} (90 minutes before kickoff), subject to change. Aim to reach Q2 around then, and check the live trip planner before leaving.` : 'Tell me which match or kickoff time and I can suggest an arrival window.'}`;
+  }
+  if (result.route === 'transport' && result.context.origin) {
+    const eventTime = result.context.event?.startsAt ? new Date(result.context.event.startsAt) : undefined;
+    const validHomeEvent = eventTime && eventTime.getTime() > Date.now() && result.context.event?.title.includes(' vs ');
+    const gateTime = validHomeEvent ? new Intl.DateTimeFormat(es ? 'es-US' : 'en-US',{timeZone:'America/Chicago',hour:'numeric',minute:'2-digit'}).format(new Date(eventTime.getTime()-90*60000)) : undefined;
+    return es
+      ? `Desde ${result.context.origin}, usa el planificador de CapMetro para confirmar la parada, el transbordo y la hora de salida hacia Q2 Stadium. No tengo un itinerario en vivo verificado para tu origen.${gateTime ? ` Para ${result.context.event?.title}, las puertas suelen abrir cerca de las ${gateTime}, 90 minutos antes del inicio; confirma el horario del evento.` : ''}`
+      : `From ${result.context.origin}, use CapMetro’s trip planner to confirm your stop, transfers, and departure time to Q2 Stadium. I cannot verify a live itinerary from your starting point.${gateTime ? ` For ${result.context.event?.title}, gates generally open around ${gateTime}, 90 minutes before kickoff; confirm the event schedule.` : ''}`;
   }
   if (result.route === 'transport') {
     return es ? 'CapMetro ofrece la ruta Rapid 803 hasta Q2 Stadium y la línea Red Line hasta McKalla Station. Usa el planificador de CapMetro para elegir la parada y hora de salida desde tu ubicación; los horarios cambian según el evento.' : 'CapMetro Rapid 803 stops in front of Q2 Stadium, and the Red Line serves McKalla Station on the east side. Use CapMetro’s trip planner to choose the stop and departure from your location; event-day schedules can change.';

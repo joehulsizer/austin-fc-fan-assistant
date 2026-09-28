@@ -70,17 +70,17 @@ groups = [
         "Clima a la hora de inicio del partido", "Forecast for match kickoff?",
         "Will I need a raincoat at kickoff?", "Temperature at kickoff?",
     ]),
-    ("next_match", "club", ["San Diego"], "austinfc.com", [
+    ("next_match", "club", ["@NEXT_HOME"], "austinfc.com", [
         "When is the next Austin FC home match?", "Who do we play next at Q2?", "Next home game?",
         "What time is the next home match?", "When do Austin FC play next at home?",
         "¿Cuándo es el próximo partido en casa?", "¿Quién es el rival del siguiente partido en casa?",
-        "Next match at Q2 Stadium?", "Is the next home game against San Diego?",
+        "Next match at Q2 Stadium?", "Who is our next home opponent?",
         "Tell me the next Austin FC home match and kickoff",
     ]),
 ]
 patterns = {"vegan": r"119", "vegetarian": r"122", "gluten": r"gluten|cel[ií]ac", "drinks": r"bar",
             "diaper": r"bag|bolsa|pañalera", "train": r"McKalla", "transfer": r"app", "purchase": r"ticket|boleto|entrada",
-            "sensory": r"125", "water": r"30", "weather": r"match|partido", "next_match": r"San Diego"}
+            "sensory": r"125", "water": r"30", "weather": r"match|partido", "next_match": r"@NEXT_HOME"}
 cases = [{"id": f"{kind}-{i+1:02d}", "kind": kind, "question": prompt, "route": route,
           "mustMatch": patterns[kind], "sourceDomain": source}
          for kind, route, needles, source, prompts in groups for i, prompt in enumerate(prompts)]

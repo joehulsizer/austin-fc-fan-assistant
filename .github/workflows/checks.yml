@@ -14,6 +14,7 @@ jobs:
         run: python3 -c "import xml.etree.ElementTree as ET; ET.parse('public/q2-stadium-map.svg')"
       - run: npm run test
       - run: npm run eval
+      - run: npm run eval:conversations
       - run: npx playwright install --with-deps chromium
       - name: Browser acceptance checks
         run: |
@@ -26,6 +27,7 @@ jobs:
           name: verification-results
           path: |
             evaluation-results.json
+            conversation-evaluation-results.json
             playwright-report/
             test-results/
             /tmp/austin-server.log

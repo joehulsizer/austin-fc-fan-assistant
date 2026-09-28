@@ -1,11 +1,14 @@
 {
-  "checkedAt": "2026-09-25T06:00:00Z",
-  "source": "https://images.mlssoccer.com/image/upload/v1763667074/assets/atx/2026_AustinFC_Schedule_PrintColor_lyhkf3.pdf",
+  "checkedAt": "2026-09-27T06:00:00Z",
+  "source": "https://www.austinfc.com/schedule/",
   "events": [
-    {"title":"Austin FC vs San Diego FC","startsAt":"2026-09-26T19:30:00-05:00"},
-    {"title":"Austin FC vs Nashville SC","startsAt":"2026-10-10T19:30:00-05:00"},
-    {"title":"Austin FC vs Vancouver Whitecaps FC","startsAt":"2026-10-17T19:30:00-05:00"},
-    {"title":"Austin FC vs Real Salt Lake","startsAt":"2026-10-28T19:30:00-05:00"},
-    {"title":"Austin FC vs Portland Timbers","startsAt":"2026-11-07T18:00:00-06:00"}
+    {"title":"Austin FC vs San Diego FC","opponent":"San Diego FC","startsAt":"2026-09-26T19:30:00-05:00","home":true},
+    {"title":"Austin FC vs Nashville SC","opponent":"Nashville SC","startsAt":"2026-10-10T19:30:00-05:00","home":true,"url":"https://www.austinfc.com/news/austin-fc-overcomes-three-goal-deficit-to-tie-san-diego-fc"},
+    {"title":"Austin FC at LAFC","opponent":"LAFC","startsAt":"2026-10-14T21:30:00-05:00","home":false},
+    {"title":"Austin FC vs Vancouver Whitecaps FC","opponent":"Vancouver Whitecaps FC","startsAt":"2026-10-17T19:30:00-05:00","home":true},
+    {"title":"Austin FC at Sporting Kansas City","opponent":"Sporting Kansas City","startsAt":"2026-10-24T19:30:00-05:00","home":false},
+    {"title":"Austin FC vs Real Salt Lake","opponent":"Real Salt Lake","startsAt":"2026-10-28T19:30:00-05:00","home":true},
+    {"title":"Austin FC at LA Galaxy","opponent":"LA Galaxy","startsAt":"2026-10-31T16:00:00-05:00","home":false},
+    {"title":"Austin FC vs Portland Timbers","opponent":"Portland Timbers","startsAt":"2026-11-07T18:00:00-06:00","home":true}
   ]
 }

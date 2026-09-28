@@ -485,7 +485,7 @@
     "question": "How do I transfer my ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "austinfc.com"
+    "sourceDomain": "q2stadium.com"
   },
   {
     "id": "transfer-02",
@@ -493,7 +493,7 @@
     "question": "Can I transfer a ticket on SeatGeek?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "austinfc.com"
+    "sourceDomain": "q2stadium.com"
   },
   {
     "id": "transfer-03",
@@ -501,7 +501,7 @@
     "question": "Ticket transfer instructions",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "austinfc.com"
+    "sourceDomain": "q2stadium.com"
   },
   {
     "id": "transfer-04",
@@ -509,7 +509,7 @@
     "question": "Where do I send my digital ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "austinfc.com"
+    "sourceDomain": "q2stadium.com"
   },
   {
     "id": "transfer-05",
@@ -517,7 +517,7 @@
     "question": "How can the recipient get my ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "austinfc.com"
+    "sourceDomain": "q2stadium.com"
   },
   {
     "id": "transfer-06",
@@ -525,7 +525,7 @@
     "question": "¿Cómo puedo transferir mi boleto?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "austinfc.com"
+    "sourceDomain": "q2stadium.com"
   },
   {
     "id": "transfer-07",
@@ -533,7 +533,7 @@
     "question": "Transferir entrada desde la app",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "austinfc.com"
+    "sourceDomain": "q2stadium.com"
   },
   {
     "id": "transfer-08",
@@ -541,7 +541,7 @@
     "question": "My ticket transfer button is missing",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "austinfc.com"
+    "sourceDomain": "q2stadium.com"
   },
   {
     "id": "transfer-09",
@@ -549,7 +549,7 @@
     "question": "Can I share my Austin FC ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "austinfc.com"
+    "sourceDomain": "q2stadium.com"
   },
   {
     "id": "transfer-10",
@@ -557,7 +557,7 @@
     "question": "Help me transfer tickets to a friend",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "austinfc.com"
+    "sourceDomain": "q2stadium.com"
   },
   {
     "id": "purchase-01",
@@ -884,7 +884,7 @@
     "kind": "next_match",
     "question": "When is the next Austin FC home match?",
     "route": "club",
-    "mustMatch": "San Diego",
+    "mustMatch": "@NEXT_HOME",
     "sourceDomain": "austinfc.com"
   },
   {
@@ -892,7 +892,7 @@
     "kind": "next_match",
     "question": "Who do we play next at Q2?",
     "route": "club",
-    "mustMatch": "San Diego",
+    "mustMatch": "@NEXT_HOME",
     "sourceDomain": "austinfc.com"
   },
   {
@@ -900,7 +900,7 @@
     "kind": "next_match",
     "question": "Next home game?",
     "route": "club",
-    "mustMatch": "San Diego",
+    "mustMatch": "@NEXT_HOME",
     "sourceDomain": "austinfc.com"
   },
   {
@@ -908,7 +908,7 @@
     "kind": "next_match",
     "question": "What time is the next home match?",
     "route": "club",
-    "mustMatch": "San Diego",
+    "mustMatch": "@NEXT_HOME",
     "sourceDomain": "austinfc.com"
   },
   {
@@ -916,7 +916,7 @@
     "kind": "next_match",
     "question": "When do Austin FC play next at home?",
     "route": "club",
-    "mustMatch": "San Diego",
+    "mustMatch": "@NEXT_HOME",
     "sourceDomain": "austinfc.com"
   },
   {
@@ -924,7 +924,7 @@
     "kind": "next_match",
     "question": "¿Cuándo es el próximo partido en casa?",
     "route": "club",
-    "mustMatch": "San Diego",
+    "mustMatch": "@NEXT_HOME",
     "sourceDomain": "austinfc.com"
   },
   {
@@ -932,7 +932,7 @@
     "kind": "next_match",
     "question": "¿Quién es el rival del siguiente partido en casa?",
     "route": "club",
-    "mustMatch": "San Diego",
+    "mustMatch": "@NEXT_HOME",
     "sourceDomain": "austinfc.com"
   },
   {
@@ -940,15 +940,15 @@
     "kind": "next_match",
     "question": "Next match at Q2 Stadium?",
     "route": "club",
-    "mustMatch": "San Diego",
+    "mustMatch": "@NEXT_HOME",
     "sourceDomain": "austinfc.com"
   },
   {
     "id": "next_match-09",
     "kind": "next_match",
-    "question": "Is the next home game against San Diego?",
+    "question": "Who is our next home opponent?",
     "route": "club",
-    "mustMatch": "San Diego",
+    "mustMatch": "@NEXT_HOME",
     "sourceDomain": "austinfc.com"
   },
   {
@@ -956,7 +956,7 @@
     "kind": "next_match",
     "question": "Tell me the next Austin FC home match and kickoff",
     "route": "club",
-    "mustMatch": "San Diego",
+    "mustMatch": "@NEXT_HOME",
     "sourceDomain": "austinfc.com"
   }
 ]

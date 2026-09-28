@@ -9,6 +9,7 @@ from pathlib import Path
 
 BASE = "https://austin-fc-fan-assistant.vercel.app"
 CASES = json.loads(Path("data/evaluation.json").read_text())
+SCHEDULE = json.loads(Path("data/club-schedule.json").read_text())
 assert len(CASES) == 120
 
 
@@ -29,7 +30,13 @@ def evaluate(case):
             meta = events[0]
             answer = "".join(event.get("text", "") for event in events if event.get("type") == "delta")
             route = meta.get("route") == case["route"]
-            content = bool(re.search(case["mustMatch"], answer, re.I))
+            if case["kind"] == "next_match":
+                future = [event for event in SCHEDULE["events"] if event["home"] and datetime.fromisoformat(event["startsAt"]).astimezone(timezone.utc) > datetime.now(timezone.utc)]
+                future.sort(key=lambda event: event["startsAt"])
+                expected = future[0]["opponent"] if future else "no other confirmed future match"
+                content = expected.lower() in answer.lower()
+            else:
+                content = bool(re.search(case["mustMatch"], answer, re.I))
             source = any(case["sourceDomain"] in item["url"].split("/")[2] for item in meta.get("sources", []))
             critical = True
             if case["kind"] == "vegan":
@@ -39,7 +46,7 @@ def evaluate(case):
             elif case["kind"] == "purchase":
                 critical = bool(re.search(r"can.t|cannot|no puedo", answer, re.I))
             elif case["kind"] == "next_match":
-                critical = "San Diego" in answer and "2026" in answer
+                critical = content and (not future or str(datetime.fromisoformat(future[0]["startsAt"]).year) in answer)
             return {"id": case["id"], "pass": route and content and source and critical, "route": route, "content": content,
                     "source": source, "critical": critical, "latencyMs": round((time.monotonic() - started) * 1000),
                     "answer": answer, "sourceUrls": [item["url"] for item in meta.get("sources", [])]}

@@ -25,12 +25,20 @@ export async function getKnowledge(): Promise<Snapshot> {
 
 export function detectContext(query: string, previous: FanContext): FanContext {
   const context: FanContext = { ...previous };
+  if (/(?:not sure|don.t know|don.t remember|haven.t got|no idea).{0,40}(?:section|seat|sitting)|(?:section|seat).{0,25}(?:unknown|not sure|don.t know)/i.test(query)) delete context.section;
   const section = query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin)\s*#?\s*(\d{3})\b/i);
   if (section) context.section = Number(section[1]);
-  if (/\b(university of texas|ut austin|ut campus|student center)\b/i.test(query)) context.origin = 'ut-austin';
-  if (/\b(vegan|vegab|vegano|vegana)\b/i.test(query)) context.dietary = 'vegan';
+  const origin = query.match(/\b(?:from|starting at|leaving from|located at|i(?:'m| am|m) (?:at|near|in))\s+(.+?)(?=\s+(?:to|get to|for the|how do|where can|what time|and when)\b|[,.!?]|$)/i)?.[1]?.trim();
+  if (origin && !/^(?:section|sec\.?|secci[oó]n|here|there|the bar|the stand)\b/i.test(origin)) {
+    context.origin = /\b(?:university of texas(?: at austin)?|ut austin|ut campus)\b/i.test(origin) ? 'UT Austin' : origin.slice(0, 120);
+  } else if (/\b(?:university of texas(?: at austin)?|ut austin|ut campus)\b/i.test(query) && /\b(?:travel|train|bus|stadium|q2|there|leave|arrive)\b/i.test(query)) context.origin = 'UT Austin';
+  const noDiet = /\b(?:no dietary restrictions|not (?:vegan|vegetarian)|anything is fine)\b/i.test(query);
+  if (noDiet) delete context.dietary;
+  else if (/\b(vegan|vegab|vegano|vegana)\b/i.test(query)) context.dietary = 'vegan';
   else if (/\b(vegetarian|vegetariano|vegetariana|veggie)\b/i.test(query)) context.dietary = 'vegetarian';
   else if (/\b(gluten|celiac|celiaco|celíaco)\b/i.test(query)) context.dietary = 'gluten-aware';
+  const food = query.match(/\b(chicken|wings?|tenders?|burgers?|hamburgers?|pizza|tacos?|nachos|bao|barbecue|bbq|shawarma)\b/i);
+  if (food) context.food = food[1].toLowerCase();
   if (/[¿¡]|\b(d[oó]nde|comida|boleto|entrada|estadio|puedo|para|c[oó]mo|quiero|tren|estacionamiento)\b/i.test(query)) context.language = 'es';
   else if (/\b(english|in english)\b/i.test(query)) context.language = 'en';
   return context;
@@ -113,6 +121,24 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
   const q = normalize(query);
   const base: Grounding = { route: 'general', context, facts: [], sources: [], cards: [] };
   const addDoc = (d: Doc) => { base.facts.push(`${d.title}: ${d.body.slice(0, 2400)}`); base.sources.push(source(d.title, d.url, d.checkedAt)); };
+  if (/\b(charged|refund|payment|paid|missing order|never received|didn.t receive)\b/.test(q) && /\b(food|drink|concession|order|meal|ticket)\b/.test(q)) {
+    base.route = 'support';
+    const guestServices = knowledge.documents.find(d => d.title.startsWith('Guest Services'));
+    if (guestServices) addDoc(guestServices);
+    const contact = knowledge.documents.find(d => d.title === 'ADA/Accessibility');
+    if (contact) base.sources.push(source('Q2 Stadium Guest Services contact', contact.url, contact.checkedAt));
+    base.answer = spanish ? 'No puedo ver pagos ni emitir reembolsos. Para un cargo por comida que no recibiste, habla con Guest Services en la explanada principal detrás de la sección 124 o escribe a GuestServices@AustinFC.com. Ten a mano los detalles del pedido y el cargo.' : 'I cannot see payments or issue refunds. For a food charge without an order, visit Guest Services on the main concourse behind section 124 or email GuestServices@AustinFC.com. Have your order and charge details ready.';
+    return base;
+  }
+  if (/\b(?:guest|gues|guesst)\s+servic/.test(q)) {
+    base.route = 'stadium';
+    const guestServices = knowledge.documents.find(d => d.title.startsWith('Guest Services'));
+    if (guestServices) addDoc(guestServices);
+    const contact = knowledge.documents.find(d => d.title === 'ADA/Accessibility');
+    if (contact) base.sources.push(source('Q2 Stadium Guest Services contact', contact.url, contact.checkedAt));
+    base.answer = spanish ? 'Guest Services está en la explanada principal detrás de la sección 124. También puedes escribir a GuestServices@AustinFC.com para consultar con el estadio.' : 'Guest Services is on the main concourse behind section 124. You can also email GuestServices@AustinFC.com for stadium help.';
+    return base;
+  }
   if (/\b(burgers?|hamburgers?|chicken|wings?|tenders?)\b/.test(q)) {
     base.route = 'concessions';
     const isBurger = /\b(burgers?|hamburgers?)\b/.test(q);
@@ -188,7 +214,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
   }
   if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|roster|players?|goalkeepers?|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias|porteros?|jugadores?|copa america)\b/.test(q) && !/\b(weather|rain|forecast|lluvia|llovera?|clima|pronostico)\b/.test(q) || /\b(join|tryout|academy)\b.*\b(player|team|club|austin fc)\b/.test(q)) { base.route = 'club'; return base; }
   if (/\b(weather|rain|temperature|forecast|kickoff|lluvia|llovera?|clima|tiempo|pronostico|inicio del partido)\b/.test(q)) { base.route = 'weather'; return base; }
-  base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte|red line|mckalla|directions|getting there|coming from|how do i get there|how do i get to the stadium|how do i get to q2|how do i get there and what time|student center)\b/.test(q) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
+  base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte|red line|mckalla|directions|getting there|coming from|how do i get there|how do i get to the stadium|how do i get to q2|how do i get there and what time|student center)\b/.test(q) || (context.origin && /\b(?:from|i am at|i'm at|im at|leaving|starting at)\b/.test(q)) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
   const transportIds = /\b(parking|park|estacionamiento)\b/.test(q) ? ['parking','policy-ada-accessibility'] : /\b(what time|when|arrive|early)\b/.test(q) ? ['directions','policy-capital-metro','policy-gate-opening-times'] : ['directions','policy-capital-metro'];
   const docs = base.route === 'transport'
     ? knowledge.documents.filter(d => transportIds.includes(d.id))
@@ -201,7 +227,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     base.sources.push(source(transferring ? 'Austin FC mobile ticketing' : 'Austin FC tickets', transferring ? MOBILE_TICKET_URL : TICKET_URL));
     if (transferring && knowledge.documents.some(d => d.title === 'Will Call')) base.sources.push(source('Will Call', POLICY_URL, knowledge.checkedAt));
   }
-  if (base.route === 'transport') { base.cards.push(card('Plan your trip', 'CapMetro event service', TRANSIT_URL)); base.sources.push(source('CapMetro event service', TRANSIT_URL)); if(context.origin === 'ut-austin') base.sources.push(source('CapMetro Rapid 803 route', 'https://www.capmetro.org/rapid/route803', knowledge.checkedAt)); }
+  if (base.route === 'transport') { base.cards.push(card('Plan your trip', 'CapMetro event service', TRANSIT_URL)); base.sources.push(source('CapMetro event service', TRANSIT_URL)); if(context.origin === 'UT Austin') base.sources.push(source('CapMetro Rapid 803 route', 'https://www.capmetro.org/rapid/route803', knowledge.checkedAt)); }
   if (docs.length === 0 && base.route === 'stadium') base.answer = spanish ? 'No encontré una respuesta confirmada en las fuentes oficiales. Prueba con una pregunta más específica o consulta al personal de Guest Services.' : 'I couldn’t verify that from the current official sources. Try a more specific question or ask Guest Services at the stadium.';
   return base;
 }

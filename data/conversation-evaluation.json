@@ -1,0 +1,42 @@
+{
+  "sourceNote": "Anonymized, paraphrased fan wording and topic transitions from the supplied 2023–2024 Satisfi exports, plus the September 2026 live test chat. No historical answers or identifiers are included.",
+  "scenarios": [
+    {"id":"next-match-weather","requiresNextHome":true,"turns":[
+      {"question":"When is the next Austin FC home match?","route":"club","mustMatch":"@NEXT_HOME","sourceDomain":"austinfc.com","context":{"eventOpponent":"@NEXT_HOME"}},
+      {"question":"Will it rain at kickoff?","route":"weather","mustMatch":"forecast|pron[oó]stico|rain|lluvia","sourceDomain":"weather.gov","context":{"eventOpponent":"@NEXT_HOME"}}
+    ]},
+    {"id":"arbitrary-starting-point","requiresNextHome":true,"turns":[
+      {"question":"I'm at the student center at University of Austin.","route":"transport","mustMatch":"University of Austin","mustNotMatch":"northbound.*Rapid 803","sourceDomain":"capmetro.org","context":{"origin":"the student center at University of Austin"}},
+      {"question":"When is the next Austin FC home game?","route":"club","mustMatch":"@NEXT_HOME","sourceDomain":"austinfc.com","context":{"origin":"the student center at University of Austin","eventOpponent":"@NEXT_HOME"}},
+      {"question":"How do I get there and when should I leave?","route":"transport","mustMatch":"University of Austin","mustNotMatch":"northbound.*Rapid 803","sourceDomain":"capmetro.org","context":{"origin":"the student center at University of Austin","eventOpponent":"@NEXT_HOME"}}
+    ]},
+    {"id":"section-diet-and-reset","turns":[
+      {"question":"I'm in section 119. Where can I get vegan food?","route":"concessions","mustMatch":"Verde Vegan.*119","sourceDomain":"q2stadium.com","context":{"section":119,"dietary":"vegan"}},
+      {"question":"What about drinks?","route":"drinks","mustMatch":"Bar","sourceDomain":"q2stadium.com","context":{"section":119,"dietary":"vegan"}},
+      {"question":"I'm still vegan but not sure where I'm sitting.","route":"concessions","mustMatch":"section","sourceDomain":"q2stadium.com","context":{"dietary":"vegan"},"contextAbsent":["section"]}
+    ]},
+    {"id":"food-pronoun","turns":[
+      {"question":"What chicken food is there?","route":"concessions","mustMatch":"Pluckers.*135","sourceDomain":"q2stadium.com","context":{"food":"chicken"}},
+      {"question":"Where are those?","route":"concessions","mustMatch":"Pluckers.*135","sourceDomain":"q2stadium.com","context":{"food":"chicken"}}
+    ]},
+    {"id":"ticket-recipient","turns":[
+      {"question":"How do I transfer my tickets?","route":"ticketing","mustMatch":"Send Tickets","sourceDomain":"austinfc.com"},
+      {"question":"How does the recipient receive it?","route":"ticketing","mustMatch":"Manage My Tickets","sourceDomain":"austinfc.com","mustNotMatch":"choose the ticket quantity"}
+    ]},
+    {"id":"guest-help-and-order","turns":[
+      {"question":"Gues services","route":"stadium","mustMatch":"section 124","sourceDomain":"q2stadium.com"},
+      {"question":"I was charged for food I never received","route":"support","mustMatch":"cannot see payments|no puedo ver pagos","mustNotMatch":"Published options","sourceDomain":"q2stadium.com"}
+    ]},
+    {"id":"spanish-follow-up","turns":[
+      {"question":"¿Dónde puedo encontrar comida vegetariana?","route":"concessions","mustMatch":"Opciones publicadas","sourceDomain":"q2stadium.com","context":{"language":"es","dietary":"vegetarian"}},
+      {"question":"¿Y bebidas?","route":"drinks","mustMatch":"Opciones de bebida","sourceDomain":"q2stadium.com","context":{"language":"es","dietary":"vegetarian"}}
+    ]},
+    {"id":"player-tryouts","turns":[
+      {"question":"Tryouts","route":"stadium","mustMatch":"couldn.t confirm|no pude confirmar","contextAbsent":["event"]},
+      {"question":"As a player for Austin FC","route":"club","mustMatch":"Academy recruitment|Academia","sourceDomain":"austinfc.com"}
+    ]},
+    {"id":"past-opponent","turns":[
+      {"question":"Is the next home match against San Diego?","route":"club","mustMatch":"@NEXT_HOME","mustNotMatch":"next.*San Diego FC on","sourceDomain":"austinfc.com"}
+    ]}
+  ]
+}
