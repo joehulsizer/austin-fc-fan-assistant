@@ -25,6 +25,7 @@ export async function getKnowledge(): Promise<Snapshot> {
 
 export function detectContext(query: string, previous: FanContext): FanContext {
   const context: FanContext = { ...previous };
+  if (context.origin === 'ut-austin') context.origin = 'UT Austin';
   if (/(?:not sure|don.t know|don.t remember|haven.t got|no idea).{0,40}(?:section|seat|sitting)|(?:section|seat).{0,25}(?:unknown|not sure|don.t know)/i.test(query)) delete context.section;
   const section = query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin)\s*#?\s*(\d{3})\b/i);
   if (section) context.section = Number(section[1]);
