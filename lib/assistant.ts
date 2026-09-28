@@ -25,7 +25,7 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     : query;
   let result = await ground(retrievalQuery, priorContext);
   if (result.route === 'weather') result = await weatherGrounding(query, result.context);
-  if (result.route === 'club') result = await clubGrounding(retrievalQuery, result.context);
+  if (result.route === 'club' && !result.answer) result = await clubGrounding(retrievalQuery, result.context);
   result.context = { ...result.context, topic: result.route };
   return result;
 }

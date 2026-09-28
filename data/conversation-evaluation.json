@@ -32,7 +32,7 @@
       {"question":"¿Y bebidas?","route":"drinks","mustMatch":"Opciones de bebida","sourceDomain":"q2stadium.com","context":{"language":"es","dietary":"vegetarian"}}
     ]},
     {"id":"player-tryouts","turns":[
-      {"question":"Tryouts","route":"stadium","mustMatch":"couldn.t confirm|no pude confirmar","contextAbsent":["event"]},
+      {"question":"Tryouts","route":"club","mustMatch":"player tryouts|pruebas","sourceDomain":"austinfc.com","contextAbsent":["event"]},
       {"question":"As a player for Austin FC","route":"club","mustMatch":"Academy recruitment|Academia","sourceDomain":"austinfc.com"}
     ]},
     {"id":"past-opponent","turns":[

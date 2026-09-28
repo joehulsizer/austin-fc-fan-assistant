@@ -122,6 +122,12 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
   const q = normalize(query);
   const base: Grounding = { route: 'general', context, facts: [], sources: [], cards: [] };
   const addDoc = (d: Doc) => { base.facts.push(`${d.title}: ${d.body.slice(0, 2400)}`); base.sources.push(source(d.title, d.url, d.checkedAt)); };
+  if (/^\s*tryouts?\s*\??\s*$/.test(q)) {
+    base.route = 'club';
+    base.answer = spanish ? '¿Te refieres a pruebas como jugador para la Academia de Austin FC? Si es así, puedo explicarte la guía oficial de reclutamiento.' : 'Do you mean player tryouts for Austin FC Academy? If so, I can explain its official recruitment guidance.';
+    base.sources = [source('Austin FC Academy recruitment', 'https://www.austinfc.com/academy/recruitment')];
+    return base;
+  }
   if (/\b(charged|refund|payment|paid|missing order|never received|didn.t receive)\b/.test(q) && /\b(food|drink|concession|order|meal|ticket)\b/.test(q)) {
     base.route = 'support';
     const guestServices = knowledge.documents.find(d => d.title.startsWith('Guest Services'));
