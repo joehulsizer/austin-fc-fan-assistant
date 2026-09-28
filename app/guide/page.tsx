@@ -29,7 +29,7 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
   const selectedPolicy = params.find ? policyDocs.find(d => d.title.toLowerCase() === params.find!.toLowerCase()) || policyDocs.find(d => d.title.toLowerCase().includes(params.find!.toLowerCase())) : undefined;
   const travelDocs = data.documents.filter(d => d.id === 'directions' || d.id === 'parking');
   const forecast = topic === 'weather' ? await weatherGrounding('weather right now', { language: 'en' }) : null;
-  const futureGames = schedule.events.filter(event => new Date(event.startsAt).getTime() > Date.now());
+  const futureGames = schedule.events.filter(event => event.home && new Date(event.startsAt).getTime() > Date.now());
 
   return <main className="guide-page">
     <div className="guide-wrap">

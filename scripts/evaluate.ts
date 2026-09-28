@@ -1,5 +1,6 @@
 import { writeFileSync, readFileSync } from 'node:fs';
 import { prepare, groundedFallback } from '../lib/assistant';
+import { nextFixture } from '../lib/schedule';
 
 type Case = { id:string; kind:string; question:string; route:string; mustMatch:string; sourceDomain:string };
 const cases:Case[]=JSON.parse(readFileSync('data/evaluation.json','utf8'));
@@ -10,7 +11,8 @@ for(const test of cases){
   const grounding=await prepare({messages:[{role:'user',content:test.question}],context:{}});
   const answer=grounding.answer||groundedFallback(test.question,grounding);
   const route=grounding.route===test.route;
-  const content=new RegExp(test.mustMatch,'i').test(answer);
+  const expected = test.mustMatch === '@NEXT_HOME' ? (nextFixture(new Date(), true)?.opponent || 'no other confirmed future match') : test.mustMatch;
+  const content=test.mustMatch==='@NEXT_HOME' ? answer.toLowerCase().includes(expected.toLowerCase()) : new RegExp(test.mustMatch,'i').test(answer);
   const source=grounding.sources.some(s=>{try{return new URL(s.url).hostname.endsWith(test.sourceDomain);}catch{return false;}});
   results.push({id:test.id,pass:route&&content&&source,route,content,source,answer,sourceUrls:grounding.sources.map(s=>s.url)});
 }

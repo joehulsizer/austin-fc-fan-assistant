@@ -2,7 +2,9 @@ export type FanContext = {
   section?: number;
   dietary?: 'vegan' | 'vegetarian' | 'gluten-aware';
   language?: 'en' | 'es';
-  origin?: 'ut-austin';
+  origin?: string;
+  food?: string;
+  topic?: string;
   event?: { title: string; startsAt?: string; source?: string };
 };
 

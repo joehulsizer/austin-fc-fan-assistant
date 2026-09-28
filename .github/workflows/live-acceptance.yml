@@ -10,6 +10,8 @@ jobs:
           python-version: '3.12'
       - name: Test 120 public production conversations
         run: python scripts/evaluate_live.py
+      - name: Test paraphrased multi-turn fan chats
+        run: python scripts/evaluate_conversations_live.py
       - name: Publish versioned evaluation result
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
@@ -23,3 +25,10 @@ jobs:
         with:
           name: live-evaluation-results
           path: live-evaluation-results.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: multi-turn-review
+          path: |
+            live-conversation-evaluation-results.json
+            conversation-human-review.csv

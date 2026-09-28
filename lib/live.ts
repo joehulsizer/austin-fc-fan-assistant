@@ -2,7 +2,7 @@ import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import type { FanContext, Grounding } from './types';
 import { getKnowledge } from './knowledge';
-import schedule from '@/data/club-schedule.json';
+import { nextFixture, fixtureSource } from './schedule';
 
 const NWS_URL = 'https://api.weather.gov/gridpoints/EWX/157,96/forecast/hourly';
 const WEATHER_SOURCE = 'https://forecast.weather.gov/MapClick.php?lat=30.3877&lon=-97.7194';
@@ -110,28 +110,25 @@ export async function clubGrounding(query: string, context: FanContext): Promise
       return base;
     }
   }
-  if (/\b(next|pr[oó]ximo|siguiente)\b/i.test(query) && /\b(match|game|fixture|partido)\b/i.test(query)) {
-    const featured = (await getKnowledge()).featuredMatch;
-    const until = featured ? new Date(featured.startsAt).getTime() - Date.now() : -1;
-    if (featured && until > 0 && until <= 72 * 3600 * 1000) {
-      const local = new Intl.DateTimeFormat(spanish ? 'es-US' : 'en-US', { timeZone: 'America/Chicago', dateStyle: 'full', timeStyle: 'short' }).format(new Date(featured.startsAt));
-      base.answer = spanish ? `El próximo partido publicado de Austin FC es ${featured.title}, ${local}, en Q2 Stadium. Confirma la hora antes de viajar.` : `The next published Austin FC match is ${featured.title} on ${local} at Q2 Stadium. Confirm kickoff before traveling.`;
-      base.context = { ...context, event: { title: featured.title, startsAt: featured.startsAt, source: featured.url } };
-      base.sources = [{ title: 'Austin FC match preview', url: featured.url, checkedAt: featured.checkedAt }];
+  if (/\b(next|upcoming|pr[oó]ximo|siguiente)\b/i.test(query) && /\b(match|game|fixture|partido|home|casa|q2|opponent|rival)\b/i.test(query)) {
+    const homeOnly = /\b(home|casa|q2|stadium|estadio)\b/i.test(query);
+    const match = nextFixture(new Date(), homeOnly);
+    base.sources = [{ title: 'Austin FC published schedule', url: SCHEDULE_URL }];
+    if (!match) {
+      base.answer = spanish ? 'No hay otro partido futuro confirmado en el calendario publicado que tengo. Consulta el calendario oficial de Austin FC para nuevas fechas.' : 'I do not have another confirmed future match in the published schedule. Check Austin FC’s official schedule for new dates.';
       return base;
     }
-  }
-  if (/next|pr[oó]ximo|siguiente|kickoff|inicio/i.test(query) && /home|casa|q2/i.test(query)) {
-    const featured = (await getKnowledge()).featuredMatch;
-    const next = schedule.events.find(event => new Date(event.startsAt).getTime() > Date.now());
-    const match = featured && new Date(featured.startsAt).getTime() > Date.now() && (!next || featured.startsAt === next.startsAt) ? featured : next && { ...next, url: schedule.source, checkedAt: schedule.checkedAt };
-    if (match) {
-      const local = new Intl.DateTimeFormat(spanish ? 'es-US' : 'en-US', { timeZone: 'America/Chicago', dateStyle: 'full', timeStyle: 'short' }).format(new Date(match.startsAt));
-      base.answer = spanish ? `El próximo partido en casa publicado es ${match.title}, ${local}, en Q2 Stadium. Confirma la hora en el calendario oficial antes de viajar.` : `The next published Austin FC home match is ${match.title} on ${local} at Q2 Stadium. Confirm the kickoff time on the official schedule before traveling.`;
-      base.context = { ...context, event: { title: match.title, startsAt: match.startsAt, source: match.url } };
-      base.sources = [{ title: featured && match.url === featured.url ? 'Austin FC match preview' : 'Austin FC published season schedule', url: match.url, checkedAt: match.checkedAt }];
-      return base;
-    }
+    const local = new Intl.DateTimeFormat(spanish ? 'es-US' : 'en-US', { timeZone: 'America/Chicago', dateStyle: 'full', timeStyle: 'short' }).format(new Date(match.startsAt));
+    const venue = match.home ? 'Q2 Stadium' : 'away';
+    const requestedOpponent = /\b(san diego|nashville|vancouver|whitecaps|kansas city|sporting|salt lake|portland|timbers|lafc|la galaxy)\b/i.exec(query)?.[0];
+    const correction = requestedOpponent && /\b(is|against|versus|contra)\b/i.test(query) && !match.opponent.toLowerCase().includes(requestedOpponent.toLowerCase()) ? (spanish ? 'No. ' : 'No. ') : '';
+    base.answer = spanish
+      ? `${correction}El próximo partido ${homeOnly ? 'en casa ' : ''}publicado de Austin FC es ${match.title}, ${local}, ${match.home ? 'en Q2 Stadium' : 'como visitante'}. Confirma la hora antes de viajar.`
+      : `${correction}The next published Austin FC ${homeOnly ? 'home ' : ''}match is ${match.title} on ${local} ${match.home ? 'at Q2 Stadium' : 'away'}. Confirm kickoff before traveling.`;
+    base.context = { ...context, event: { title: match.title, startsAt: match.startsAt, source: match.url || SCHEDULE_URL } };
+    base.sources = [fixtureSource(match)];
+    base.cards = [{ title: 'Austin FC schedule', detail: `${match.title} · ${venue}`, href: SCHEDULE_URL, label: spanish ? 'Ver calendario' : 'View schedule' }];
+    return base;
   }
   try {
     const result = await generateText({

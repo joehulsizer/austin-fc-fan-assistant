@@ -6,6 +6,45 @@ import { cleanClubSearchAnswer, weatherGrounding } from '../lib/live';
 import type { Grounding } from '../lib/types';
 import { internalGuideHref } from '../lib/internal-links';
 import { shareInputSchema } from '../lib/share';
+import { nextFixture } from '../lib/schedule';
+import { detectContext } from '../lib/knowledge';
+
+test('next match advances as each published fixture passes', () => {
+  assert.equal(nextFixture(new Date('2026-09-27T12:00:00Z'))?.opponent, 'Nashville SC');
+  assert.equal(nextFixture(new Date('2026-10-11T12:00:00Z'))?.opponent, 'LAFC');
+  assert.equal(nextFixture(new Date('2026-10-11T12:00:00Z'), true)?.opponent, 'Vancouver Whitecaps FC');
+  assert.equal(nextFixture(new Date('2026-11-08T12:00:00Z')), undefined);
+});
+
+test('free-text starting point is kept distinct from UT Austin', async () => {
+  const result = await prepare({ messages: [
+    { role: 'user', content: 'I am at the student center at University of Austin' },
+    { role: 'assistant', content: 'Where are you heading?' },
+    { role: 'user', content: 'How do I get to Q2 and when should I leave?' },
+  ], context: {} });
+  assert.equal(result.context.origin, 'the student center at University of Austin');
+  assert.equal(result.route, 'transport');
+  const answer = groundedFallback('How do I get to Q2 and when should I leave?', result);
+  assert.match(answer, /student center at University of Austin/);
+  assert.doesNotMatch(answer, /northbound CapMetro Rapid 803/);
+});
+
+test('unknown section clears a previously remembered section', () => {
+  const context = detectContext('I am vegan but not sure where I am sitting', { section: 119, dietary: 'vegan' });
+  assert.equal(context.section, undefined);
+  assert.equal(context.dietary, 'vegan');
+});
+
+test('food choice carries through a pronoun follow-up', async () => {
+  const result = await prepare({ messages: [
+    { role: 'user', content: 'What chicken options are at Q2?' },
+    { role: 'assistant', content: 'There are published chicken options.' },
+    { role: 'user', content: 'Where are those?' },
+  ], context: {} });
+  assert.equal(result.context.food, 'chicken');
+  assert.equal(result.route, 'concessions');
+  assert.match(result.answer || '', /Pluckers/);
+});
 
 test('current vendor source resolves Verde Vegan at 119, not the old map label', async () => {
   const result = await ground('I am in section 123. Where is vegan food?', {});
