@@ -25,6 +25,15 @@ Separate multiple requests into intents with short standalone subqueries in the 
       if(intents[i].kind==='benefits'&&!benefitRequested) intents.splice(i,1);
       else if(intents[i].kind==='ordering'&&!orderRequested) intents.splice(i,1);
     }
+    const foodKnown=fallback.some(i=>i.kind==='concessions'),drinksKnown=fallback.some(i=>i.kind==='drinks');
+    const amenitiesRequested=/restroom|bathroom|charging|headphones|sensory|sensorial|wheelchair|accessible|accessibility|guest servic|smoking|locker|banos?|quiet space|overstimulat/i.test(query);
+    const requestedPolicies=policyTopics(query);
+    for(let i=intents.length-1;i>=0;i--) {
+      const intent=intents[i];
+      if(intent.kind==='stadium' && (foodKnown||drinksKnown) && !fallback.some(x=>x.kind==='stadium') && !amenitiesRequested) intents.splice(i,1);
+      else if(intent.policy && requestedPolicies.length && !requestedPolicies.includes(intent.policy)) intents.splice(i,1);
+      else if(intent.kind==='concessions' && drinksKnown && !foodKnown && !/\b(food|eat|snacks?|meal|comida|comer|and|y)\b/i.test(query)) intents.splice(i,1);
+    }
     // Fixed, recognized requested policies must not disappear from the model's plan.
     for(const known of fallback.filter(i=>i.policy||['ordering','benefits','refund','ticketing','account'].includes(i.kind)))if(!intents.some(i=>i.kind===known.kind&&i.policy===known.policy))intents.push({kind:known.kind as Exclude<Intent['kind'],'security'>,query:known.query,policy:known.policy});
     // Ordering items do not imply a separate request to locate a stand.
