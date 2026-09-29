@@ -17,7 +17,7 @@ Separate multiple requests into intents with short standalone subqueries in the 
     const intents=result.object.intents.filter((i,index,all)=>all.findIndex(x=>x.kind===i.kind&&x.policy===i.policy)===index);
     // Fixed, recognized requested policies must not disappear from the model's plan.
     for(const known of fallback.filter(i=>i.policy))if(!intents.some(i=>i.policy===known.policy))intents.push({kind:known.kind as Exclude<Intent['kind'],'security'>,query:known.query,policy:known.policy});
-    if(context.eventKind==='other')return intents.filter(i=>i.kind!=='club');
+    if(context.eventKind==='other') { const safe=intents.filter(i=>i.kind!=='club'); return safe.length?safe:fallback; }
     return intents.length?intents:fallback;
   } catch {
     console.warn(JSON.stringify({event:'intent_planner_unavailable'}));return fallback;

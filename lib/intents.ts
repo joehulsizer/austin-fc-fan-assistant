@@ -15,9 +15,9 @@ export function planIntents(query: string, priorTopic?: string): Intent[] {
   policies.forEach(p=>push('stadium', query, p));
   const travel = /\b(parking|park|rideshare|uber|lyft|taxi|train|rail|red line|mckalla|transit|transport|transportation|bus|bike|bicycle|directions|route|fastest|estacionamiento|aparcar|tren|autobus|bicicleta|transporte|ruta)\b|(?:get|getting|go|travel) to (?:q2|the stadium|there)|getting (?:there|here)|coming from|llegar (?:al|a) (?:q2|estadio)|como llego|when should i leave|what time should i (?:leave|do it)|leave.by|salir|student center/.test(q) || priorTopic==='transport' && /how long|what time|arrive|leave|departure|when|cuanto|hora/.test(q);
   if (travel) push('transport');
-  if (/\b(weather|rain|raining|raincoat|temperature|forecast|lluvia|llovera|clima|pronostico|llover|frio|calor)\b/.test(q)) push('weather');
+  if (/(?:hot|cold|windy|wind).{0,30}(?:kickoff|today|tomorrow|tonight|outside)|\b(weather|rain|raining|raincoat|temperature|forecast|lluvia|llovera|clima|pronostico|llover|frio|calor)\b/.test(q)) push('weather');
   const other = /concert|concierto|festival|non.match|private event/.test(q);
-  if (!other && /\b(next|upcoming|proximo|siguiente)\b.{0,45}\b(match|game|home|partido|casa|rival)\b|\b(schedule|roster|players?|goalkeepers?|standings|news|fixtures?|calendario|plantilla|noticias|porteros?|jugadores?|copa america|tryouts?|academy|coach)\b|join.{0,30}(?:team|club|player)/.test(q)) push('club');
+  if (!other && /\b(next|upcoming|proximo|siguiente)\b.{0,45}\b(match|game|home|partido|casa|rival|q2|fixture)\b|\b(schedule|roster|players?|goalkeepers?|standings|news|fixtures?|calendario|plantilla|noticias|porteros?|jugadores?|copa america|tryouts?|academy|coach)\b|join.{0,30}(?:team|club|player)/.test(q)) push('club');
   if (!refund && /\b(tickets?|boletos?|entradas?|seatgeek|transfer|transferir|recipient)\b/.test(q)) push('ticketing');
   if (!refund&&!benefit&&!ordering) {
     if (!policies.includes('alcohol') && /\b(drinks?|beers?|wine|soda|cocktail|margarita|bebidas?|cerveza|vino|refresco|bar)\b/.test(q)) push('drinks');
