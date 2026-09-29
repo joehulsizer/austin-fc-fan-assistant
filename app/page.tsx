@@ -55,6 +55,7 @@ export default function Home(){
     const id=crypto.randomUUID();setMessages([welcome,...conversation,{id,role:'assistant',content:''}]);
     setDraft('');setBusy(true);setRetryText(null);setDrawer(false);setShareUrl('');setShareCopied(false);
     const controller=new AbortController();abort.current=controller;
+    let timedOut=false;const responseTimeout=setTimeout(()=>{timedOut=true;controller.abort();},60000);
     try{
       const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversation.slice(-16).map(({role,content})=>({role,content})),context}),signal:controller.signal});
       if(!response.ok||!response.body)throw new Error('Service unavailable');
@@ -68,8 +69,8 @@ export default function Home(){
           if(event.type==='error')throw new Error(event.message);
         }
       }
-    }catch{setMessages(old=>old.map(m=>m.id===id?{...m,content:controller.signal.aborted?'Response stopped.':'Something went wrong. Please try again.',error:true,actions:guestActions(context.language==='es')}:m));if(!controller.signal.aborted)setRetryText(text);}
-    finally{setBusy(false);abort.current=null;input.current?.focus();}
+    }catch{setMessages(old=>old.map(m=>m.id===id?{...m,content:timedOut?(context.language==='es'?'La respuesta tardó demasiado. Inténtalo de nuevo o contacta a Guest Services.':'The response took too long. Retry or contact Guest Services.'):controller.signal.aborted?'Response stopped.':'Something went wrong. Please try again.',error:true,actions:guestActions(context.language==='es')}:m));if(timedOut||!controller.signal.aborted)setRetryText(text);}
+    finally{clearTimeout(responseTimeout);setBusy(false);abort.current=null;input.current?.focus();}
   }
   async function rate(id:string,rating:'up'|'down',comment?:string){
     const message=messages.find(m=>m.id===id);if(!message)return;

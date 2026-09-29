@@ -173,6 +173,7 @@ export async function* answerStream(input: ChatInput, result: Grounding): AsyncG
     return;
   }
   const fallback = groundedFallback(query, result);
+  if (!result.facts.length) { yield fallback; return; }
   if (['concessions', 'drinks', 'transport', 'ticketing', 'transaction'].includes(result.route) || /diaper|pa[nñ]al|childcare bag|\b(bag|backpack|purse|clutch|bolsa|bolso|mochila)\b|water|agua|hydration|refill|water station|sensory|sensorial|botella|bottle/i.test(query)) {
     yield fallback;
     return;
