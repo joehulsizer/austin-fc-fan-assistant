@@ -1187,7 +1187,7 @@
   },
   {
     "id": "parking-membership-benefit",
-    "question": "Do members get a parking discount?",
+    "question": "What member parking discount applies, and where should I park?",
     "route": "multi",
     "all": [
       "member benefits",
