@@ -6,7 +6,10 @@ import { safetyGrounding } from '../lib/safety';
 import { staticKnowledge } from '../lib/knowledge';
 import { isActionHref, ORDER_URL } from '../lib/handoffs';
 import { shareInputSchema } from '../lib/share';
-import cases from '../data/redteam.json';
+import rawCases from '../data/redteam.json';
+import type { FanContext } from '../lib/types';
+type RedCase = {id:string;question:string;route:string;all:string[];none?:string[];language?:string;action?:string;prior?:string[];context?:FanContext;sources?:string[]};
+const cases:RedCase[]=rawCases;
 for(const c of cases) test(`red-team: ${c.id}`, async()=>{
   let context = c.context || {};
   const messages:{role:'user'|'assistant';content:string}[]=[];
