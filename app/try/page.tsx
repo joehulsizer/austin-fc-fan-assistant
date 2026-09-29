@@ -4,7 +4,7 @@ import '../style.css';
 import '../guide/guide.css';
 
 const groups = [
-  { title: 'Knowledge base', description: 'These are answered from checked stadium facts and set rules, without generating text with a model.', questions: [
+  { title: 'Knowledge base', description: 'Answers come from checked stadium facts and set rules. A hosted model helps interpret ordinary questions; these answers themselves use the verified guide.', questions: [
     'I’m in section 123. Where can I get vegan food?',
     'What about drinks? (ask after the vegan question)',
     'Can I bring a diaper bag?',
@@ -14,11 +14,24 @@ const groups = [
     '¿Dónde puedo encontrar comida vegetariana?',
   ] },
   { title: 'Model assisted', description: 'The site sends the question and relevant published facts to OpenAI’s GPT-5.4 mini model for a flexible answer. This is a separate service, not this Codex chat.', questions: [
-    'What should I do if I lose something at Q2 Stadium?',
     'What are the camera rules at Q2?',
     'Where is an accessible restroom?',
-    'What time do gates open?',
-    'When is the next Austin FC match? (live official-site search)',
+    'What is the policy on smoking at Q2?',
+  ] },
+  { title: 'Safety and handoffs', description: 'Safety responses are fixed in English and Spanish and bypass the model. Ordering and account actions open the appropriate provider.', questions: [
+    'Perdí a mi hijo de 6 años cerca de la sección 118',
+    'I found a child alone',
+    'What should I do if I lose something at Q2 Stadium?',
+    'Beer and hot dog delivered to my seat in 210',
+    'STM food discount',
+    'My kid is sick; can I refund my ticket?',
+  ] },
+  { title: 'Mixed requests and getting here', description: 'Try questions with several requests and follow-ups in a different language.', questions: [
+    'Can I bring a backpack and water bottle, and when is the beer cutoff?',
+    'Where is food near section 123, how do I transfer tickets, and can I bring a bag?',
+    'I’m at UT, kickoff is 7:30, fastest way to Q2',
+    'Concert at Q2 next month, where do I park?',
+    'What time do gates open? (ask after a Spanish question)',
   ] },
   { title: 'Live weather', description: 'Weather comes directly from the National Weather Service. Ask about a specific kickoff after choosing a match.', questions: [
     'Will it rain at kickoff? (ask after the home-match question)',

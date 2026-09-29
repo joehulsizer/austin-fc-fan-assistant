@@ -25,6 +25,17 @@ function futureDateInAnswer(answer: string): boolean {
   return !Number.isNaN(date.getTime()) && date.getTime() >= Date.now() - 86400000;
 }
 
+function austinDate(day:string,hour='20',minute='00'):Date {
+  const offset=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',timeZoneName:'shortOffset'}).formatToParts(new Date(`${day}T18:00:00Z`)).find(p=>p.type==='timeZoneName')?.value;
+  const parsed=/GMT([+-])(\d{1,2})/.exec(offset||'');
+  const suffix=parsed?`${parsed[1]}${parsed[2].padStart(2,'0')}:00`:'-06:00';
+  return new Date(`${day}T${hour.padStart(2,'0')}:${minute}:00${suffix}`);
+}
+function austinDay(now:Date):string {
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+  return ['year','month','day'].map(t=>parts.find(p=>p.type===t)?.value).join('-');
+}
+
 export async function weatherGrounding(query: string, context: FanContext): Promise<Grounding> {
   const spanish = context.language === 'es';
   const base: Grounding = { route: 'weather', context, facts: [], sources: [{ title: 'National Weather Service: Q2 Stadium forecast', url: WEATHER_SOURCE, checkedAt: new Date().toISOString() }], cards: [{ title: 'Hourly forecast', detail: 'Q2 Stadium area', href: WEATHER_SOURCE, label: spanish ? 'Ver pronóstico' : 'View forecast' }] };
@@ -37,11 +48,11 @@ export async function weatherGrounding(query: string, context: FanContext): Prom
   let target: Date | undefined;
   if (/kickoff|inicio del partido/.test(q) && context.event?.startsAt) target = new Date(context.event.startsAt);
   else if (/tomorrow|mañana/.test(q)) target = new Date(now.getTime() + 24 * 3600 * 1000);
-  else if (/tonight|esta noche/.test(q)) { target = new Date(now); target.setHours(20, 0, 0, 0); }
+  else if (/tonight|esta noche/.test(q)) { target = austinDate(austinDay(now)); }
   else if (/today|hoy|right now|ahora/.test(q)) target = now;
   else {
     const dateMatch = q.match(/\b(20\d\d)-(\d\d)-(\d\d)(?:[t ](\d\d):?(\d\d)?)?/);
-    if (dateMatch) target = new Date(`${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}T${dateMatch[4] || '18'}:${dateMatch[5] || '00'}:00-05:00`);
+    if (dateMatch) target = austinDate(`${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}`,dateMatch[4]||'18',dateMatch[5]||'00');
   }
   if (!target || Number.isNaN(target.getTime())) {
     base.answer = spanish ? '¿Para qué fecha y hora quieres el pronóstico en Q2 Stadium?' : 'What date and time should I check for Q2 Stadium?';

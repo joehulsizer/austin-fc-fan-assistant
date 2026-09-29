@@ -122,6 +122,7 @@ test('bilingual emergency, language switch and relevant source chips work on a p
   await expect(page.locator('.message.assistant').last().locator('.sources a')).toHaveCount(1);
   await expect(page.locator('.message.assistant').last().locator('.sources a')).toContainText('Gate Opening Times');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2)).toBe(false);
+  await page.screenshot({path:'test-results/mobile-safety-handoffs.png',fullPage:true});
 });
 
 test('seat ordering uses actual OrderNext and share retains handoffs',async({page})=>{

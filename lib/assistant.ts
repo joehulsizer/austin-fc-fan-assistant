@@ -3,6 +3,7 @@ import { detectContext, ground, sectionZone, getKnowledge } from './knowledge';
 import { safetyGrounding } from './safety';
 import { planIntents } from './intents';
 import { semanticPlan } from './model-planner';
+import { ticketGrounding } from './ticketing';
 import { policyGrounding } from './policies';
 import { travelGrounding } from './travel';
 import { supportGrounding } from './support';
@@ -45,10 +46,11 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     else if(intent.kind==='ordering'||intent.kind==='benefits'||intent.kind==='refund'||intent.kind==='security') result=supportGrounding(intent.kind,query,context,knowledge);
     else if(intent.policy) result=policyGrounding(intent.policy,query,context,knowledge);
     else if(intent.kind==='transport') result=travelGrounding(query,context,knowledge);
+    else if(intent.kind==='ticketing') result=ticketGrounding(intent.query,context,knowledge);
     else if(intent.kind==='weather') result=await weatherGrounding(query,context);
     else if(intent.kind==='club') { result=await ground(intent.query,context); if(!result.answer) result=await clubGrounding(intent.query,context); }
     else {
-      const lookup=intent.kind==='drinks' ? (intents.length>1 ? (context.language==='es'?'bebidas':'drinks') : intent.query) : intent.kind==='ticketing' ? `${intent.query.replace(/\b(?:beer|food|parking|rain|backpack|bottle)\b/gi,'')} ticket` : intent.query;
+      const lookup=intent.kind==='drinks' ? (intents.length>1 ? (context.language==='es'?'bebidas':'drinks') : intent.query) : intent.kind==='concessions' && intents.length>1 ? intent.query.replace(/\b(?:bags?|backpacks?|purse|clutch|bolsas?|bolsos?|mochila|diaper|bottle|botella|water|agua|tickets?|boletos?|entradas?|transfer|transferir|recipient|parking|park|kickoff|gates?|rain|forecast|beer|drinks?|cerveza|bebidas?)\b/gi,'')+' food' : intent.query;
       result=await ground(lookup,context);
       // Retrieved subqueries must not change the language of the actual latest message.
       result.context={...result.context,language:context.language};

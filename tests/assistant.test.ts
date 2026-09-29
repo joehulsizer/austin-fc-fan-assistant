@@ -207,3 +207,13 @@ test('a real six-card concessions answer can be shared', async () => {
   ] });
   assert.equal(snapshot.messages[1].cards?.length, 6);
 });
+
+
+test('weather timestamps use Austin standard time after the daylight-saving change', async()=>{
+  const previous=global.fetch;
+  global.fetch=async()=>Response.json({properties:{periods:[{startTime:'2026-11-02T18:00:00-06:00',endTime:'2026-11-02T19:00:00-06:00',temperature:68,temperatureUnit:'F',shortForecast:'Clear',windSpeed:'5 mph'}]}});
+  try {
+    const result=await weatherGrounding('weather 2026-11-02 18:00',{language:'en'});
+    assert.match(result.answer||'',/68°F/);assert.doesNotMatch(result.answer||'',/outside/);
+  }finally{global.fetch=previous;}
+});
