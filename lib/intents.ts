@@ -21,7 +21,7 @@ export function planIntents(query: string, priorTopic?: string): Intent[] {
   if (!other && /\b(next|upcoming|proximo|siguiente)\b.{0,45}\b(match|game|home|partido|casa|rival|q2|fixture)\b|\b(schedule|roster|players?|goalkeepers?|standings|news|fixtures?|calendario|plantilla|noticias|porteros?|jugadores?|copa america|tryouts?|academy|coach)\b|join.{0,30}(?:team|club|player)/.test(q)) push('club');
   if (!refund && /\b(tickets?|boletos?|entradas?|seatgeek|transfer|transferir|recipient)\b/.test(q)) push('ticketing');
   if (!refund&&!benefit&&!ordering) {
-    if (!policies.includes('alcohol') && /\b(drinks?|beers?|wine|soda|cocktail|margarita|bebidas?|cerveza|vino|refresco|bar)\b/.test(q)) push('drinks');
+    if (!policies.includes('alcohol') && /\b(drinks?|beers?|wine|soda|sprite|coke|heineken|jellyfish|non.alcoholic|bottled water|cocktail|margarita|bebidas?|cerveza|vino|refresco|bar)\b/.test(q)) push('drinks');
     if (/\b(food|eat|vegan|vegab|vegetarian|veggie|celiac|gluten|concessions?|nachos|pizza|tacos?|bao|shawarma|barbecue|bbq|burgers?|hamburgers?|chicken|wings?|tenders?|hot dogs?|comida|comer|vegano|vegana|vegetariano|vegetariana|sin gluten)\b/.test(q)) push('concessions', policies.length || intents.some(i=>i.kind==='drinks') ? `${query.replace(/\b(?:beer|drinks?|water bottle|backpack|bag|kickoff|rain|parking|ticket)\b/gi,'')} food` : query);
   }
   if (!intents.length && /\b(?:from|i am at|i'm at|im at|starting at|leaving)\b/.test(q) && !/\bsection\b/.test(q)) push('transport');

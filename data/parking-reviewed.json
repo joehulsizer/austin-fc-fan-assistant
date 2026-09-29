@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-09-29T23:27:18.358451+00:00",
+  "url": "https://www.q2stadium.com/parking/",
+  "sha256": "11f3142ea8777a0305595373882f03005922238a0d75a586f3c7c5bdd48be062",
+  "mapUrl": "https://www.q2stadium.com/wp-content/uploads/2026_ParkingMap_All_Inventory-1.png",
+  "mapWidth": 14194,
+  "mapHeight": 9184,
+  "lots": [
+    {
+      "name": "Q2 Stadium",
+      "color": "Red",
+      "address": "10414 McKalla Pl, Austin, TX 78758"
+    },
+    {
+      "name": "Dillard’s Garage",
+      "color": "Green",
+      "address": "3220 Feathergrass Ct, Austin, TX 78758"
+    },
+    {
+      "name": "Former BBVA Bank",
+      "color": "Light Blue",
+      "address": "10711 Burnet Rd, Austin, TX 78758"
+    },
+    {
+      "name": "Verde Square",
+      "color": "Orange",
+      "address": "10435–10515 Burnet Rd, Austin, TX 78758"
+    },
+    {
+      "name": "JOP",
+      "color": "Teal",
+      "address": "10409 Burnet Rd, Austin, TX 78758"
+    },
+    {
+      "name": "O3 Loop",
+      "color": "Pink",
+      "address": "2201 Donley Dr Suite 200, Austin, TX 78758"
+    }
+  ]
+}

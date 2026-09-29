@@ -51,8 +51,8 @@ def main():
             continue
         docs.append({"id": "policy-" + re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-"), "title": title,
                      "body": body, "url": PAGES["policy"], "checkedAt": checked,
-                     "links": [{"label": clean(a.text_content()) or "Official link", "url": a.get("href")}
-                               for a in body_nodes[0].xpath('.//a[@href]') if (a.get("href") or "").startswith("https://")]})
+                     "links": [{"label": clean(a.text_content()) or "Official link", "url": a.get("href").strip()}
+                               for a in body_nodes[0].xpath('.//a[@href]') if (a.get("href") or "").strip().startswith("https://")]})
     for key, title in [("directions", "Transportation and directions"), ("parking", "Parking")]:
         main_nodes = parsed[key].xpath("//main")
         if not main_nodes:
@@ -61,8 +61,8 @@ def main():
             garbage.drop_tree()
         body = clean(main_nodes[0].text_content())[:14000]
         docs.append({"id": key, "title": title, "body": body, "url": PAGES[key], "checkedAt": checked,
-                     "links": [{"label": clean(a.text_content()) or "Official link", "url": a.get("href")}
-                               for a in main_nodes[0].xpath('.//a[@href]') if (a.get("href") or "").startswith("https://")]})
+                     "links": [{"label": clean(a.text_content()) or "Official link", "url": a.get("href").strip()}
+                               for a in main_nodes[0].xpath('.//a[@href]') if (a.get("href") or "").strip().startswith("https://")]})
     vendors = []
     for heading in parsed["vendors"].xpath("//main//h3"):
         parent = heading.getparent()
@@ -79,6 +79,16 @@ def main():
                         "url": PAGES["vendors"], "checkedAt": checked})
     if len(vendors) < 15 or len(docs) < 40:
         raise ValueError(f"Incomplete scrape: {len(vendors)} vendors, {len(docs)} guidance topics")
+    beverages = []
+    for block in parsed["drinks"].xpath('//div[contains(concat(" ",normalize-space(@class)," ")," block-acf-faqs ")]'):
+        category = clean(" ".join(block.xpath('.//h2[1]//text()')))
+        for faq in block.xpath('.//div[contains(concat(" ",normalize-space(@class)," ")," faq ")]'):
+            name = clean(" ".join(faq.xpath('./a[1]//text()')))
+            locations = [clean(li.text_content()) for li in faq.xpath('.//li')]
+            if name and locations:
+                beverages.append({"name": name, "category": category, "locations": locations, "url": PAGES["drinks"], "checkedAt": checked})
+    if len(beverages) < 40 or not any("Sprite" in b["name"] for b in beverages):
+        raise ValueError("Incomplete beverage catalog")
     map_source = fetched["map"].decode("utf-8", errors="replace")
     map_pins = []
     for attrs in re.findall(r"<use\b([^>]+)>?", map_source):
@@ -129,7 +139,7 @@ def main():
         raise ValueError(f"Incomplete club data: {len(roster)} players, {len(news)} stories")
     snapshot = {"version": checked, "checkedAt": checked, "sources": [{"url": url, "sha256": hashlib.sha256(fetched[key]).hexdigest()}
                                                                    for key, url in PAGES.items()],
-                "documents": docs, "vendors": vendors, "mapPins": map_pins, "featuredMatch": featured_match,
+                "documents": docs, "vendors": vendors, "beverages": beverages, "mapPins": map_pins, "featuredMatch": featured_match,
                 "roster": roster, "news": news}
     out = ROOT / "data" / "knowledge.json"
     out.parent.mkdir(parents=True, exist_ok=True)

@@ -61,7 +61,9 @@ test('the drink follow-up retains the fan section', async () => {
   const second = await ground('What about drinks?', first.context);
   assert.equal(second.route, 'drinks');
   assert.equal(second.context.section, 123);
-  assert.ok(second.cards.some(c => c.title.includes('Bar')));
+  assert.ok(second.cards.some(c=>/\d{3}/.test(c.detail)));
+  assert.ok(second.sources.every(s=>s.title==='Q2 Stadium beverage menu'));
+  assert.doesNotMatch(second.answer||'',/Supporter Section/);
 });
 
 test('purchasing is refused and linked to official tickets', async () => {

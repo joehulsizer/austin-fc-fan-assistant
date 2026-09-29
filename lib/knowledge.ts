@@ -1,10 +1,12 @@
 import bundled from '@/data/knowledge.json';
+import { foodGrounding, type Beverage } from './food';
+import { amenityGrounding } from './amenities';
 import { messageLanguage } from './language';
 import type { Card, FanContext, Grounding, Source } from './types';
 
 type Doc = { id: string; title: string; body: string; url: string; checkedAt: string; links: { label: string; url: string }[] };
 type Vendor = { name: string; sections: number[]; location: string; description: string; url: string; checkedAt: string };
-export type Snapshot = { version: string; checkedAt: string; documents: Doc[]; vendors: Vendor[]; sources: { url: string; sha256: string }[]; featuredMatch?: { title: string; startsAt: string; url: string; checkedAt: string } | null; roster?: { number: number; name: string; position: string; url: string }[]; news?: { title: string; summary: string; url: string }[] };
+export type Snapshot = { version: string; checkedAt: string; documents: Doc[]; vendors: Vendor[]; sources: { url: string; sha256: string }[]; beverages?: Beverage[]; featuredMatch?: { title: string; startsAt: string; url: string; checkedAt: string } | null; roster?: { number: number; name: string; position: string; url: string }[]; news?: { title: string; summary: string; url: string }[] };
 export const staticKnowledge = bundled as Snapshot;
 export const MAP_URL = 'https://www.q2stadium.com/stadium-maps/';
 export const TICKET_URL = 'https://www.austinfc.com/tickets/';
@@ -42,7 +44,7 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   const food = query.match(/\b(chicken|wings?|tenders?|burgers?|hamburgers?|pizza|tacos?|nachos|bao|barbecue|bbq|shawarma)\b/i);
   if (food) context.food = food[1].toLowerCase();
   context.language = messageLanguage(query, previous.language);
-  if (/\b(concert|concierto|festival|non.match|otro evento|private event|comedy show|comedia|other event)\b/i.test(query)) { context.eventKind = 'other'; delete context.event; delete context.kickoffTime; }
+  if (/\b(concert|concierto|festival|non.match|otro evento|private event|comedy show|comedia|other event)\b/i.test(query)) { context.eventKind = 'other'; delete context.event; delete context.kickoffTime; delete context.travelMinutes; }
   else if (/\b(match|partido)\b/i.test(query) || (!context.eventKind && /\bkickoff\b/i.test(query))) context.eventKind = 'match';
   const clock = query.match(/(?:kickoff|start(?:s)?|inicio|empieza|comienza)(?:\s+(?:is|at|a las|es|del partido))*\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i);
   if (clock && Number(clock[1]) <= 23 && Number(clock[2] || 0) < 60) {
@@ -51,7 +53,7 @@ export function detectContext(query: string, previous: FanContext): FanContext {
     else if ((clock[3]?.startsWith('p') || !clock[3]) && hour < 12) hour += 12;
     context.kickoffTime = `${String(hour).padStart(2,'0')}:${clock[2] || '00'}`;
   }
-  const duration = query.match(/(\d{1,3})\s*(?:minutes?|mins?|minutos?)\s*(?:trip|travel|drive|ride|journey|viaje|trayecto)?/i);
+  const duration = query.match(/(?:trip|travel|drive|ride|journey|maps|viaje|trayecto|tarda)(?:\s+(?:takes|is|says|shows|about|de|dura|indica))*\s+(\d{1,3})\s*(?:minutes?|mins?|minutos?)/i) || query.match(/(\d{1,3})\s*(?:minutes?|mins?|minutos?)\s*(?:trip|travel|drive|ride|journey|viaje|trayecto)/i) || (previous.topic==='transport' && /^\s*(\d{1,3})\s*(?:minutes?|mins?|minutos?)[.!?]?\s*$/i.exec(query));
   if (duration && Number(duration[1]) > 0 && Number(duration[1]) <= 240) context.travelMinutes = Number(duration[1]);
   return context;
 }
@@ -157,17 +159,6 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     base.answer = spanish ? 'Guest Services está en la explanada principal detrás de la sección 124. También puedes escribir a GuestServices@AustinFC.com para consultar con el estadio.' : 'Guest Services is on the main concourse behind section 124. You can also email GuestServices@AustinFC.com for stadium help.';
     return base;
   }
-  if (/\b(burgers?|hamburgers?|chicken|wings?|tenders?)\b/.test(q)) {
-    base.route = 'concessions';
-    const isBurger = /\b(burgers?|hamburgers?)\b/.test(q);
-    const ranked = MENU_HIGHLIGHTS.filter(item => item.category === (isBurger ? 'burger' : 'chicken')).sort((a,b) => rankVendor({sections:[Number(a.location.match(/\d{3}/)?.[0])],name:a.name,location:a.location,description:'',url:'',checkedAt:''}, context.section) - rankVendor({sections:[Number(b.location.match(/\d{3}/)?.[0])],name:b.name,location:b.location,description:'',url:'',checkedAt:''}, context.section));
-    base.facts = ranked.map(item => `${item.name}: ${item.item}, ${item.location}.`);
-    base.cards = ranked.map(item => card(item.name, `${item.item} · ${item.location}`, MAP_URL));
-    base.sources = [source('Q2 Stadium food and dietary guide', POLICY_URL, knowledge.checkedAt), ...(!isBurger ? [source('Q2 Stadium vendors', 'https://www.q2stadium.com/food-and-drink/our-vendors/', knowledge.checkedAt)] : []), source('Official stadium map', MAP_URL, knowledge.checkedAt)];
-    const note = isBurger ? 'The published burger is vegetarian; I cannot confirm a beef or vegan burger from this guide.' : 'Menus can change on matchday; check at the stand.';
-    base.answer = `${isBurger ? 'Published burger option:' : 'Published chicken options:'}\n${base.facts.map(f => `• ${f}`).join('\n')}\n${note}`;
-    return base;
-  }
   if (/\b(buy|purchase|sell|transfer for me|book|comprar|compra|comprame|comprarme)\b/.test(q) && /\b(ticket|tickets|boleto|boletos|entrada|entradas)\b/.test(q)) {
     base.route = 'transaction';
     base.answer = spanish ? 'No puedo comprar ni transferir boletos por ti. Puedes hacerlo en el servicio oficial de boletos de Austin FC. Si necesitas ayuda con una transferencia, te explico los pasos.' : 'I can’t buy or transfer a ticket for you. Use Austin FC’s official ticket service for purchases and your Austin FC or SeatGeek app for transfers. I can walk you through the steps.';
@@ -200,36 +191,9 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     base.cards = [card('Stadium amenities', 'Hydration stations and water fountains', MAP_URL, spanish ? 'Ver mapa' : 'View map')];
     return base;
   }
-  if (/\b(drinks?|beers?|wine|water|beverages?|soda|cocktail|margarita|bebidas?|cerveza|vino|agua|refresco|bar)\b/.test(q)) {
-    base.route = 'drinks';
-    const vendors = knowledge.vendors.filter(v => /Bar|Draft|Wine|Heineken|Michelob/.test(v.name)).sort((a, b) => rankVendor(a, context.section) - rankVendor(b, context.section)).slice(0, 5);
-    for (const v of vendors) { base.facts.push(`${v.name}: ${v.location}. ${v.description}`); base.cards.push(card(v.name, v.location, MAP_URL, spanish ? 'Ver mapa' : 'View map')); }
-    base.sources = [source('Q2 Stadium vendors', 'https://www.q2stadium.com/food-and-drink/our-vendors/', knowledge.checkedAt), source('Q2 Stadium beverage menu', 'https://www.q2stadium.com/food-and-drink/drink-menu/', knowledge.checkedAt)];
-    if (!context.section) base.facts.push('Ask for the fan section before suggesting a nearby area.');
-    return base;
-  }
-  if (/\b(food|eat|vegan|vegab|vegetarian|veggie|celiac|celiaco|gluten|concession|nachos|pizza|taco|bao|shawarma|barbecue|bbq|comida|comer|vegano|vegetariano|vegetariana|sin gluten)\b/.test(q) || (context.dietary && /\b(near|nearby|closest|options|about|what else|where|d[oó]nde|que mas)\b/.test(q))) {
-    base.route = 'concessions';
-    let matches = knowledge.vendors.filter(v => {
-      const named = q.includes(normalize(v.name)) || normalize(v.name + ' ' + v.description).includes(q.replace(/^(where|do|can|i|find|is|the|a|an|at|in|section|food|comida|near|me|what|about|are|vegan|vegetarian|gluten|options|donde|hay|para|mi|quiero|quieres|un|una|de|el|la)\s+/g, '').trim());
-      const diet = DIET[v.name];
-      return context.dietary ? Boolean(diet?.[context.dietary === 'gluten-aware' ? 'glutenAware' : context.dietary]) : named || /food|comida|eat|comer|concession/.test(q);
-    });
-    if (matches.length === 0 && context.dietary) matches = knowledge.vendors.filter(v => Boolean(DIET[v.name]?.[context.dietary === 'gluten-aware' ? 'glutenAware' : context.dietary!]));
-    matches.sort((a, b) => rankVendor(a, context.section) - rankVendor(b, context.section));
-    matches = matches.slice(0, 6);
-    for (const v of matches) {
-      const diet = DIET[v.name];
-      const dietaryDetail = context.dietary && diet ? diet[context.dietary === 'gluten-aware' ? 'glutenAware' : context.dietary] : undefined;
-      base.facts.push(`${v.name}: ${v.location}. ${dietaryDetail || v.description}`);
-      base.cards.push(card(v.name, v.location, MAP_URL, spanish ? 'Ver mapa' : 'View map'));
-    }
-    base.sources = [source('Q2 Stadium vendors', 'https://www.q2stadium.com/food-and-drink/our-vendors/', knowledge.checkedAt), source('Q2 Stadium policy and dietary guide', POLICY_URL, knowledge.checkedAt), source('Official stadium map', MAP_URL, knowledge.checkedAt)];
-    if (!context.section) base.facts.push('Ask the fan for their section to suggest an approximate area. Do not claim nearest or precise walking distance.');
-    if (context.dietary === 'gluten-aware') base.facts.push('The stadium calls these options "avoiding gluten" or "gluten-aware"; do not promise allergy or celiac safety. Ask staff about ingredients and cross-contact.');
-    if (matches.length === 0) base.answer = spanish ? 'No encontré una opción publicada que pueda confirmar. Dime qué buscas y tu sección para revisar las opciones oficiales.' : 'I could not verify a published option for that request. Tell me what you want and your section, and I’ll narrow down the official listings.';
-    return base;
-  }
+  if (/\b(drinks?|beers?|wine|water|beverages?|soda|sprite|heineken|jellyfish|cocktail|margarita|bebidas?|cerveza|vino|agua|refresco|bar)\b/.test(q)) return foodGrounding('drinks',query,context,knowledge);
+  if (/\b(food|eat|vegan|vegab|vegetarian|veggie|celiac|gluten|concessions?|nachos|pizza|tacos?|bao|shawarma|barbecue|bbq|burgers?|hamburgers?|chicken|wings?|tenders?|hot dogs?|comida|comer|vegano|vegana|vegetariano|vegetariana)\b/.test(q) || context.dietary && /near|options|where|about/.test(q)) return foodGrounding('concessions',query,context,knowledge);
+  const amenity=amenityGrounding(query,context,knowledge);if(amenity)return amenity;
   if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|roster|players?|goalkeepers?|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias|porteros?|jugadores?|copa america)\b/.test(q) && !/\b(weather|rain|forecast|lluvia|llovera?|clima|pronostico)\b/.test(q) || /\b(join|tryout|academy)\b.*\b(player|team|club|austin fc)\b/.test(q)) { base.route = 'club'; return base; }
   if (/\b(weather|rain|temperature|forecast|lluvia|llovera?|clima|tiempo|pronostico)\b/.test(q)) { base.route = 'weather'; return base; }
   base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte|red line|mckalla|directions|getting there|coming from|how do i get there|how do i get to the stadium|how do i get to q2|how do i get there and what time|student center)\b/.test(q) || (context.origin && /\b(?:from|i am at|i'm at|im at|leaving|starting at)\b/.test(q)) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';

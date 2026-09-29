@@ -9,7 +9,7 @@ test('desktop conversation carries section and reset clears it', async ({ page }
   await expect(page.locator('.context-box')).toContainText('Section 123');
   await page.getByLabel('Ask a question').fill('What about drinks?');
   await page.getByLabel('Ask a question').press('Enter');
-  await expect(page.locator('.message.assistant').last()).toContainText('Bar', { timeout: 20000 });
+  await expect(page.locator('.message.assistant').last()).toContainText('beverage menu', { timeout: 20000 });
   await page.getByRole('button', { name: /Start over/i }).click();
   await expect(page.locator('.context-box')).toContainText('Section not set');
 });
@@ -151,4 +151,22 @@ test('a stalled response times out with retry and working support links',async({
   await expect(response.locator('a[href="mailto:GuestServices@AustinFC.com"]')).toBeVisible();
   await expect(page.getByRole('button',{name:'Retry last question'})).toBeVisible();
   await expect(page.getByLabel('Ask a question')).toBeEnabled();
+});
+
+test('the exact reported travel sequence gives distinct, focused answers',async({page})=>{
+ await page.goto('/');
+ const ask=async(q:string)=>{await page.getByLabel('Ask a question').fill(q);await page.getByLabel('Ask a question').press('Enter');await expect(page.getByLabel('Ask a question')).toBeEnabled({timeout:30000});};
+ await ask("I'm at UT, kickoff is 7:30, what's the fastest way to Q2?");
+ const first=page.locator('.message.assistant').last();
+ await expect(first.locator('.message-copy')).toContainText('northbound Rapid 803');await expect(first.locator('.message-copy')).toContainText('6:00 PM');
+ await expect(first.locator('.message-copy')).not.toContainText('Bike Valet');await expect(first.locator('.message-copy')).not.toContainText('5:00');
+ const firstText=await first.locator('.message-copy').innerText();
+ await ask('Concert at Q2 next month, where do I park?');
+ const second=page.locator('.message.assistant').last();
+ await expect(second.locator('.message-copy')).toContainText('event-specific parking pass');await expect(second.locator('.message-copy')).toContainText('Which concert and date');
+ await expect(second.locator('.message-copy')).not.toContainText('Rapid 803');await expect(second.locator('.message-copy')).not.toContainText('Red Line');
+ await expect(second.locator('.sources a')).toHaveCount(1);await expect(second.locator('.sources a')).toContainText('parking and lot map');
+ expect(await second.locator('.message-copy').innerText()).not.toEqual(firstText);
+ await expect(second.locator('.handoffs a')).toHaveCount(3);await page.screenshot({path:'test-results/exact-user-sequence.png',fullPage:true});
+ await second.locator('.card').click();await expect(page.getByRole('img',{name:/published parking map/})).toBeVisible();
 });

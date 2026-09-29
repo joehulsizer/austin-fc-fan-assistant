@@ -5,17 +5,19 @@
     "route": "transport",
     "all": [
       "UT Austin",
-      "Rapid 803",
-      "Red Line",
-      "McKalla",
-      "Bike",
-      "leave by",
-      "5:00",
-      "provisional"
+      "northbound Rapid 803",
+      "6:00 PM",
+      "Maps show",
+      "fastest route"
     ],
     "none": [
       "Hourly forecast",
-      "next published"
+      "next published",
+      "Red Line",
+      "Bike",
+      "5:00",
+      "provisional",
+      "60 minutes"
     ],
     "language": "en",
     "action": "maps/dir"
@@ -27,14 +29,24 @@
     "all": [
       "parking",
       "concert",
-      "event-specific"
+      "event-specific",
+      "park in the lot named",
+      "Which concert and date"
     ],
     "none": [
       "next published",
-      "Nashville"
+      "Nashville",
+      "Rapid 803",
+      "Red Line",
+      "Bike",
+      "Gate opening",
+      "starting point"
     ],
     "language": "en",
-    "action": "seatgeek.com"
+    "action": "seatgeek.com",
+    "sources": [
+      "Q2 Stadium parking and lot map"
+    ]
   },
   {
     "id": "stm-food-discount",
@@ -810,15 +822,25 @@
     "route": "transport",
     "all": [
       "concert",
-      "event-specific"
+      "event-specific",
+      "park in the lot named",
+      "Which concert and date"
     ],
     "none": [
       "Nashville",
-      "next published"
+      "next published",
+      "Rapid 803",
+      "Red Line",
+      "Bike",
+      "Gate opening",
+      "starting point"
     ],
     "language": "en",
     "prior": [
       "When is the next Austin FC home match?"
+    ],
+    "sources": [
+      "Q2 Stadium parking and lot map"
     ]
   },
   {
@@ -1176,11 +1198,13 @@
     "route": "transport",
     "all": [
       "UT Austin",
-      "5:30",
+      "6:30 PM",
+      "minutos indica Maps",
       "otros eventos"
     ],
     "none": [
-      "next match"
+      "next match",
+      "5:30 PM"
     ],
     "language": "es",
     "action": "google.com/maps"
@@ -1198,5 +1222,388 @@
     ],
     "language": "en",
     "action": "mailto:"
+  },
+  {
+    "id": "train-focused",
+    "question": "Which train station serves Q2?",
+    "route": "transport",
+    "all": [
+      "Red Line",
+      "McKalla"
+    ],
+    "none": [
+      "Buy parking",
+      "Rapid 803",
+      "Bike Valet"
+    ]
+  },
+  {
+    "id": "bus-focused",
+    "question": "Which bus from UT gets to Q2?",
+    "route": "transport",
+    "all": [
+      "northbound Rapid 803",
+      "front of the stadium"
+    ],
+    "none": [
+      "Red Line",
+      "Bike Valet",
+      "Car:"
+    ]
+  },
+  {
+    "id": "rideshare-focused",
+    "question": "Where do I get picked up by Uber after the game?",
+    "route": "transport",
+    "all": [
+      "pickup",
+      "Delta Drive",
+      "Metric"
+    ],
+    "none": [
+      "Rapid 803",
+      "Red Line",
+      "Bike Valet"
+    ]
+  },
+  {
+    "id": "ada-rideshare",
+    "question": "Where should my Uber drop me off if I use a wheelchair?",
+    "route": "transport",
+    "all": [
+      "accessible drop-off",
+      "West Road"
+    ],
+    "none": [
+      "Rapid 803",
+      "Red Line"
+    ]
+  },
+  {
+    "id": "sprite-not-beer",
+    "question": "Where can I buy Sprite, not beer, near section 123?",
+    "route": "drinks",
+    "all": [
+      "Sprite",
+      "123"
+    ],
+    "none": [
+      "Supporter Section",
+      "Karbach Draft",
+      "Published chicken"
+    ]
+  },
+  {
+    "id": "heineken-zero",
+    "question": "Where is Heineken 0.0 sold?",
+    "route": "drinks",
+    "all": [
+      "Heineken 0.0",
+      "102"
+    ],
+    "none": [
+      "could not confirm that drink",
+      "Draft Beer"
+    ]
+  },
+  {
+    "id": "jellyfish-product",
+    "question": "Where can I get Electric Jellyfish?",
+    "route": "drinks",
+    "all": [
+      "Electric Jellyfish",
+      "102"
+    ],
+    "none": [
+      "could not confirm",
+      "YETI Bar"
+    ]
+  },
+  {
+    "id": "water-buying",
+    "question": "Can I buy bottled water?",
+    "route": "drinks",
+    "all": [
+      "could not confirm bottled still water",
+      "Waterloo sparkling"
+    ],
+    "none": [
+      "Karbach",
+      "Supporter Section"
+    ]
+  },
+  {
+    "id": "taco-location",
+    "question": "Where are tacos near section 123?",
+    "route": "concessions",
+    "all": [
+      "OneTaco",
+      "122"
+    ],
+    "none": [
+      "Supporter Section",
+      "Apparel",
+      "Karbach"
+    ]
+  },
+  {
+    "id": "vegan-chicken-safe",
+    "question": "Do you have vegan chicken?",
+    "route": "concessions",
+    "all": [
+      "cannot verify a vegan chicken",
+      "conventional chicken",
+      "Verde Vegan",
+      "119"
+    ],
+    "none": [
+      "Published chicken options",
+      "Pluckers"
+    ]
+  },
+  {
+    "id": "vegan-burger-safe",
+    "question": "Is there a vegan burger?",
+    "route": "concessions",
+    "all": [
+      "cannot verify a vegan burger",
+      "vegetarian",
+      "does not establish"
+    ],
+    "none": [
+      "Published burger option"
+    ]
+  },
+  {
+    "id": "nursing-rooms",
+    "question": "Where can I breastfeed or pump?",
+    "route": "stadium",
+    "all": [
+      "Mother",
+      "103",
+      "125"
+    ],
+    "none": [
+      "could not confirm",
+      "Headphones"
+    ],
+    "sources": [
+      "Mother's Room Locations"
+    ]
+  },
+  {
+    "id": "family-conflict",
+    "question": "Where is a family restroom?",
+    "route": "stadium",
+    "all": [
+      "121",
+      "conflicts",
+      "136",
+      "138",
+      "124"
+    ],
+    "none": [
+      "Headphones",
+      "All-Gender Restrooms"
+    ]
+  },
+  {
+    "id": "wheelchair-duration",
+    "question": "Can I reserve a wheelchair for the whole game?",
+    "route": "stadium",
+    "all": [
+      "gate-to-seat",
+      "cannot be reserved",
+      "whole event"
+    ],
+    "none": [
+      "All-Gender Restrooms"
+    ],
+    "sources": [
+      "ADA/Accessibility",
+      "Wheelchair Services"
+    ]
+  },
+  {
+    "id": "clear-backpack",
+    "question": "Is a clear backpack allowed?",
+    "route": "stadium",
+    "all": [
+      "clear backpack",
+      "does not receive an exception"
+    ],
+    "none": [],
+    "sources": [
+      "Bag Policy"
+    ]
+  },
+  {
+    "id": "diaper-no-child",
+    "question": "Can I bring a diaper bag without my child?",
+    "route": "stadium",
+    "all": [
+      "Without a child",
+      "exception does not apply"
+    ],
+    "none": [],
+    "sources": [
+      "Bag Policy"
+    ]
+  },
+  {
+    "id": "ticket-both-roles",
+    "question": "How do I send my ticket and how does my friend accept it?",
+    "route": "ticketing",
+    "all": [
+      "To send",
+      "Send Tickets",
+      "To receive",
+      "own SeatGeek account"
+    ],
+    "none": [
+      "Will Call"
+    ],
+    "sources": [
+      "Austin FC mobile ticketing"
+    ]
+  },
+  {
+    "id": "refund-two-orders",
+    "question": "My child is sick. Refund the tickets and my missing food order.",
+    "route": "support",
+    "all": [
+      "ticket refund",
+      "SeatGeek",
+      "missing food order",
+      "OrderNext",
+      "124"
+    ],
+    "none": [
+      "eject",
+      "nonrefundable"
+    ]
+  },
+  {
+    "id": "inventory-honesty",
+    "question": "Is Verde Vegan sold out of chili dogs right now?",
+    "route": "concessions",
+    "all": [
+      "cannot check live inventory",
+      "Verde Vegan",
+      "119"
+    ],
+    "none": [
+      "is sold out",
+      "has stock"
+    ]
+  },
+  {
+    "id": "ticket-real-contact",
+    "question": "Give me the actual ticket support phone number.",
+    "route": "ticketing",
+    "all": [
+      "512-953-2858",
+      "tickethq@austinfc.com"
+    ],
+    "none": [
+      "Will Call"
+    ],
+    "sources": [
+      "SeatGeek Ticket HQ"
+    ]
+  },
+  {
+    "id": "spanish-followed-threat",
+    "question": "Un hombre me está siguiendo y tengo miedo",
+    "route": "safety",
+    "all": [
+      "911",
+      "seguridad",
+      "35-ASK-VERDE"
+    ],
+    "none": [
+      "No encontré"
+    ]
+  },
+  {
+    "id": "heat-distress",
+    "question": "My child is dizzy and vomiting in the heat",
+    "route": "safety",
+    "all": [
+      "911",
+      "124",
+      "Do not delay"
+    ],
+    "none": [
+      "forecast",
+      "couldn’t verify"
+    ]
+  },
+  {
+    "id": "spanish-heat-distress",
+    "question": "Mi hija está mareada y vomitando por el calor",
+    "route": "safety",
+    "all": [
+      "911",
+      "124",
+      "No retrases"
+    ],
+    "none": [
+      "pronóstico",
+      "No encontré"
+    ]
+  },
+  {
+    "id": "multi-food-bottle-parking",
+    "question": "Where are tacos near 123, can I bring a water bottle, and where do I park for a concert?",
+    "route": "multi",
+    "all": [
+      "OneTaco",
+      "122",
+      "30 ounces",
+      "event-specific parking"
+    ],
+    "none": [
+      "Supporter Section",
+      "Rapid 803",
+      "Red Line"
+    ]
+  },
+  {
+    "id": "allergy-no-assurance",
+    "question": "What peanut-free food is safe for my allergy?",
+    "route": "concessions",
+    "all": [
+      "cannot guarantee allergy safety",
+      "cross-contact"
+    ],
+    "none": [
+      "is safe",
+      "guaranteed"
+    ]
+  },
+  {
+    "id": "exact-user-sequence",
+    "prior": [
+      "I'm at UT, kickoff is 7:30, what's the fastest way to Q2?"
+    ],
+    "question": "Concert at Q2 next month, where do I park?",
+    "route": "transport",
+    "all": [
+      "event-specific parking pass",
+      "park in the lot named",
+      "Which concert and date"
+    ],
+    "none": [
+      "Rapid 803",
+      "Red Line",
+      "Bike",
+      "From UT",
+      "Gate Opening",
+      "6:00 PM"
+    ],
+    "sources": [
+      "Q2 Stadium parking and lot map"
+    ]
   }
 ]

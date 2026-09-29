@@ -1,4 +1,7 @@
 import Link from 'next/link';
+import Image from 'next/image';
+import parking from '@/data/parking-reviewed.json';
+import beverageData from '@/data/beverages.json';
 import { ArrowLeft, ArrowRight, Clock3, MapPin, Search } from 'lucide-react';
 import { getKnowledge, MENU_HIGHLIGHTS, sectionZone } from '@/lib/knowledge';
 import { weatherGrounding } from '@/lib/live';
@@ -50,6 +53,8 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
         <div className="guide-callout">Published locations are listed below. Ask the chat about a diet and your section for an approximate area. “Avoiding gluten” is a published menu label, not an allergy guarantee.</div>
         <div className="handoffs"><a href={ORDER_URL} target="_blank" rel="noopener noreferrer">Order food in OrderNext <ArrowRight size={14}/></a></div>
         <h2 className="guide-subhead">Published burger and chicken options</h2><div className="guide-grid">{MENU_HIGHLIGHTS.map(item => <article className="guide-card" key={item.name}><div className="guide-card-top"><MapPin size={17}/><span>{item.location}</span></div><h2>{item.name}</h2><p>{item.item}</p><small>Q2 Stadium food and dietary guide / vendor directory · checked {checked} CT</small></article>)}</div>
+        <h2 className="guide-subhead">Published beverage menu</h2>
+        <div className="guide-grid">{(data.beverages||beverageData.items).map(b=><article className="guide-card" key={b.name}><h2>{b.name}</h2><p>{b.category}</p><p>{b.locations.join('; ')}</p><small>Beverage menu · checked {date(b.checkedAt)} CT. Availability can change.</small></article>)}</div>
         <h2 className="guide-subhead">Vendor directory</h2>
         <div className="guide-grid">{data.vendors.map(v => <article className="guide-card" key={v.name}><div className="guide-card-top"><MapPin size={17}/><span>{v.location}</span></div><h2>{v.name}</h2><p>{v.description}</p><small>Q2 Stadium vendor listing · checked {date(v.checkedAt)} CT</small></article>)}</div>
       </section>}
@@ -66,6 +71,8 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
 
       {topic === 'travel' && <section>
         <TravelPlanner/>
+        <figure className="guide-map" id="parking"><Image src={parking.mapUrl} width={parking.mapWidth} height={parking.mapHeight} sizes="(max-width: 768px) 100vw, 1200px" style={{width:'100%',height:'auto'}} alt="Q2 Stadium published parking map showing Red, Green, Light Blue, Orange, Teal and Pink lots"/><figcaption>Published parking map · checked {date(parking.checkedAt)} CT. Lot availability depends on the event.</figcaption></figure>
+        <div className="guide-grid">{parking.lots.map(l=><article className="guide-card" key={l.color}><h2>{l.color} / {l.name}</h2><p>{l.address}</p><small>Use the lot named on your event parking pass; this map does not confirm availability.</small></article>)}</div>
         <div className="guide-grid guide-grid-two">
           <article className="guide-card"><h2>Train</h2><p>Take CapMetro’s Red Line to McKalla Station on the east side of Q2 Stadium. Follow signs from the station. Confirm event-day train times before traveling.</p></article>
           <article className="guide-card"><h2>Bus</h2><p>CapMetro routes serve Q2 Stadium, including Rapid 803. Event-day service and pickup locations can change; check the published schedule.</p></article>

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 export function TravelPlanner() {
-  const [origin,setOrigin]=useState(''),[start,setStart]=useState('19:30'),[duration,setDuration]=useState('60'),[kind,setKind]=useState('match');
+  const [origin,setOrigin]=useState(''),[start,setStart]=useState('19:30'),[duration,setDuration]=useState(''),[kind,setKind]=useState('match');
   const question=`I'm starting at ${origin}. ${kind==='concert'?'Concert':'Match'} at Q2 starts at ${start}. My travel takes ${duration} minutes. Show my options and when to leave.`;
   return <form className="guide-feature" action="/">
     <h2>Plan your arrival</h2><p>Compare car, rideshare, Red Line, Rapid 803, and bike options. Use the route duration from Maps to calculate a leave-by time.</p>
