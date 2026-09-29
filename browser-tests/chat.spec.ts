@@ -137,3 +137,18 @@ test('arrival planner generates a usable chat request with origin, event type, t
   await page.goto('/guide?topic=travel');await page.getByLabel('Starting point').fill('UT Austin');await page.getByLabel('Start time (Austin time)').fill('19:30');await page.getByLabel('Travel duration / planning allowance (minutes)').fill('35');await page.getByRole('button',{name:'Build my arrival plan'}).click();
   await expect(page.getByLabel('Ask a question')).toHaveValue(/UT Austin.*19:30.*35 minutes/);await page.getByLabel('Ask a question').press('Enter');await expect(page.locator('.message.assistant').last()).toContainText('5:25');await expect(page.locator('.message.assistant').last().getByRole('link',{name:'Bike: Directions in Apple Maps'})).toHaveAttribute('href',/maps.apple.com/);
 });
+
+test('a stalled response times out with retry and working support links',async({page})=>{
+  await page.clock.install();
+  await page.route('**/api/chat',()=>{});
+  await page.goto('/');
+  await page.getByLabel('Ask a question').fill('What is my wallet balance?');
+  await page.getByRole('button',{name:'Send message'}).click();
+  await expect(page.getByRole('button',{name:'Stop response'})).toBeVisible();
+  await page.clock.fastForward(61000);
+  const response=page.locator('.message.assistant').last();
+  await expect(response).toContainText('response took too long');
+  await expect(response.locator('a[href="mailto:GuestServices@AustinFC.com"]')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Retry last question'})).toBeVisible();
+  await expect(page.getByLabel('Ask a question')).toBeEnabled();
+});
