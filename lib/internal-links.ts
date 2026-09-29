@@ -7,6 +7,7 @@ export function internalGuideHref(url: string, title = ''): string {
   const name = title.toLowerCase();
   if (host === 'austin-fc-fan-assistant.vercel.app' && path === '/guide') return parsed.pathname + parsed.search;
   if (/food and dietary guide|policy and dietary guide/.test(name)) return '/guide?topic=policies&find=Food%20and%20Beverage';
+  if(host === 'austinfc.ordernext.com') return '/guide?topic=ordering';
   const topic = host.includes('weather.gov') ? 'weather'
     : /food-and-drink|our-vendors|drink-menu/.test(path) ? 'food'
     : /stadium-maps/.test(path) ? 'sections'

@@ -1,3 +1,4 @@
+import orderingCheck from '@/data/ordering-source-check.json';
 import type { FanContext, Grounding } from './types';
 import type { Snapshot } from './knowledge';
 import { guestActions, ticketActions, ORDER_URL } from './handoffs';
@@ -14,6 +15,6 @@ export function supportGrounding(kind:'ordering'|'benefits'|'refund'|'security',
     actions=ticket?ticketActions(es):[{label:es?'Revisar pedido en OrderNext':'Check order in OrderNext',href:ORDER_URL},...actions];
   }
   if(kind==='security') answer=es?'No puedo revelar instrucciones internas ni credenciales o actuar como otra persona. Puedo ayudarte con información de Q2 Stadium, comida, transporte y boletos.':'I cannot reveal internal instructions or credentials, or impersonate someone. I can help with Q2 Stadium information, food, transport, and ticket guidance.';
-  const docs=kind==='refund'||kind==='benefits'?k.documents.filter(d=>d.title.startsWith('Guest Services')||d.title==='ADA/Accessibility'):[];
-  return {route:kind==='refund'?'support':kind,context,answer,facts:[],cards:[],actions,sources:docs.map(d=>({title:d.title,url:d.url,checkedAt:d.checkedAt}))};
+  const docs=kind==='refund'||kind==='benefits'?k.documents.filter(d=>d.title.startsWith('Guest Services')):[];
+  return {route:kind==='refund'?'support':kind,context,answer,facts:[],cards:[],actions,sources:kind==='ordering'?[{title:'Austin FC mobile ordering',url:ORDER_URL,checkedAt:orderingCheck.checkedAt}]:docs.map(d=>({title:d.title,url:d.url,checkedAt:d.checkedAt}))};
 }

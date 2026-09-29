@@ -1,3 +1,4 @@
+import transitCheck from '@/data/transit-source-check.json';
 import type { FanContext, Grounding } from './types';
 import type { Snapshot } from './knowledge';
 import { mapsActions, guestActions } from './handoffs';
@@ -45,5 +46,5 @@ export function travelGrounding(query: string, context: FanContext, knowledge: S
     {label:es?'Horarios de CapMetro':'CapMetro event schedules',href:TRANSIT}, ...guestActions(es),
   ];
   const selected = docs.filter(d => d.id !== 'policy-ada-accessibility' || /accessible|ada|wheelchair|accesib|silla/.test(q));
-  return {route:'transport',context,answer:[origin,...lines,'',timing,'',disclaimer,other?(es?'Para conciertos y otros eventos, confirma estacionamiento y horarios específicos; no uso el calendario de Austin FC para este evento.':'For concerts and other events, confirm event-specific parking and hours; I am not using the Austin FC match schedule for this event.'):''].filter(Boolean).join('\n'),facts:selected.map(d=>`${d.title}: ${d.body}`),sources:selected.map(d=>({title:d.title,url:d.url,checkedAt:d.checkedAt})).concat([{title:'CapMetro event service',url:TRANSIT,checkedAt:'2026-09-29T17:00:00Z'}]),cards:[],actions};
+  return {route:'transport',context,answer:[origin,...lines,'',timing,'',disclaimer,other?(es?'Para conciertos y otros eventos, confirma estacionamiento y horarios específicos; no uso el calendario de Austin FC para este evento.':'For concerts and other events, confirm event-specific parking and hours; I am not using the Austin FC match schedule for this event.'):''].filter(Boolean).join('\n'),facts:selected.map(d=>`${d.title}: ${d.body}`),sources:selected.map(d=>({title:d.title,url:d.url,checkedAt:d.checkedAt})).concat([{title:'CapMetro event service',url:TRANSIT,checkedAt:transitCheck.checkedAt}]),cards:[],actions};
 }

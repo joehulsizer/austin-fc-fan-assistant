@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Clock3, MapPin, Search } from 'lucide-react';
 import { getKnowledge, MENU_HIGHLIGHTS, sectionZone } from '@/lib/knowledge';
 import { weatherGrounding } from '@/lib/live';
 import schedule from '@/data/club-schedule.json';
+import orderingCheck from '@/data/ordering-source-check.json';
 import { getInternalFeed } from '@/lib/internal-knowledge';
 import { ORDER_URL, guestActions, ticketActions } from '@/lib/handoffs';
 import { TravelPlanner } from './travel-planner';
@@ -11,6 +12,7 @@ import './guide.css';
 
 const sections = [
   { id: 'food', label: 'Food & drink' },
+  { id: 'ordering', label: 'Order food' },
   { id: 'sections', label: 'Section guide' },
   { id: 'travel', label: 'Getting here' },
   { id: 'policies', label: 'Stadium policies' },
@@ -51,6 +53,8 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
         <h2 className="guide-subhead">Vendor directory</h2>
         <div className="guide-grid">{data.vendors.map(v => <article className="guide-card" key={v.name}><div className="guide-card-top"><MapPin size={17}/><span>{v.location}</span></div><h2>{v.name}</h2><p>{v.description}</p><small>Q2 Stadium vendor listing · checked {date(v.checkedAt)} CT</small></article>)}</div>
       </section>}
+
+      {topic === 'ordering' && <section><article className="guide-feature"><h2>OrderNext mobile ordering</h2><p>Open the club’s ordering platform to select your event and section, view available ordering options, and manage your order. The platform determines pickup or seat-delivery eligibility; this guide does not confirm delivery for every section.</p><small>Ordering destination checked {date(orderingCheck.checkedAt)} CT</small><div className="handoffs"><a href={ORDER_URL} target="_blank" rel="noopener noreferrer">Open OrderNext</a></div></article></section>}
 
       {topic === 'sections' && <section>
         <div className="guide-callout">The published stadium map is copied below for orientation. Some concession pins on that map may lag the current vendor list, so use the checked location cards underneath for vendor sections. Zone-based suggestions are approximate, not walking times.</div>
