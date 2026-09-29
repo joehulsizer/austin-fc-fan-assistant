@@ -1183,7 +1183,7 @@
       "next match"
     ],
     "language": "es",
-    "action": "maps.google"
+    "action": "google.com/maps"
   },
   {
     "id": "parking-membership-benefit",
