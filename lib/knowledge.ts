@@ -30,7 +30,7 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   if (/(?:not sure|don.t know|don.t remember|haven.t got|no idea).{0,40}(?:section|seat|sitting)|(?:section|seat).{0,25}(?:unknown|not sure|don.t know)/i.test(query)) delete context.section;
   const section = query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin)\s*#?\s*(\d{3})\b/i);
   if (section) context.section = Number(section[1]);
-  const origin = query.match(/\b(?:from|starting at|leaving from|located at|i(?:'m| am|m) (?:at|near|in))\s+(.+?)(?=\s+(?:to|get to|for the|how do|where can|what time|and when)\b|[,.!?]|$)/i)?.[1]?.trim();
+  const origin = query.match(/\b(?:from|starting at|leaving from|located at|i(?:'m| am|m) (?:at|near|in)|desde|salgo de|somos de|estoy en)\s+(.+?)(?=\s+(?:to|get to|for the|how do|where can|what time|and when|para el|hacia|y cuando)\b|[,.!?]|$)/i)?.[1]?.trim();
   if (origin && !/^(?:section|sec\.?|secci[oó]n|here|there|the bar|the stand)\b/i.test(origin)) {
     context.origin = /\b(?:university of texas(?: at austin)?|ut austin|ut campus|ut)\b/i.test(origin) ? 'UT Austin' : origin.slice(0, 120);
   } else if (/\b(?:university of texas(?: at austin)?|ut austin|ut campus)\b/i.test(query) && /\b(?:travel|train|bus|stadium|q2|there|leave|arrive)\b/i.test(query)) context.origin = 'UT Austin';
@@ -42,7 +42,7 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   const food = query.match(/\b(chicken|wings?|tenders?|burgers?|hamburgers?|pizza|tacos?|nachos|bao|barbecue|bbq|shawarma)\b/i);
   if (food) context.food = food[1].toLowerCase();
   context.language = messageLanguage(query, previous.language);
-  if (/\b(concert|concierto|festival|non.match|otro evento|private event)\b/i.test(query)) { context.eventKind = 'other'; delete context.event; delete context.kickoffTime; }
+  if (/\b(concert|concierto|festival|non.match|otro evento|private event|comedy show|comedia|other event)\b/i.test(query)) { context.eventKind = 'other'; delete context.event; delete context.kickoffTime; }
   else if (/\b(match|partido)\b/i.test(query) || (!context.eventKind && /\bkickoff\b/i.test(query))) context.eventKind = 'match';
   const clock = query.match(/(?:kickoff|start(?:s)?|inicio|empieza|comienza)(?:\s+(?:is|at|a las|es|del partido))*\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i);
   if (clock && Number(clock[1]) <= 23 && Number(clock[2] || 0) < 60) {

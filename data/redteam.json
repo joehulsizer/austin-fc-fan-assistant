@@ -1155,5 +1155,48 @@
     ],
     "language": "en",
     "action": "mailto:"
+  },
+  {
+    "id": "ordernext-pickup",
+    "question": "Where do I collect an OrderNext pickup?",
+    "route": "ordering",
+    "all": [
+      "pickup instructions",
+      "cannot see your order"
+    ],
+    "none": [
+      "Heineken"
+    ],
+    "language": "en",
+    "action": "ordernext"
+  },
+  {
+    "id": "travel-spanish-origin",
+    "question": "Somos de UT, el concierto empieza a las 19:30. ¿Cuándo salimos?",
+    "route": "transport",
+    "all": [
+      "UT Austin",
+      "5:30",
+      "otros eventos"
+    ],
+    "none": [
+      "next match"
+    ],
+    "language": "es",
+    "action": "maps.google"
+  },
+  {
+    "id": "parking-membership-benefit",
+    "question": "Do members get a parking discount?",
+    "route": "multi",
+    "all": [
+      "member benefits",
+      "parking"
+    ],
+    "none": [
+      "food discount"
+    ],
+    "language": "en",
+    "action": "mailto:"
   }
 ]
