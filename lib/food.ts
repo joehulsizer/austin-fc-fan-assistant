@@ -81,6 +81,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
   const foodItem=q.match(/\b(tacos?|pizza|nachos|bao|shawarma|barbecue|bbq|popcorn|chili dog|hot dog|empanadas?)\b/)?.[1];
   const named=k.vendors.filter(v=>q.includes(normalized(v.name)));
   let matches=k.vendors.filter(v=> {
+   if(!named.length && /Bar|Draft|Heineken|Michelob/.test(v.name))return false;
    const detail=context.dietary?labels[v.name]?.[context.dietary]:v.description;
    if(context.dietary&&!detail)return false;
    if(named.length&&!named.some(n=>n.name===v.name))return false;

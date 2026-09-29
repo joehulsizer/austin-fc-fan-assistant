@@ -55,17 +55,9 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     else if(intent.kind==='weather') result=await weatherGrounding(query,context);
     else if(intent.kind==='club') { result=await ground(intent.query,context); if(!result.answer) result=await clubGrounding(intent.query,context); }
     else {
-      const lookup=intent.kind==='drinks' ? (intents.length>1 ? (context.language==='es'?'bebidas':'drinks') : intent.query) : intent.kind==='concessions' && intents.length>1 ? intent.query.replace(/\b(?:bags?|backpacks?|purse|clutch|bolsas?|bolsos?|mochila|diaper|bottle|botella|water|agua|tickets?|boletos?|entradas?|transfer|transferir|recipient|parking|park|kickoff|gates?|rain|forecast|beer|drinks?|cerveza|bebidas?)\b/gi,'')+' food' : intent.query;
-      result=await ground(lookup,context);
-      // Retrieved subqueries must not change the language of the actual latest message.
+      result=await ground(intent.query,context);
+      // A standalone retrieval query cannot rewrite the fan's supplied context.
       result.context={...context};
-      if(intent.kind==='concessions'||intent.kind==='drinks') {
-        result.route=intent.kind;
-        if(context.section && context.section>=200 && context.section<300) {
-          result.answer=(context.language==='es' ? `No tengo puestos publicados en el nivel 200 que pueda confirmar cerca de la sección ${context.section}. Los puestos publicados están principalmente en la explanada principal; no voy a llamarlos cercanos a tu asiento. Consulta el mapa o OrderNext para opciones de tu sección.` : `I do not have verified 200-level stands near section ${context.section}. Published options are mainly on the main concourse; I cannot call them nearby to your seat. Check the section guide or OrderNext for options serving your section.`);
-          result.cards=[];
-        }
-      }
     }
     context={...context,...result.context,language:context.language};
     result.context=context;
