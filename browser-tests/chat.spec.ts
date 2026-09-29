@@ -170,3 +170,14 @@ test('the exact reported travel sequence gives distinct, focused answers',async(
  await expect(second.locator('.handoffs a')).toHaveCount(3);await page.screenshot({path:'test-results/exact-user-sequence.png',fullPage:true});
  await second.locator('.card').click();await expect(page.getByRole('img',{name:/published parking map/})).toBeVisible();
 });
+
+test('public storage really shares a conversation and retains its answer and actions',async({page,browser})=>{
+ test.skip(!process.env.PLAYWRIGHT_BASE_URL,'Requires deployed durable Blob storage');
+ await page.goto('/');await page.getByLabel('Ask a question').fill('Where can I get Sprite near section 123?');await page.getByLabel('Ask a question').press('Enter');
+ await expect(page.locator('.message.assistant').last().locator('.message-copy')).toContainText('Sprite',{timeout:30000});await expect(page.getByLabel('Ask a question')).toBeEnabled();
+ await page.getByRole('button',{name:'Share chat'}).click();await page.getByRole('button',{name:'Create share link'}).click();
+ const field=page.getByRole('textbox',{name:'Share link'});await expect(field).toHaveValue(/\/share\/[0-9a-f-]+/,{timeout:15000});
+ const url=await field.inputValue();const fresh=await browser.newContext();const partner=await fresh.newPage();await partner.goto(url);
+ await expect(partner.getByText('Sprite (published soda selection)').first()).toBeVisible();await expect(partner.locator('a[href="https://austinfc.ordernext.com/"]')).toBeVisible();
+ await partner.reload();await expect(partner.getByText('Sprite (published soda selection)').first()).toBeVisible();await fresh.close();
+});
