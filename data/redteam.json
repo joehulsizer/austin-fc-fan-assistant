@@ -1646,5 +1646,21 @@
       "date/start time",
       "Where are you starting"
     ]
+  },
+  {
+    "id": "spanish-diet-negation",
+    "prior": [
+      "Soy vegano, sección 123."
+    ],
+    "question": "Ya no soy vegano. ¿Dónde hay pollo?",
+    "route": "concessions",
+    "all": [
+      "Pluckers",
+      "135"
+    ],
+    "none": [
+      "No puedo confirmar pollo vegano"
+    ],
+    "language": "es"
   }
 ]

@@ -55,7 +55,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
   result.facts=lines;result.sources=[src('Q2 Stadium beverage menu',DRINK_URL,selected[0]?.checkedAt||beverageData.checkedAt)];return result;
  }
  const vegan=context.dietary==='vegan',vegetarian=context.dietary==='vegetarian',gluten=context.dietary==='gluten-aware';
- if(/peanut.?free|nut.?free|dairy.?free|halal|kosher|sin lactosa|sin frutos secos/.test(q)) {
+ if(/peanut|nut.?free|dairy|milk|allerg|ingredients|halal|kosher|alerg|ingredientes|leche|sin lactosa|sin frutos secos/.test(q)) {
   result.answer=es?'No tengo esa clasificación dietética confirmada ni puedo garantizar seguridad para una alergia. Consulta ingredientes y contacto cruzado con el puesto antes de pedir; Guest Services puede ayudarte.':'I do not have that dietary label verified and cannot guarantee allergy safety. Ask the stand about ingredients and cross-contact before ordering; Guest Services can help.';
   result.sources=doc?[src(doc.title,doc.url,doc.checkedAt)]:[];return result;
  }
@@ -74,7 +74,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
    'Bao’d Up':{vegan:'Creamy Veggie bao; vegan mayo',vegetarian:'Creamy Veggie bao (vegan)'},
    'Verde Vegan & Wine Bar':{vegan:'Vegan chili dog, Impossible bowl or tofu bowl',vegetarian:'Vegan menu', 'gluten-aware':'Impossible bowl or tofu bowl (avoiding gluten)'},
    'Double Dave’s':{vegan:'Popcorn',vegetarian:'Cheese pizza or Chee-z Rolls; popcorn','gluten-aware':'Popcorn (avoiding gluten)'},
-   OneTaco:{vegetarian:'Chips & queso or quesobirria (listed vegetarian)','gluten-aware':'Chips & queso or quesobirria (listed avoiding gluten)'},
+   OneTaco:{vegetarian:'Chips & queso or spicy queso (listed vegetarian)','gluten-aware':'Chips & queso or spicy queso (listed avoiding gluten)'},
    'Shawarma Point':{vegetarian:'Falafel wrap or salad; hummus & pita','gluten-aware':'Tabouli & chips (avoiding gluten)'},
    'Little Patagonia':{vegetarian:'Published vegetarian empanada options; confirm the item'},
    'Eastside Eats':{vegan:'Popcorn',vegetarian:'Cheese nachos, popcorn or soft pretzels','gluten-aware':'Cheese nachos or popcorn (avoiding gluten)'}
@@ -98,6 +98,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
   result.sources=[src('Q2 Stadium vendors',FOOD_URL),...(context.dietary?[src('Q2 Stadium food and dietary guide',POLICY_URL,doc?.checkedAt)]:[])];
  }
  if(gluten)result.answer+=(es?'\n“Evita gluten” es la etiqueta publicada, no una garantía de seguridad para alergias o celiaquía. Consulta ingredientes y contacto cruzado con el personal.':'\n“Avoiding gluten” is the published label, not an allergy guarantee or a celiac-safety guarantee. Ask staff about ingredients and cross-contact.');
+ if(es) result.answer=result.answer.replace(/Section/g,'Sección').replace(/Popcorn/g,'Palomitas').replace(/Creamy Veggie bao; vegan mayo/g,'Bao Creamy Veggie y mayonesa vegana').replace(/Vegan chili dog, Impossible bowl or tofu bowl/g,'Hot dog vegano, bowl Impossible o bowl de tofu').replace(/Vegan menu/g,'Menú vegano').replace(/Cheese pizza or Chee-z Rolls; popcorn/g,'Pizza de queso o Chee-z Rolls; palomitas').replace(/Chips & queso or spicy queso \(listed vegetarian\)/g,'Chips con queso o queso picante (publicados como vegetarianos)').replace(/Falafel wrap or salad; hummus & pita/g,'Wrap o ensalada de falafel; hummus con pita').replace(/Published vegetarian empanada options; confirm the item/g,'Empanadas vegetarianas publicadas; confirma el producto').replace(/Cheese nachos, popcorn or soft pretzels/g,'Nachos de queso, palomitas o pretzels').replace(/\(avoiding gluten\)/g,'(evita gluten)');
  if(!context.section)result.answer+=es?'\nDime tu sección para sugerir una zona aproximada.':'\nTell me your section to suggest a broad area.';
  else result.answer+=es?'\nLas ubicaciones están publicadas; la proximidad es aproximada.':'\nLocations are published; proximity is approximate.';
  return result;
