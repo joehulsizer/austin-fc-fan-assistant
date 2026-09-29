@@ -1061,5 +1061,71 @@
     ],
     "language": "en",
     "action": "ordernext"
+  },
+  {
+    "id": "medical-typo",
+    "question": "med emergncy in sec 118",
+    "route": "safety",
+    "all": [
+      "911",
+      "35-ASK-VERDE",
+      "124"
+    ],
+    "language": "en"
+  },
+  {
+    "id": "child-typo",
+    "question": "I lost my chlid",
+    "route": "safety",
+    "all": [
+      "911",
+      "35-ASK-VERDE",
+      "124"
+    ],
+    "language": "en"
+  },
+  {
+    "id": "blood",
+    "question": "There is blood everywhere in our row",
+    "route": "safety",
+    "all": [
+      "911",
+      "35-ASK-VERDE",
+      "124"
+    ],
+    "language": "en"
+  },
+  {
+    "id": "throat",
+    "question": "My throat is closing after eating food",
+    "route": "safety",
+    "all": [
+      "911",
+      "35-ASK-VERDE",
+      "124"
+    ],
+    "language": "en"
+  },
+  {
+    "id": "throat-es",
+    "question": "Mi garganta se está cerrando después de comer",
+    "route": "safety",
+    "all": [
+      "911",
+      "35-ASK-VERDE",
+      "124"
+    ],
+    "language": "es"
+  },
+  {
+    "id": "breathing-negation",
+    "question": "No puedo tragar y no puedo respirar",
+    "route": "safety",
+    "all": [
+      "911",
+      "35-ASK-VERDE",
+      "124"
+    ],
+    "language": "es"
   }
 ]
