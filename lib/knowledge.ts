@@ -35,7 +35,7 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   const section = query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin|cerca de la)\s*#?\s*(\d{3})\b/i);
   if (section) context.section = Number(section[1]);
   const origin = query.match(/\b(?:from|starting at|leaving from|located at|i(?:'m| am|m) (?:at|near|in)|desde|salgo de|somos de|estoy en)\s+(.+?)(?=\s+(?:to|get to|for the|how do|where can|what time|and when|para el|hacia|y cuando)\b|[,.!?]|$)/i)?.[1]?.trim();
-  if (origin && !/^(?:section|sec\.?|secci[oó]n|here|there|the bar|the stand)\b/i.test(origin)) {
+  if (origin && !/^(?:section|sec\.?|secci[oó]n|here|there|the bar|the stand|the app|la app|app|my phone|mi telefono|my account|mi cuenta)\b/i.test(origin)) {
     context.origin = /\b(?:university of texas(?: at austin)?|ut austin|ut campus|ut)\b/i.test(origin) ? 'UT Austin' : origin.slice(0, 120);
   } else if (/\b(?:university of texas(?: at austin)?|ut austin|ut campus)\b/i.test(query) && /\b(?:travel|train|bus|stadium|q2|there|leave|arrive)\b/i.test(query)) context.origin = 'UT Austin';
   const noDiet = /\b(?:no dietary restrictions|not (?:vegan|vegetarian)|anything is fine|(?:ya )?no soy (?:vegan[oa]|vegetarian[oa])|sin restricciones alimentarias)\b/i.test(query);

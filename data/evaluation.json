@@ -244,7 +244,7 @@
     "kind": "drinks",
     "question": "What about drinks?",
     "route": "drinks",
-    "mustMatch": "bar",
+    "mustMatch": "Austin Beerworks.*102|Bud Light.*101",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -252,7 +252,7 @@
     "kind": "drinks",
     "question": "Beer near section 123?",
     "route": "drinks",
-    "mustMatch": "bar",
+    "mustMatch": "(?:Bud Light|Celis|Dos Equis).*123",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -260,7 +260,7 @@
     "kind": "drinks",
     "question": "Where can I get a drink in section 123?",
     "route": "drinks",
-    "mustMatch": "bar",
+    "mustMatch": "(?:Bud Light|Celis|Dos Equis).*123",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -276,7 +276,7 @@
     "kind": "drinks",
     "question": "Any beer by section 120?",
     "route": "drinks",
-    "mustMatch": "bar",
+    "mustMatch": "(?:Dos Equis|Heineken).*120",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -284,7 +284,7 @@
     "kind": "drinks",
     "question": "¿Dónde hay cerveza cerca de la sección 123?",
     "route": "drinks",
-    "mustMatch": "bar",
+    "mustMatch": "(?:Bud Light|Celis|Dos Equis).*123",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -300,7 +300,7 @@
     "kind": "drinks",
     "question": "I want a soda near 123",
     "route": "drinks",
-    "mustMatch": "bar",
+    "mustMatch": "Soda.*(?:123|101)",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -316,7 +316,7 @@
     "kind": "drinks",
     "question": "Where is the YETI Bar?",
     "route": "drinks",
-    "mustMatch": "bar",
+    "mustMatch": "YETI Bar location conflicts.*125.*124",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -485,7 +485,7 @@
     "question": "How do I transfer my ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-02",
@@ -493,7 +493,7 @@
     "question": "Can I transfer a ticket on SeatGeek?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-03",
@@ -501,7 +501,7 @@
     "question": "Ticket transfer instructions",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-04",
@@ -509,7 +509,7 @@
     "question": "Where do I send my digital ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-05",
@@ -517,7 +517,7 @@
     "question": "How can the recipient get my ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-06",
@@ -525,7 +525,7 @@
     "question": "¿Cómo puedo transferir mi boleto?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-07",
@@ -533,7 +533,7 @@
     "question": "Transferir entrada desde la app",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-08",
@@ -541,7 +541,7 @@
     "question": "My ticket transfer button is missing",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-09",
@@ -549,7 +549,7 @@
     "question": "Can I share my Austin FC ticket?",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "transfer-10",
@@ -557,7 +557,7 @@
     "question": "Help me transfer tickets to a friend",
     "route": "ticketing",
     "mustMatch": "app",
-    "sourceDomain": "q2stadium.com"
+    "sourceDomain": "austinfc.com"
   },
   {
     "id": "purchase-01",

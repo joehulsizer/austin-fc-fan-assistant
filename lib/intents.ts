@@ -14,7 +14,7 @@ export function planIntents(query: string, priorTopic?: string): Intent[] {
   else if (ordering) push('ordering');
   const policies = policyTopics(query);
   policies.forEach(p=>push('stadium', query, p));
-  const travel = /\b(parking|park|lots?|garages?|rideshare|uber|lyft|taxi|train|rail|red line|mckalla|transit|transport|transportation|bus|bike|bicycle|directions|route|fastest|estacionamiento|aparcar|tren|autobus|bicicleta|transporte|ruta)\b|(?:get|getting|go|travel) to (?:q2|the stadium|there)|getting (?:there|here)|coming from|llegar (?:al|a) (?:q2|estadio)|como llego|when should i leave|what time should i (?:leave|do it)|leave.by|salir|salimos|desde|somos de|salgo de|student center/.test(q) || priorTopic==='transport' && /how long|arrive|leave|departure|cuanto tarda|salir|llegar/.test(q);
+  const travel = /\b(parking|park|lots?|garages?|rideshare|uber|lyft|taxi|train|rail|red line|mckalla|transit|transport|transportation|bus|bike|bicycle|directions|route|fastest|estacionamiento|aparcar|tren|autobus|bicicleta|transporte|ruta)\b|(?:get|getting|go|travel) to (?:q2|the stadium|there)|getting (?:there|here)|coming from|llegar (?:al|a) (?:q2|estadio)|como llego|when should i leave|what time should i (?:leave|do it)|leave.by|salir|salimos|desde.{0,80}(?:q2|estadio|llegar)|student center/.test(q) || priorTopic==='transport' && /how long|arrive|leave|departure|cuanto tarda|salir|llegar/.test(q);
   if (travel) push('transport');
   if (/(?:hot|cold|windy|wind).{0,30}(?:kickoff|today|tomorrow|tonight|outside)|\b(weather|rain|raining|raincoat|temperature|forecast|lluvia|llovera|clima|pronostico|llover|frio|calor)\b/.test(q)) push('weather');
   const other = /concert|concierto|festival|non.match|private event/.test(q);
@@ -24,7 +24,7 @@ export function planIntents(query: string, priorTopic?: string): Intent[] {
     if (!policies.includes('alcohol') && /\b(drinks?|beers?|wine|soda|sprite|coke|heineken|jellyfish|non.alcoholic|bottled water|cocktail|margarita|bebidas?|cerveza|vino|refresco|bar)\b/.test(q)) push('drinks');
     if (/\b(food|eat|vegan|vegab|vegetarian|veggie|celiac|gluten|concessions?|nachos|pizza|tacos?|bao|shawarma|barbecue|bbq|burgers?|hamburgers?|chicken|wings?|tenders?|hot dogs?|comida|comer|vegano|vegana|vegetariano|vegetariana|sin gluten)\b/.test(q)) push('concessions', policies.length || intents.some(i=>i.kind==='drinks') ? `${query.replace(/\b(?:beer|drinks?|water bottle|backpack|bag|kickoff|rain|parking|ticket)\b/gi,'')} food` : query);
   }
-  if (!intents.length && /\b(?:from|i am at|i'm at|im at|starting at|leaving)\b/.test(q) && !/\bsection\b/.test(q)) push('transport');
+  if (!intents.length && /\b(?:from|i am at|i'm at|im at|starting at|leaving|desde|somos de|salgo de)\b/.test(q) && !/\bsection\b/.test(q)) push('transport');
   if (!intents.length) push('stadium');
   return intents;
 }

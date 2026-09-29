@@ -24,6 +24,18 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
  }
  if(kind==='drinks') {
   const items=k.beverages||beverageData.items;
+  if(/\b(bar|bars|wine bar)\b/.test(q)&&!/\b(soda|sprite|coke|jellyfish|0\.0)\b/.test(q)) {
+   const named=k.vendors.filter(v=>q.includes(normalized(v.name)));
+   const vendors=(named.length?named:k.vendors.filter(v=>/Bar|Draft|Wine|Heineken|Michelob/.test(v.name))).sort((a,b)=>proximity(context.section,a.sections)-proximity(context.section,b.sections)).slice(0,4);
+   result.answer=(es?'Bares publicados:':'Published bars:')+'\n'+vendors.map(v=>`• ${v.name}: ${v.location}.`).join('\n');
+   result.sources=[src('Q2 Stadium vendors',FOOD_URL)];
+   if(vendors.some(v=>v.name==='YETI Bar')) {
+    result.answer+=es?'\nYETI Bar: el directorio dice 125, pero el menú de bebidas dice 124. Confirma la ubicación con Guest Services detrás de 124.':'\nYETI Bar location conflicts: the vendor directory says 125, but the drink menu says 124. Confirm the location with Guest Services behind 124.';
+    result.sources.push(src('Q2 Stadium beverage menu',DRINK_URL,beverageData.checkedAt));
+   }
+   result.cards=vendors.filter(v=>v.name!=='YETI Bar').map(v=>({title:v.name,detail:v.location,href:MAP_URL,label:es?'Ver ubicación':'View location'}));
+   return result;
+  }
   let nonAlcoholic=/non.?alcoholic|alcohol.?free|sin alcohol|soda|sprite|coke|coca|dr.? pepper|refresco|\bwater\b|\bagua\b|lemonade|limonada|0\.0/.test(q);
   const named=items.filter(b=>{
    const name=normalized(b.name);
@@ -38,24 +50,25 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
   else if(/\b(water|agua)\b/.test(q)&&!named.length)selected=items.filter(b=>/^waterloo sparkling/i.test(b.name));
   else if(!selected.length)selected=items.filter(b=>nonAlcoholic?/non.?alcohol/i.test(b.category):/wine|vino/.test(q)?/wine/i.test(b.category):/margarita/.test(q)?/margarita/i.test(b.name):/beer|cerveza/.test(q)?/beer/i.test(b.category)&&!/non.?alcohol/i.test(b.category):true);
   if(nonAlcoholic)selected=selected.filter(b=>/non.?alcohol/i.test(b.category));
+  if(!/suite|club/i.test(q))selected=selected.filter(b=>b.locations.some(l=>sections(l).some(n=>n>=100&&n<400)));
   selected.sort((a,b)=>proximity(context.section,a.locations.flatMap(sections))-proximity(context.section,b.locations.flatMap(sections)));
   // Avoid choosing between conflicting YETI section labels across official pages.
   const lines:string[]=[];
   for(const b of selected.slice(0,3)) {
-   const locs=[...b.locations].filter(l=>!/(124|125).*yeti/i.test(l)).sort((a,b)=>proximity(context.section,sections(a))-proximity(context.section,sections(b))).slice(0,3);
+   const locs=[...b.locations].filter(l=>!/(124|125).*yeti/i.test(l)&&(/suite|club/i.test(q)||sections(l).some(n=>n>=100&&n<400))).sort((a,b)=>proximity(context.section,sections(a))-proximity(context.section,sections(b))).slice(0,3);
    if(!locs.length)continue;
    const name=/^soda\b/i.test(b.name)&&/sprite/i.test(q)?'Sprite (published soda selection)':b.name;
    lines.push(`• ${name}: ${locs.join('; ')}.`);
    result.cards.push({title:name,detail:locs.join('; '),href:DRINK_URL,label:es?'Ver bebidas':'View drink menu'});
   }
-  let intro=es?'Opciones del menú de bebidas publicado:':'Published drink options from the beverage menu:';
+  let intro=es?'Opciones de bebida del menú publicado:':'Published drink options from the beverage menu:';
   if(/bottled|still water|agua embotellada/.test(q))intro=es?'No pude confirmar agua embotellada sin gas en este menú. Sí publica agua con gas Waterloo:':'I could not confirm bottled still water in this menu. It does list Waterloo sparkling water:';
   result.answer=lines.length?intro+'\n'+lines.join('\n')+(es?'\nLa disponibilidad puede cambiar; confirma en el puesto.':'\nAvailability can change; confirm at the stand.'):(es?'No pude confirmar esa bebida en el menú publicado. Revisa OrderNext o consulta a Guest Services.':'I could not confirm that drink in the published menu. Check OrderNext or ask Guest Services.');
   if(!context.section)result.answer+=es?'\n¿En qué sección estás?':'\nWhat section are you in?';
   result.facts=lines;result.sources=[src('Q2 Stadium beverage menu',DRINK_URL,selected[0]?.checkedAt||beverageData.checkedAt)];return result;
  }
  const vegan=context.dietary==='vegan',vegetarian=context.dietary==='vegetarian',gluten=context.dietary==='gluten-aware';
- if(/peanut|nut.?free|dairy|milk|allerg|ingredients|halal|kosher|alerg|ingredientes|leche|sin lactosa|sin frutos secos/.test(q)) {
+ if(/peanut|nut.?free|dairy|milk|halal|kosher|leche|sin lactosa|sin frutos secos/.test(q) || /allerg|ingredients|alerg|ingredientes/.test(q)&&!gluten) {
   result.answer=es?'No tengo esa clasificación dietética confirmada ni puedo garantizar seguridad para una alergia. Consulta ingredientes y contacto cruzado con el puesto antes de pedir; Guest Services puede ayudarte.':'I do not have that dietary label verified and cannot guarantee allergy safety. Ask the stand about ingredients and cross-contact before ordering; Guest Services can help.';
   result.sources=doc?[src(doc.title,doc.url,doc.checkedAt)]:[];return result;
  }
@@ -98,7 +111,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
   result.sources=[src('Q2 Stadium vendors',FOOD_URL),...(context.dietary?[src('Q2 Stadium food and dietary guide',POLICY_URL,doc?.checkedAt)]:[])];
  }
  if(gluten)result.answer+=(es?'\n“Evita gluten” es la etiqueta publicada, no una garantía de seguridad para alergias o celiaquía. Consulta ingredientes y contacto cruzado con el personal.':'\n“Avoiding gluten” is the published label, not an allergy guarantee or a celiac-safety guarantee. Ask staff about ingredients and cross-contact.');
- if(es) result.answer=result.answer.replace(/Section/g,'Sección').replace(/Popcorn/g,'Palomitas').replace(/Creamy Veggie bao; vegan mayo/g,'Bao Creamy Veggie y mayonesa vegana').replace(/Vegan chili dog, Impossible bowl or tofu bowl/g,'Hot dog vegano, bowl Impossible o bowl de tofu').replace(/Vegan menu/g,'Menú vegano').replace(/Cheese pizza or Chee-z Rolls; popcorn/g,'Pizza de queso o Chee-z Rolls; palomitas').replace(/Chips & queso or spicy queso \(listed vegetarian\)/g,'Chips con queso o queso picante (publicados como vegetarianos)').replace(/Falafel wrap or salad; hummus & pita/g,'Wrap o ensalada de falafel; hummus con pita').replace(/Published vegetarian empanada options; confirm the item/g,'Empanadas vegetarianas publicadas; confirma el producto').replace(/Cheese nachos, popcorn or soft pretzels/g,'Nachos de queso, palomitas o pretzels').replace(/\(avoiding gluten\)/g,'(evita gluten)');
+ if(es) result.answer=result.answer.replace(/Section/g,'Sección').replace(/Chicken tenders and wings/g,'Tiras de pollo y alitas').replace(/Teriyaki chicken bao/g,'Bao de pollo teriyaki').replace(/Chicken Shawarma Salad/g,'Ensalada de shawarma de pollo').replace(/Popcorn/g,'Palomitas').replace(/Creamy Veggie bao; vegan mayo/g,'Bao Creamy Veggie y mayonesa vegana').replace(/Vegan chili dog, Impossible bowl or tofu bowl/g,'Hot dog vegano, bowl Impossible o bowl de tofu').replace(/Vegan menu/g,'Menú vegano').replace(/Cheese pizza or Chee-z Rolls; popcorn/g,'Pizza de queso o Chee-z Rolls; palomitas').replace(/Chips & queso or spicy queso \(listed vegetarian\)/g,'Chips con queso o queso picante (publicados como vegetarianos)').replace(/Falafel wrap or salad; hummus & pita/g,'Wrap o ensalada de falafel; hummus con pita').replace(/Published vegetarian empanada options; confirm the item/g,'Empanadas vegetarianas publicadas; confirma el producto').replace(/Cheese nachos, popcorn or soft pretzels/g,'Nachos de queso, palomitas o pretzels').replace(/\(avoiding gluten\)/g,'(evita gluten)');
  if(!context.section)result.answer+=es?'\nDime tu sección para sugerir una zona aproximada.':'\nTell me your section to suggest a broad area.';
  else result.answer+=es?'\nLas ubicaciones están publicadas; la proximidad es aproximada.':'\nLocations are published; proximity is approximate.';
  return result;
