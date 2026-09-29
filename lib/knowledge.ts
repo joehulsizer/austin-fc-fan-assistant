@@ -98,7 +98,6 @@ export const MENU_HIGHLIGHTS = [
 
 export function searchDocs(query: string, knowledge: Snapshot, count = 4): Doc[] {
   const normalized = normalize(query);
-  const stop = new Set(['the','and','for','from','where','what','when','there','here','with','can','you','how','are','get','find','stadium','austin','q2','some','about','those','they','them','want','need','please','could','would']);
   const stop = new Set('the a an i my me is are do does can could would will should it this that there here q2 stadium please tell about what where how when to at in on of for and or with from you your have has be get'.split(' '));
   const words = normalized.split(/[^a-z0-9]+/).filter(w => w.length > 2 && !stop.has(w));
   const aliases: Record<string, string> = {
