@@ -17,7 +17,7 @@ export function travelModes(query: string, context: FanContext): Mode[] {
   if (/all (?:five|5|the )?(?:options|ways|modes)|show (?:my |travel |the )?options|compare.{0,30}(?:car|rideshare|train|bus|bike)|todas las opciones/.test(q)) return ['car', 'rideshare', 'rail', 'bus', 'bike'];
   const modes: Mode[] = [];
   if (/park.?and.?ride|park & ride/.test(q)) return ['bus', 'rail'];
-  if (/\b(parking|park|lot|garage|estacionamiento|aparcar|estacionar)\b/.test(q)) modes.push('parking');
+  if (/\b(parking|park|lots?|garages?|estacionamiento|aparcar|estacionar)\b/.test(q)) modes.push('parking');
   if (/\b(rideshare|uber|lyft|taxi|pick.?up|drop.?off)\b/.test(q)) modes.push('rideshare');
   if (/\b(train|rail|red line|mckalla|tren|ferrocarril)\b/.test(q)) modes.push('rail');
   if (/\b(bus|803|autobus|camion)\b/.test(q)) modes.push('bus');
