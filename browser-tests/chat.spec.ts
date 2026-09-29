@@ -144,7 +144,7 @@ test('a stalled response times out with retry and working support links',async({
   await page.goto('/');
   await page.getByLabel('Ask a question').fill('What is my wallet balance?');
   await page.getByRole('button',{name:'Send message'}).click();
-  await expect(page.getByRole('button',{name:'Stop response'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Stop answer'})).toBeVisible();
   await page.clock.fastForward(61000);
   const response=page.locator('.message.assistant').last();
   await expect(response).toContainText('response took too long');
