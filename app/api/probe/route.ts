@@ -2,12 +2,19 @@ import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { put } from '@vercel/blob';
 import { answerStream } from '@/lib/assistant';
+import { semanticPlan } from '@/lib/model-planner';
+import { planIntents } from '@/lib/intents';
 import type { ChatInput, Grounding } from '@/lib/types';
 export const maxDuration=120;
 export async function POST(req:Request){
   if(!process.env.CRON_SECRET || req.headers.get('authorization')!==`Bearer ${process.env.CRON_SECRET}`) return Response.json({error:'Unauthorized'},{status:401});
   const {kind}=await req.json();
   try {
+    if(kind==='planner'){
+      const query='Where is vegan food and how do I transfer my ticket?';
+      const result=await semanticPlan(query,{language:'en'},planIntents(query));
+      return Response.json({ok:result.mode==='model',mode:result.mode,kinds:result.intents.map(i=>i.kind),errorKind:result.errorKind,errorStatus:result.errorStatus});
+    }
     if(kind==='storage'){
       const marker=crypto.randomUUID();
       const b=await put(`checks/${marker}.json`,JSON.stringify({marker}),{access:'public',contentType:'application/json'});
