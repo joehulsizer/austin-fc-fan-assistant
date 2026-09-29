@@ -16,7 +16,7 @@ const groups = [
   { title: 'Model assisted', description: 'The site sends the question and relevant published facts to OpenAI’s GPT-5.4 mini model for a flexible answer. This is a separate service, not this Codex chat.', questions: [
     'What are the camera rules at Q2?',
     'Where is an accessible restroom?',
-    'What recent official club news is available?',
+    'What is the policy on smoking at Q2?',
   ] },
   { title: 'Safety and handoffs', description: 'Safety responses are fixed in English and Spanish and bypass the model. Ordering and account actions open the appropriate provider.', questions: [
     'Perdí a mi hijo de 6 años cerca de la sección 118',
