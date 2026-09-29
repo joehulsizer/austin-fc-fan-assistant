@@ -33,7 +33,7 @@ export function travelGrounding(query: string, context: FanContext, knowledge: S
   const modes = travelModes(query, context), onlyParking = modes.length === 1 && modes[0] === 'parking';
   const accessible = /accessible|ada|wheelchair|accesib|silla de ruedas|movilidad reducida/.test(q);
   const fastest = /fastest|quickest|mas rapido|rapida/.test(q);
-  const timingAsked = !onlyParking && /when|leave|arriv|kickoff|start|time|salir|salimos|llegar|hora|inicio|empieza|comienza/.test(q);
+  const timingAsked = !onlyParking && /when|leave.by|when.{0,20}leave|arriv|kickoff|starts?|what time|departure time|cuando|salimos|hora|inicio|empieza|comienza/.test(q);
   const docIds = new Set<string>();
   const lines: string[] = [], actions: Action[] = [];
   const atUT = context.origin === 'UT Austin';
@@ -43,7 +43,7 @@ export function travelGrounding(query: string, context: FanContext, knowledge: S
   for (const mode of modes) {
     if (mode === 'parking') {
       docIds.add('parking');
-      const lot = parking.lots.find(l => new RegExp(`\\b${normalized(l.color)}\\b`).test(q) || q.includes(normalized(l.name)));
+      const lot = parking.lots.find(l => new RegExp(`\\b${normalized(l.color)}\\b`).test(q) || (l.name!=='Q2 Stadium' && q.includes(normalized(l.name))));
       if (lot) {
         lines.push(es ? `${lot.color} / ${lot.name}: ${lot.address}. La ubicación aparece en el mapa oficial; confirma que tu pase y evento correspondan a ese lote.` : `${lot.color} / ${lot.name}: ${lot.address}. This is its published map location; confirm your event's pass is for this lot.`);
         actions.push(...mapsActions(context, 'driving', lot.address));

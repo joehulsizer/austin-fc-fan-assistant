@@ -28,7 +28,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
   const named=items.filter(b=>{
    const name=normalized(b.name);
    if(q.includes(name))return true;
-   const significant=name.split(/[^a-z0-9.]+/).filter(w=>w.length>3&&!['original','cherry','lemon','lime','black','flavors'].includes(w));
+   const significant=name.split(/[^a-z0-9.]+/).filter(w=>w.length>3&&!['original','cherry','lemon','lime','black','flavors','water','sparkling','soda','beer','wine','light','lager','margarita','juice','lemonade','salt','gold','peak'].includes(w));
    return significant.some(w=>new RegExp(`\\b${w}\\b`).test(q));
   });
   if(named.some(b=>!/non.?alcohol/i.test(b.category)) && !/non.?alcoholic|alcohol.?free|sin alcohol|0\.0/.test(q))nonAlcoholic=false;
