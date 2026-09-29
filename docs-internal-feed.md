@@ -2,7 +2,7 @@
 
 Production endpoint: `POST https://austin-fc-fan-assistant.vercel.app/api/internal-knowledge`
 
-Authorization: `Bearer CRON_SECRET` using the existing server/Vercel environment secret. Never put the token in the app or browser. The POC does not need a staff dashboard. A maintained file or existing API can post the same JSON contract. Uploads replace the entire feed; `entries: []` clears it. Valid versions are saved in Blob before the latest pointer changes; rejected uploads retain the last version. Retrieval caches for up to 60 seconds.
+Authorization: `Bearer CRON_SECRET` using the existing server/Vercel environment secret. Never put the token in the app or browser. The POC does not need a staff dashboard. A maintained file or existing API can post the same JSON contract. Authenticated `GET` returns the current approved feed for editors/adapters. Uploads replace the entire feed; `entries: []` clears it. Valid versions are saved in Blob before the latest pointer changes; rejected uploads retain the last version. Retrieval caches for up to 60 seconds.
 
 Only approved fan-facing answers belong in this **public** POC feed. Each entry requires both English and Spanish, approval attribution, review time, expiry, and official source/provenance URL. It is not connected to a club system yet. Ask the business team: “Where should staff maintain approved chatbot answers—a spreadsheet, uploaded file, or existing system? Who approves changes?”
 
@@ -37,3 +37,5 @@ The example is a schema example, not a verified discount; do not publish placeho
 Maps links use the provided starting point and destination; they do not imply live routing, fastest-route verification, delivery availability, or a completed transaction. Leave-by time is calculated from the supplied start, arrival buffer, and user travel duration (or an explicitly provisional 60-minute allowance). Concerts use event-specific confirmation, never an Austin FC fixture inferred from “next month.”
 
 The site retains browser context and shared chats in public Blob snapshots. Account transactions and actual app privacy/data-retention controls belong to the native-app handoff.
+
+Production uses a bounded model classifier for unfamiliar wording, with deterministic routing as the outage fallback. Safety bypasses classification and answer-generation models entirely. Cloud tests exercise the outage fallback; production red-team tests exercise the hosted model path and fallback when needed.

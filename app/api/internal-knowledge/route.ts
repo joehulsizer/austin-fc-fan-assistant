@@ -16,3 +16,9 @@ export async function POST(request:Request) {
     return Response.json({ok:true,version:feed.version,entries:feed.entries.length},{headers:{'Cache-Control':'no-store'}});
   } catch{return Response.json({error:'Storage unavailable; previous feed retained'},{status:503});}
 }
+
+export async function GET(request:Request) {
+  if(!process.env.CRON_SECRET||request.headers.get('authorization')!==`Bearer ${process.env.CRON_SECRET}`)return Response.json({error:'Unauthorized'},{status:401});
+  const {getInternalFeed}=await import('@/lib/internal-knowledge');
+  return Response.json(await getInternalFeed() || {version:new Date().toISOString(),entries:[]},{headers:{'Cache-Control':'no-store'}});
+}
