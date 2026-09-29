@@ -26,8 +26,13 @@ export function mapsActions(context: FanContext, mode = 'driving', destination =
   google.searchParams.set('api', '1'); google.searchParams.set('destination', destination); google.searchParams.set('travelmode', mode);
   if (context.origin) google.searchParams.set('origin', context.origin);
   const apple = new URL('https://maps.apple.com/');
-  apple.searchParams.set('daddr', destination); apple.searchParams.set('dirflg', mode === 'transit' ? 'r' : mode === 'bicycling' ? 'b' : 'd');
-  if (context.origin) apple.searchParams.set('saddr', context.origin);
+  if(mode === 'bicycling') {
+    apple.pathname='/directions';apple.searchParams.set('destination',destination);apple.searchParams.set('mode','cycling');
+    if(context.origin)apple.searchParams.set('source',context.origin);
+  } else {
+    apple.searchParams.set('daddr', destination); apple.searchParams.set('dirflg', mode === 'transit' ? 'r' : 'd');
+    if (context.origin) apple.searchParams.set('saddr', context.origin);
+  }
   return [{label: es ? 'Ruta en Google Maps' : 'Directions in Google Maps', href: google.href}, {label: es ? 'Ruta en Apple Maps' : 'Directions in Apple Maps', href: apple.href}];
 }
 export function addHandoffs(result: Grounding): Grounding {

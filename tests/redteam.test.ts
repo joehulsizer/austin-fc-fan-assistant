@@ -4,7 +4,7 @@ import { prepare, answerStream, groundedFallback } from '../lib/assistant';
 import { internalFeedSchema, lookupFeed } from '../lib/internal-knowledge';
 import { safetyGrounding } from '../lib/safety';
 import { staticKnowledge } from '../lib/knowledge';
-import { isActionHref, ORDER_URL } from '../lib/handoffs';
+import { isActionHref, ORDER_URL, mapsActions } from '../lib/handoffs';
 import { shareInputSchema } from '../lib/share';
 import rawCases from '../data/redteam.json';
 import type { FanContext } from '../lib/types';
@@ -61,4 +61,13 @@ test('shared snapshots preserve usable actions and reject arbitrary destinations
   const messages=[{role:'user',content:'Order food'},{role:'assistant',content:'Use OrderNext',actions:[{label:'Order food',href:ORDER_URL}]}];
   assert.equal(shareInputSchema.parse({messages}).messages[1].actions?.[0].href,ORDER_URL);
   assert.throws(()=>shareInputSchema.parse({messages:[...messages,{role:'assistant',content:'click',actions:[{label:'Unsafe',href:'javascript:alert(1)'}]}]}));
+});
+
+
+test('cycling deep links use documented Google and modern Apple Maps modes',()=>{
+  const actions=mapsActions({origin:'UT Austin'},'bicycling');
+  const google=new URL(actions[0].href),apple=new URL(actions[1].href);
+  assert.equal(google.searchParams.get('travelmode'),'bicycling');
+  assert.equal(apple.pathname,'/directions');assert.equal(apple.searchParams.get('mode'),'cycling');
+  assert.equal(apple.searchParams.get('source'),'UT Austin');assert.ok(!apple.searchParams.has('dirflg'));
 });

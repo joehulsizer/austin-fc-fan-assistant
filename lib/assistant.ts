@@ -23,7 +23,7 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
   if (context.event?.startsAt && new Date(context.event.startsAt).getTime() < Date.now()) context = { ...context, event: undefined };
   const knowledge = await getKnowledge();
   const safety = safetyGrounding(query, context, knowledge);
-  if (safety) return addHandoffs({ ...safety, context: { ...context, topic: 'safety' } });
+  if (safety) return addHandoffs({ ...safety, planner:'fixed', context: { ...context, topic: 'safety' } });
   const mentioned = context.eventKind !== 'other' ? fixtureMentioned(query) : undefined;
   if (mentioned && /\b(match|game|kickoff|partido|there|stadium|q2|weather|rain|lluvia)\b/i.test(query)) {
     context = { ...context, eventKind: 'match', event: { title: mentioned.title, startsAt: mentioned.startsAt, source: mentioned.url || 'https://www.austinfc.com/schedule/' } };
@@ -34,7 +34,8 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     : context.topic === 'transport' && /\b(leave|arrive|how long|what time)\b/i.test(query) ? `${query} travel to q2`
     : /\b(player|team|club)\b/i.test(query) && input.messages.slice(0,-1).some(m => m.role === 'user' && /\btryouts?\b/i.test(m.content)) ? `${query} tryout`
     : query;
-  const intents = await semanticPlan(retrievalQuery, context, planIntents(retrievalQuery, context.topic));
+  const planning = await semanticPlan(retrievalQuery, context, planIntents(retrievalQuery, context.topic));
+  const intents = planning.intents;
   // Resolve an explicitly requested match before the forecast which depends on it.
   if(intents.some(i=>i.kind==='club')&&intents.some(i=>i.kind==='weather')) intents.sort((a,b)=>Number(b.kind==='club')-Number(a.kind==='club'));
   const feed = intents[0]?.kind === 'security' ? undefined : await getInternalFeed();
@@ -66,10 +67,10 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     result.context=context;
     parts.push({query:intent.query,result:addHandoffs(result)});
   }
-  if(parts.length===1) return {...parts[0].result,context:{...context,topic:parts[0].result.route}};
+  if(parts.length===1) return {...parts[0].result,planner:planning.mode,context:{...context,topic:parts[0].result.route}};
   const sources=parts.flatMap(p=>p.result.sources).filter((s,i,a)=>a.findIndex(x=>x.title===s.title&&x.url===s.url)===i);
   const actions=parts.flatMap(p=>p.result.actions||[]).filter((s,i,a)=>a.findIndex(x=>x.href===s.href)===i);
-  return {route:'multi',context:{...context,topic:'multi'},facts:parts.flatMap(p=>p.result.facts),sources,cards:parts.flatMap(p=>p.result.cards),actions,parts,
+  return {route:'multi',planner:planning.mode,context:{...context,topic:'multi'},facts:parts.flatMap(p=>p.result.facts),sources,cards:parts.flatMap(p=>p.result.cards),actions,parts,
     answer:parts.every(p=>p.result.answer||['concessions','drinks','ticketing','transaction'].includes(p.result.route)) ? parts.map(p=>groundedFallback(p.query,p.result)).join('\n\n') : undefined};
 }
 
