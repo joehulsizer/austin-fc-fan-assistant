@@ -23,7 +23,7 @@ for(const c of cases) test(`red-team: ${c.id}`, async()=>{
   for(const expected of c.all) assert.match(answer,new RegExp(expected,'i'));
   for(const forbidden of c.none || []) assert.doesNotMatch(answer,new RegExp(forbidden,'i'));
   if(c.language)assert.equal(result.context.language,c.language);
-  if(c.action) assert.ok(result.actions?.some(a=>a.href.includes(c.action)),JSON.stringify(result.actions));
+  if(c.action) assert.ok(result.actions?.some(a=>a.href.includes(c.action!)),JSON.stringify(result.actions));
   if(c.sources) assert.deepEqual(result.sources.map(s=>s.title),c.sources);
   assert.ok(result.actions?.length,'Every response has a support/action destination');
   for(const a of result.actions || [])assert.ok(isActionHref(a.href));

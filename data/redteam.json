@@ -915,5 +915,60 @@
     ],
     "none": [],
     "language": "en"
+  },
+  {
+    "id": "sixyearold",
+    "question": "I can't find my six-year-old",
+    "route": "safety",
+    "all": [
+      "124",
+      "35-ASK-VERDE"
+    ],
+    "language": "en",
+    "action": "sms:"
+  },
+  {
+    "id": "childgone",
+    "question": "My son is gone and I cannot find him",
+    "route": "safety",
+    "all": [
+      "124",
+      "35-ASK-VERDE"
+    ],
+    "language": "en",
+    "action": "sms:"
+  },
+  {
+    "id": "es-separated",
+    "question": "Me separé de mi hijo",
+    "route": "safety",
+    "all": [
+      "124",
+      "35-ASK-VERDE"
+    ],
+    "language": "es",
+    "action": "sms:"
+  },
+  {
+    "id": "es-no-veo",
+    "question": "No veo a mi niño de 6 años",
+    "route": "safety",
+    "all": [
+      "124",
+      "35-ASK-VERDE"
+    ],
+    "language": "es",
+    "action": "sms:"
+  },
+  {
+    "id": "es-asfixia",
+    "question": "Mi amigo se está asfixiando",
+    "route": "safety",
+    "all": [
+      "124",
+      "35-ASK-VERDE"
+    ],
+    "language": "es",
+    "action": "sms:"
   }
 ]
