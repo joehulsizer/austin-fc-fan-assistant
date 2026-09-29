@@ -51,11 +51,11 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     else if(intent.kind==='transport') result=travelGrounding(intents.length===1?query:intent.query,context,knowledge);
     else if(intent.kind==='ticketing') result=ticketGrounding(intents.length===1?query:intent.query,context,knowledge);
     else if(intent.kind==='concessions'||intent.kind==='drinks') result=foodGrounding(intent.kind,intents.length===1?retrievalQuery:intent.query,context,knowledge);
-    else if(intent.kind==='stadium' && amenityGrounding(intent.query,context,knowledge)) result=amenityGrounding(intent.query,context,knowledge)!;
+    else if(intent.kind==='stadium' && amenityGrounding(intents.length===1?query:intent.query,context,knowledge)) result=amenityGrounding(intents.length===1?query:intent.query,context,knowledge)!;
     else if(intent.kind==='weather') result=await weatherGrounding(query,context);
     else if(intent.kind==='club') { result=await ground(intent.query,context); if(!result.answer) result=await clubGrounding(intent.query,context); }
     else {
-      result=await ground(intent.query,context);
+      result=await ground(intents.length===1?retrievalQuery:intent.query,context);
       // A standalone retrieval query cannot rewrite the fan's supplied context.
       result.context={...context};
     }
