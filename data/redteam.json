@@ -970,5 +970,96 @@
     ],
     "language": "es",
     "action": "sms:"
+  },
+  {
+    "id": "found-child-alone",
+    "question": "I found a child alone",
+    "route": "safety",
+    "all": [
+      "immediately",
+      "124",
+      "35-ASK-VERDE"
+    ],
+    "language": "en"
+  },
+  {
+    "id": "boy-crying-alone",
+    "question": "There is a boy crying alone near 118",
+    "route": "safety",
+    "all": [
+      "immediately",
+      "124"
+    ],
+    "language": "en"
+  },
+  {
+    "id": "found-child-spanish",
+    "question": "Encontré a una niña sola",
+    "route": "safety",
+    "all": [
+      "inmediatamente",
+      "124"
+    ],
+    "language": "es"
+  },
+  {
+    "id": "food-ticket-bag",
+    "question": "Where is food near section 123, how do I transfer tickets, and can I bring a bag?",
+    "route": "multi",
+    "all": [
+      "Published options",
+      "Send Tickets",
+      "Bags/backpacks"
+    ],
+    "none": [
+      "camera bag"
+    ],
+    "language": "en",
+    "action": "ordernext"
+  },
+  {
+    "id": "food-ticket-bag-spanish",
+    "question": "¿Dónde hay comida, cómo transferir boletos y puedo llevar mochila?",
+    "route": "multi",
+    "all": [
+      "Opciones publicadas",
+      "Send Tickets",
+      "mochilas"
+    ],
+    "language": "es"
+  },
+  {
+    "id": "buy-plus-bag",
+    "question": "Can you buy my ticket and can I bring a diaper bag?",
+    "route": "multi",
+    "all": [
+      "can.t buy",
+      "childcare bags"
+    ],
+    "language": "en",
+    "action": "seatgeek.com"
+  },
+  {
+    "id": "food-drinks-dual",
+    "question": "Can I get beer and nachos around section 123?",
+    "route": "multi",
+    "all": [
+      "Published drink options",
+      "Published options"
+    ],
+    "language": "en",
+    "action": "ordernext"
+  },
+  {
+    "id": "ordering-concert-weather",
+    "question": "How can I order food, park for a concert and check the weather tomorrow?",
+    "route": "multi",
+    "all": [
+      "OrderNext",
+      "concert",
+      "forecast|unavailable"
+    ],
+    "language": "en",
+    "action": "ordernext"
   }
 ]

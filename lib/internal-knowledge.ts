@@ -40,9 +40,9 @@ export async function getInternalFeed():Promise<InternalFeed|undefined> {
 }
 export function lookupFeed(query:string,context:FanContext,feed:InternalFeed|undefined,topic?:string):Grounding|undefined {
   if(!feed)return;
-  const q=` ${normalized(query)} `;
+  const q=` ${normalized(query).replace(/[^a-z0-9]+/g,' ').trim()} `;
   const candidates=feed.entries.filter(e=>Date.parse(e.expiresAt)>Date.now()&&(!topic||e.topic===topic||e.topic==='general'));
-  const entry=candidates.map(e=>({e,score:Math.max(...e.keywords.map(k=>q.includes(` ${normalized(k)} `)?k.length:0))})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score)[0]?.e;
+  const entry=candidates.map(e=>({e,score:Math.max(...e.keywords.map(k=>q.includes(` ${normalized(k).replace(/[^a-z0-9]+/g,' ').trim()} `)?k.length:0))})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score)[0]?.e;
   if(!entry)return;
   return {route:topic||entry.topic,context,facts:[],answer:entry.answer[context.language==='es'?'es':'en'],sources:[{title:`Club knowledge: ${entry.title}`,url:`https://austin-fc-fan-assistant.vercel.app/guide?topic=internal&entry=${entry.id}`,checkedAt:entry.checkedAt}],cards:[],actions:entry.actions.length?entry.actions:guestActions(context.language==='es')};
 }
