@@ -13,7 +13,7 @@ export function planIntents(query: string, priorTopic?: string): Intent[] {
   else if (ordering) push('ordering');
   const policies = policyTopics(query);
   policies.forEach(p=>push('stadium', query, p));
-  const travel = /\b(parking|park|rideshare|uber|lyft|taxi|train|rail|red line|mckalla|transit|transport|transportation|bus|bike|bicycle|directions|route|fastest|estacionamiento|aparcar|tren|autobus|bicicleta|transporte|ruta)\b|(?:get|getting|go|travel) to (?:q2|the stadium|there)|getting (?:there|here)|coming from|llegar (?:al|a) (?:q2|estadio)|como llego|when should i leave|what time should i (?:leave|do it)|leave.by|salir|student center/.test(q) || priorTopic==='transport' && /how long|what time|arrive|leave|departure|when|cuanto|hora/.test(q);
+  const travel = /\b(parking|park|rideshare|uber|lyft|taxi|train|rail|red line|mckalla|transit|transport|transportation|bus|bike|bicycle|directions|route|fastest|estacionamiento|aparcar|tren|autobus|bicicleta|transporte|ruta)\b|(?:get|getting|go|travel) to (?:q2|the stadium|there)|getting (?:there|here)|coming from|llegar (?:al|a) (?:q2|estadio)|como llego|when should i leave|what time should i (?:leave|do it)|leave.by|salir|student center/.test(q) || priorTopic==='transport' && /how long|arrive|leave|departure|cuanto tarda|salir|llegar/.test(q);
   if (travel) push('transport');
   if (/(?:hot|cold|windy|wind).{0,30}(?:kickoff|today|tomorrow|tonight|outside)|\b(weather|rain|raining|raincoat|temperature|forecast|lluvia|llovera|clima|pronostico|llover|frio|calor)\b/.test(q)) push('weather');
   const other = /concert|concierto|festival|non.match|private event/.test(q);

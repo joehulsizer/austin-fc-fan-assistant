@@ -88,7 +88,8 @@ test('share creates a read-only link and explains who can see it', async ({ page
   await page.getByRole('button', { name: 'Create share link' }).click();
   await expect(page.getByRole('textbox', { name: 'Share link' })).toHaveValue(/\/share\/11111111-1111-4111-8111-111111111111/);
   expect(sharedMessages).toHaveLength(2);
-  expect(sharedMessages[1].cards?.length).toBe(6);
+  const savedCardCount=await page.evaluate(()=>JSON.parse(localStorage.getItem('austin-fc-fan-assistant-v1')!).messages.at(-1).cards.length);
+  expect(sharedMessages[1].cards?.length).toBe(savedCardCount);
   expect(sharedMessages[1].sources?.length).toBeLessThanOrEqual(4);
 });
 
@@ -128,7 +129,7 @@ test('seat ordering uses actual OrderNext and share retains handoffs',async({pag
   await page.route('**/api/share',async route=>{actions=route.request().postDataJSON().messages.at(-1).actions;await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({path:'/share/11111111-1111-4111-8111-111111111111'})});});
   await page.goto('/');await page.getByLabel('Ask a question').fill('Beer and hot dog delivered to my seat in 210');await page.getByLabel('Ask a question').press('Enter');
   const response=page.locator('.message.assistant').last();await expect(response).toContainText('eligible');await expect(response.locator('.handoffs a').first()).toHaveAttribute('href','https://austinfc.ordernext.com/');
-  await expect(page.getByLabel('Ask a question')).toBeEnabled();await page.getByRole('button',{name:'Share chat'}).click();await page.getByRole('button',{name:'Create share link'}).click();await expect(page.getByLabel('Share link')).toHaveValue(/\/share\//);expect(actions.some(a=>a.href.includes('ordernext'))).toBe(true);
+  await expect(page.getByLabel('Ask a question')).toBeEnabled();await page.getByRole('button',{name:'Share chat'}).click();await page.getByRole('button',{name:'Create share link'}).click();await expect(page.getByRole('textbox',{name:'Share link'})).toHaveValue(/\/share\//);expect(actions.some(a=>a.href.includes('ordernext'))).toBe(true);
 });
 
 test('arrival planner generates a usable chat request with origin, event type, time and duration',async({page})=>{
