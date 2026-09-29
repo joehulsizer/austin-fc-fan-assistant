@@ -79,7 +79,7 @@ test('recipient ticket follow-up uses the mobile-ticket guide rather than unrela
   assert.equal(result.route, 'ticketing');
   assert.match(answer, /app/);
   assert.ok(result.sources.some(s => s.url.includes('austinfc.com/tickets/mobile-ticketing')));
-  assert.ok(result.sources.some(s => s.title === 'Will Call' && s.url.includes('q2stadium.com')));
+  assert.deepEqual(result.sources.map(s=>s.title),['Austin FC mobile ticketing']);
   assert.ok(!result.sources.some(s => /re.entry|seatgeek ticket hq/i.test(s.title)));
 });
 
@@ -115,7 +115,8 @@ test('parking guidance does not repeat the malformed lot-hours text', async () =
   const result = await ground('Where can I park at Q2 Stadium?', {});
   const answer = groundedFallback('Where can I park at Q2 Stadium?', result);
   assert.equal(result.route, 'transport');
-  assert.match(answer, /parking in advance/);
+  assert.match(answer,/event-specific parking pass/);
+  assert.doesNotMatch(answer,/Rapid 803|Bike Valet/);
   assert.doesNotMatch(answer, /-3 hours/);
   assert.ok(result.sources.some(s => s.url.includes('q2stadium.com/parking/')));
 });
@@ -185,7 +186,8 @@ test('UT origin and match context produce a useful sourced arrival plan', async 
   const answer = groundedFallback('How do I get there and what time should I do it?', result);
   assert.equal(result.route, 'transport');
   assert.match(answer, /Rapid 803/);
-  assert.match(answer, /gates generally open around/);
+  assert.match(answer, /Gates generally open 90 minutes/);
+  assert.match(answer,/duration|travel time/);
   assert.ok(result.sources.some(s => s.url.includes('capmetro.org/rapid/route803')));
   assert.ok(!result.sources.some(s => /drink|mother|lost/.test(s.title.toLowerCase())));
 });

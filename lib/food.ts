@@ -24,17 +24,18 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
  }
  if(kind==='drinks') {
   const items=k.beverages||beverageData.items;
-  const nonAlcoholic=/non.?alcoholic|alcohol.?free|sin alcohol|soda|sprite|coke|coca|dr.? pepper|refresco|water|agua|lemonade|limonada|0\.0/.test(q);
+  let nonAlcoholic=/non.?alcoholic|alcohol.?free|sin alcohol|soda|sprite|coke|coca|dr.? pepper|refresco|\bwater\b|\bagua\b|lemonade|limonada|0\.0/.test(q);
   const named=items.filter(b=>{
    const name=normalized(b.name);
    if(q.includes(name))return true;
    const significant=name.split(/[^a-z0-9.]+/).filter(w=>w.length>3&&!['original','cherry','lemon','lime','black','flavors'].includes(w));
    return significant.some(w=>new RegExp(`\\b${w}\\b`).test(q));
   });
+  if(named.some(b=>!/non.?alcohol/i.test(b.category)) && !/non.?alcoholic|alcohol.?free|sin alcohol|0\.0/.test(q))nonAlcoholic=false;
   let selected:Beverage[]=named;
   if(/heineken\s*0[.,]0/.test(q))selected=items.filter(b=>/heineken 0\.0/i.test(b.name));
   else if(/sprite|coke|coca|soda|dr.? pepper|refresco/.test(q))selected=items.filter(b=>/^soda\b/i.test(b.name));
-  else if(/water|agua/.test(q))selected=items.filter(b=>/^waterloo sparkling/i.test(b.name));
+  else if(/\b(water|agua)\b/.test(q)&&!named.length)selected=items.filter(b=>/^waterloo sparkling/i.test(b.name));
   else if(!selected.length)selected=items.filter(b=>nonAlcoholic?/non.?alcohol/i.test(b.category):/wine|vino/.test(q)?/wine/i.test(b.category):/margarita/.test(q)?/margarita/i.test(b.name):/beer|cerveza/.test(q)?/beer/i.test(b.category)&&!/non.?alcohol/i.test(b.category):true);
   if(nonAlcoholic)selected=selected.filter(b=>/non.?alcohol/i.test(b.category));
   selected.sort((a,b)=>proximity(context.section,a.locations.flatMap(sections))-proximity(context.section,b.locations.flatMap(sections)));

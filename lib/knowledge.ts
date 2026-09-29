@@ -1,6 +1,8 @@
 import bundled from '@/data/knowledge.json';
 import { foodGrounding, type Beverage } from './food';
 import { amenityGrounding } from './amenities';
+import { travelGrounding } from './travel';
+import { ticketGrounding } from './ticketing';
 import { messageLanguage } from './language';
 import type { Card, FanContext, Grounding, Source } from './types';
 
@@ -58,11 +60,6 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   return context;
 }
 
-const same = (zoneA: string, zoneB: string) => zoneA === zoneB ? 0 : ({
-  south: ['west', 'east'], west: ['south', 'northwest'], northwest: ['west', 'northeast'],
-  northeast: ['northwest', 'east'], east: ['northeast', 'south'],
-} as Record<string, string[]>)[zoneA]?.includes(zoneB) ? 1 : 2;
-
 export function sectionZone(section: number): string {
   if (section >= 101 && section <= 108) return 'south';
   if (section >= 109 && section <= 118) return 'west';
@@ -72,23 +69,8 @@ export function sectionZone(section: number): string {
   return 'other level';
 }
 
-function rankVendor(v: Vendor, section?: number) {
-  if (!section) return 0;
-  return Math.min(...v.sections.map(s => s === section ? -1 : same(sectionZone(section), sectionZone(s))));
-}
-
 function source(title: string, url: string, checkedAt = staticKnowledge.checkedAt): Source { return { title, url, checkedAt }; }
 function card(title: string, detail: string, href: string, label = 'Open official page'): Card { return { title, detail, href, label }; }
-
-const DIET: Record<string, { vegan?: string; vegetarian?: string; glutenAware?: string }> = {
-  'Bao’d Up': { vegan: 'Creamy Veggie bao; vegan mayo' },
-  'Verde Vegan & Wine Bar': { vegan: 'Vegan menu, including chili dog; listed bowls are avoiding gluten' },
-  'Double Dave’s': { vegetarian: 'Cheese pizza slice or Chee-z Rolls; popcorn is listed vegan and avoiding gluten', vegan: 'Popcorn is listed vegan and avoiding gluten' },
-  OneTaco: { vegetarian: 'Chips and queso or quesobirria are listed vegetarian and avoiding gluten', glutenAware: 'Chips and queso or quesobirria are listed as avoiding gluten' },
-  'Shawarma Point': { vegetarian: 'Falafel wrap or salad; hummus and pita', vegan: 'The stadium guide labels this vendor vegan/vegetarian, but confirm the specific item before ordering', glutenAware: 'Tabouli and chips are listed as avoiding gluten' },
-  'Little Patagonia': { vegetarian: 'Vegetarian options listed; ask the stand which are available' },
-  'Eastside Eats': { vegetarian: 'Cheese nachos, popcorn or soft pretzels listed in the stadium guide', vegan: 'Popcorn is listed vegan', glutenAware: 'Cheese nachos or popcorn are listed as avoiding gluten' },
-};
 
 export const MENU_HIGHLIGHTS = [
   { name: 'Grillove', location: 'Section 101', item: 'Impossible Good Burger (vegetarian)', category: 'burger' },
@@ -192,24 +174,15 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     return base;
   }
   if (/\b(drinks?|beers?|wine|water|beverages?|soda|sprite|heineken|jellyfish|cocktail|margarita|bebidas?|cerveza|vino|agua|refresco|bar)\b/.test(q)) return foodGrounding('drinks',query,context,knowledge);
-  if (/\b(food|eat|vegan|vegab|vegetarian|veggie|celiac|gluten|concessions?|nachos|pizza|tacos?|bao|shawarma|barbecue|bbq|burgers?|hamburgers?|chicken|wings?|tenders?|hot dogs?|comida|comer|vegano|vegana|vegetariano|vegetariana)\b/.test(q) || context.dietary && /near|options|where|about/.test(q)) return foodGrounding('concessions',query,context,knowledge);
+  if (/\b(food|eat|vegan|vegab|vegetarian|veggie|celiac|gluten|concessions?|nachos|pizza|tacos?|bao|shawarma|barbecue|bbq|burgers?|hamburgers?|chicken|wings?|tenders?|hot dogs?|comida|comer|vegano|vegana|vegetariano|vegetariana)\b/.test(q)) return foodGrounding('concessions',query,context,knowledge);
   const amenity=amenityGrounding(query,context,knowledge);if(amenity)return amenity;
   if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|roster|players?|goalkeepers?|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias|porteros?|jugadores?|copa america)\b/.test(q) && !/\b(weather|rain|forecast|lluvia|llovera?|clima|pronostico)\b/.test(q) || /\b(join|tryout|academy)\b.*\b(player|team|club|austin fc)\b/.test(q)) { base.route = 'club'; return base; }
   if (/\b(weather|rain|temperature|forecast|lluvia|llovera?|clima|tiempo|pronostico)\b/.test(q)) { base.route = 'weather'; return base; }
   base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte|red line|mckalla|directions|getting there|coming from|how do i get there|how do i get to the stadium|how do i get to q2|how do i get there and what time|student center)\b/.test(q) || (context.origin && /\b(?:from|i am at|i'm at|im at|leaving|starting at)\b/.test(q)) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
-  const transportIds = /\b(parking|park|estacionamiento)\b/.test(q) ? ['parking','policy-ada-accessibility'] : /\b(what time|when|arrive|early)\b/.test(q) ? ['directions','policy-capital-metro','policy-gate-opening-times'] : ['directions','policy-capital-metro'];
-  const docs = base.route === 'transport'
-    ? knowledge.documents.filter(d => transportIds.includes(d.id))
-    : base.route === 'ticketing' && /transfer|send|share|recipient|transferir|enviar/.test(q) ? []
-    : searchDocs(query, knowledge, 4);
+  if(base.route==='transport')return travelGrounding(query,context,knowledge);
+  if(base.route==='ticketing')return ticketGrounding(query,context,knowledge);
+  const docs=searchDocs(query,knowledge,4);
   docs.forEach(addDoc);
-  if (base.route === 'ticketing') {
-    const transferring = /transfer|send|share|recipient|transferir|enviar/.test(q);
-    base.cards.push(card(transferring ? 'Mobile ticketing guide' : 'Austin FC tickets', transferring ? 'Access, send, and manage tickets' : 'Official purchase and ticket management', transferring ? MOBILE_TICKET_URL : TICKET_URL));
-    base.sources.push(source(transferring ? 'Austin FC mobile ticketing' : 'Austin FC tickets', transferring ? MOBILE_TICKET_URL : TICKET_URL));
-    if (transferring && knowledge.documents.some(d => d.title === 'Will Call')) base.sources.push(source('Will Call', POLICY_URL, knowledge.checkedAt));
-  }
-  if (base.route === 'transport') { base.cards.push(card('Plan your trip', 'CapMetro event service', TRANSIT_URL)); base.sources.push(source('CapMetro event service', TRANSIT_URL)); if(context.origin === 'UT Austin') base.sources.push(source('CapMetro Rapid 803 route', 'https://www.capmetro.org/rapid/route803', knowledge.checkedAt)); }
   if (docs.length === 0 && base.route === 'stadium') base.answer = spanish ? 'No encontré una respuesta confirmada en las fuentes oficiales. Prueba con una pregunta más específica o consulta al personal de Guest Services.' : 'I couldn’t verify that from the current official sources. Try a more specific question or ask Guest Services at the stadium.';
   return base;
 }
