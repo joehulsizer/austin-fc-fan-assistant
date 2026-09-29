@@ -13,14 +13,23 @@ jobs:
       - name: Validate embedded stadium map
         run: python3 -c "import xml.etree.ElementTree as ET; ET.parse('public/q2-stadium-map.svg')"
       - run: npm run test
+        id: unit
+        continue-on-error: true
       - run: npm run eval
+        id: evaluation
+        continue-on-error: true
       - run: npm run eval:conversations
+        id: conversations
+        continue-on-error: true
       - run: npx playwright install --with-deps chromium
       - name: Browser acceptance checks
         run: |
           npm run start > /tmp/austin-server.log 2>&1 &
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:3000/api/health >/dev/null && break; sleep 1; done
           npm run test:browser
+      - name: Require all evaluation stages to pass
+        if: always()
+        run: test '${{ steps.unit.outcome }}' = 'success' && test '${{ steps.evaluation.outcome }}' = 'success' && test '${{ steps.conversations.outcome }}' = 'success'
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -3,11 +3,16 @@ import { ArrowLeft, ArrowRight, Clock3, MapPin, Search } from 'lucide-react';
 import { getKnowledge, MENU_HIGHLIGHTS, sectionZone } from '@/lib/knowledge';
 import { weatherGrounding } from '@/lib/live';
 import schedule from '@/data/club-schedule.json';
+import orderingCheck from '@/data/ordering-source-check.json';
+import { getInternalFeed } from '@/lib/internal-knowledge';
+import { ORDER_URL, guestActions, ticketActions } from '@/lib/handoffs';
+import { TravelPlanner } from './travel-planner';
 import '../style.css';
 import './guide.css';
 
 const sections = [
   { id: 'food', label: 'Food & drink' },
+  { id: 'ordering', label: 'Order food' },
   { id: 'sections', label: 'Section guide' },
   { id: 'travel', label: 'Getting here' },
   { id: 'policies', label: 'Stadium policies' },
@@ -15,14 +20,16 @@ const sections = [
   { id: 'weather', label: 'Weather' },
   { id: 'club', label: 'Matches & club' },
   { id: 'sources', label: 'Sources' },
+  { id: 'internal', label: 'Club knowledge' },
 ];
 const date = (value: string) => new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 
-export default async function Guide({ searchParams }: { searchParams: Promise<{ topic?: string; find?: string; section?: string }> }) {
+export default async function Guide({ searchParams }: { searchParams: Promise<{ topic?: string; find?: string; section?: string; entry?: string }> }) {
   const params = await searchParams;
   const topic = sections.some(s => s.id === params.topic) ? params.topic! : 'food';
   const data = await getKnowledge();
   const checked = date(data.checkedAt);
+  const internal = topic === 'internal' ? await getInternalFeed() : undefined;
   const selectedSection = Number(params.section);
   const zone = Number.isInteger(selectedSection) && selectedSection >= 101 && selectedSection <= 400 ? sectionZone(selectedSection) : '';
   const policyDocs = data.documents.filter(d => d.id.startsWith('policy-'));
@@ -41,10 +48,13 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
 
       {topic === 'food' && <section>
         <div className="guide-callout">Published locations are listed below. Ask the chat about a diet and your section for an approximate area. “Avoiding gluten” is a published menu label, not an allergy guarantee.</div>
+        <div className="handoffs"><a href={ORDER_URL} target="_blank" rel="noopener noreferrer">Order food in OrderNext <ArrowRight size={14}/></a></div>
         <h2 className="guide-subhead">Published burger and chicken options</h2><div className="guide-grid">{MENU_HIGHLIGHTS.map(item => <article className="guide-card" key={item.name}><div className="guide-card-top"><MapPin size={17}/><span>{item.location}</span></div><h2>{item.name}</h2><p>{item.item}</p><small>Q2 Stadium food and dietary guide / vendor directory · checked {checked} CT</small></article>)}</div>
         <h2 className="guide-subhead">Vendor directory</h2>
         <div className="guide-grid">{data.vendors.map(v => <article className="guide-card" key={v.name}><div className="guide-card-top"><MapPin size={17}/><span>{v.location}</span></div><h2>{v.name}</h2><p>{v.description}</p><small>Q2 Stadium vendor listing · checked {date(v.checkedAt)} CT</small></article>)}</div>
       </section>}
+
+      {topic === 'ordering' && <section><article className="guide-feature"><h2>OrderNext mobile ordering</h2><p>Open the club’s ordering platform to select your event and section, view available ordering options, and manage your order. The platform determines pickup or seat-delivery eligibility; this guide does not confirm delivery for every section.</p><small>Ordering destination checked {date(orderingCheck.checkedAt)} CT</small><div className="handoffs"><a href={ORDER_URL} target="_blank" rel="noopener noreferrer">Open OrderNext</a></div></article></section>}
 
       {topic === 'sections' && <section>
         <div className="guide-callout">The published stadium map is copied below for orientation. Some concession pins on that map may lag the current vendor list, so use the checked location cards underneath for vendor sections. Zone-based suggestions are approximate, not walking times.</div>
@@ -55,12 +65,14 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
       </section>}
 
       {topic === 'travel' && <section>
+        <TravelPlanner/>
         <div className="guide-grid guide-grid-two">
           <article className="guide-card"><h2>Train</h2><p>Take CapMetro’s Red Line to McKalla Station on the east side of Q2 Stadium. Follow signs from the station. Confirm event-day train times before traveling.</p></article>
           <article className="guide-card"><h2>Bus</h2><p>CapMetro routes serve Q2 Stadium, including Rapid 803. Event-day service and pickup locations can change; check the published schedule.</p></article>
           <article className="guide-card"><h2>Parking</h2><p>Q2 Stadium recommends buying parking in advance. On-site and off-site lots are published. Have the mobile parking pass ready at arrival and check your lot’s event-day hours.</p></article>
           <article className="guide-card"><h2>Rideshare</h2><p>Uber/taxi drop-off is listed at Delta Drive on the east side, accessed from Metric Boulevard. Follow event-day instructions for pickup after the match.</p></article>
         </div>
+        <article className="guide-card"><h2>Bike</h2><p>Q2 publishes free Bike Valet on the east side for matchdays. Confirm availability for other events.</p></article>
         <h2 className="guide-subhead">Published transportation details</h2>
         {travelDocs.map(d => <details className="guide-detail" key={d.id}><summary>{d.title}</summary><p>{d.body}</p><small>Q2 Stadium · checked {date(d.checkedAt)} CT</small></details>)}
       </section>}
@@ -74,6 +86,7 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
 
       {topic === 'tickets' && <section>
         <div className="guide-grid guide-grid-two"><article className="guide-card"><h2>Transfer a ticket</h2><ol><li>Open your match ticket in the Austin FC & Q2 Stadium app.</li><li>Tap “Send.”</li><li>Enter the recipient’s email address or phone number.</li><li>Choose the ticket quantity and tap “Send Tickets.”</li></ol></article><article className="guide-card"><h2>Buy or access tickets</h2><p>Purchases, account lookup, and transfers are handled by Austin FC’s official ticket service and app. This assistant can explain the steps but cannot transact or open your account.</p><p>If you need account help, use the official Austin FC ticketing service or stadium box office.</p></article></div>
+        <div className="handoffs">{ticketActions().map(a=><a key={a.href} href={a.href} target={a.href.startsWith('https:')?'_blank':undefined} rel="noopener noreferrer">{a.label}</a>)}</div>
         <div className="guide-callout">Instructions were checked against Austin FC’s mobile ticketing guide. No personal ticket or payment information is stored here.</div>
       </section>}
 
@@ -84,6 +97,8 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
         <h2 className="guide-subhead">Latest published club stories</h2><div className="guide-grid guide-grid-two">{data.news?.map(story => <article className="guide-card" key={story.url}><h2>{story.title}</h2><p>{story.summary}</p><small>Austin FC news · snapshot checked {checked} CT</small></article>)}</div>
         <h2 className="guide-subhead">Published roster</h2><div className="guide-roster">{data.roster?.map(player => <div key={player.url}><strong>#{player.number} {player.name}</strong><span>{player.position}</span></div>)}</div>
       </section>}
+
+      {topic === 'internal' && <section><div className="guide-callout">Club-approved fan answers can be published through the knowledge feed. Each answer names its approver, review time, and expiry. Expired answers are excluded.</div>{internal?.entries.filter(e=>Date.parse(e.expiresAt)>Date.now()&&(!params.entry||params.entry===e.id)).map(e=><article className="guide-feature" key={e.id}><h2>{e.title}</h2><p>{e.answer.en}</p><p lang="es">{e.answer.es}</p><small>Approved by {e.approvedBy} · checked {date(e.checkedAt)} CT · expires {date(e.expiresAt)} CT</small></article>)}{!internal?.entries.some(e=>Date.parse(e.expiresAt)>Date.now())&&<p>No club-specific answers have been published yet. Public stadium sources remain available.</p>}<div className="handoffs">{guestActions().map(a=><a key={a.href} href={a.href}>{a.label}</a>)}</div></section>}
 
       {topic === 'sources' && <section><div className="guide-callout">The information below is copied into local guides for this preview. Provider names are shown for transparency; the guide links stay inside this site. Historical Satisfi conversations shaped question wording but do not override current facts.</div><div className="guide-grid guide-grid-two">
         {[{ title: 'Q2 Stadium vendors and maps', body: `${data.vendors.length} published vendor locations and a section directory`, to: 'food' }, { title: 'Q2 Stadium policy guide', body: `${policyDocs.length} published policy topics`, to: 'policies' }, { title: 'Q2 Stadium directions and parking', body: 'Rail, bus, parking, rideshare, and accessibility directions', to: 'travel' }, { title: 'Austin FC', body: 'Published home dates, roster, recent club stories, and ticket steps', to: 'club' }, { title: 'National Weather Service', body: 'Live hourly forecast for the Q2 Stadium area', to: 'weather' }].map(item => <Link className="guide-card guide-source-card" key={item.title} href={`/guide?topic=${item.to}`}><h2>{item.title}</h2><p>{item.body}</p><small>View here <ArrowRight size={13}/></small></Link>)}

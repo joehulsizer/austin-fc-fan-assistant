@@ -1,33 +1,74 @@
 import { streamText } from 'ai';
-import { detectContext, ground, sectionZone } from './knowledge';
+import { detectContext, ground, sectionZone, getKnowledge } from './knowledge';
+import { safetyGrounding } from './safety';
+import { planIntents } from './intents';
+import { semanticPlan } from './model-planner';
+import { policyGrounding } from './policies';
+import { travelGrounding } from './travel';
+import { supportGrounding } from './support';
+import { addHandoffs } from './handoffs';
+import { getInternalFeed, lookupFeed } from './internal-knowledge';
 import { clubGrounding, weatherGrounding } from './live';
 import { fixtureMentioned } from './schedule';
 import type { ChatInput, Grounding } from './types';
 
 export async function prepare(input: ChatInput): Promise<Grounding> {
   const query = input.messages.at(-1)?.content?.trim() || '';
-  let priorContext = input.context;
+  let context = input.context;
   for (const message of input.messages.slice(0, -1)) {
-    if (message.role === 'user') priorContext = detectContext(message.content, priorContext);
+    if (message.role === 'user') context = detectContext(message.content, context);
   }
-  if (priorContext.event?.startsAt && new Date(priorContext.event.startsAt).getTime() < Date.now()) {
-    priorContext = { ...priorContext, event: undefined };
-  }
-  const mentioned = fixtureMentioned(query);
+  context = detectContext(query, context);
+  if (context.event?.startsAt && new Date(context.event.startsAt).getTime() < Date.now()) context = { ...context, event: undefined };
+  const knowledge = await getKnowledge();
+  const safety = safetyGrounding(query, context, knowledge);
+  if (safety) return addHandoffs({ ...safety, context: { ...context, topic: 'safety' } });
+  const mentioned = context.eventKind !== 'other' ? fixtureMentioned(query) : undefined;
   if (mentioned && /\b(match|game|kickoff|partido|there|stadium|q2|weather|rain|lluvia)\b/i.test(query)) {
-    priorContext = { ...priorContext, event: { title: mentioned.title, startsAt: mentioned.startsAt, source: mentioned.url || 'https://www.austinfc.com/schedule/' } };
+    context = { ...context, eventKind: 'match', event: { title: mentioned.title, startsAt: mentioned.startsAt, source: mentioned.url || 'https://www.austinfc.com/schedule/' } };
   }
   const followUp = /\b(where (?:are|is) (?:those|they|them|it)|where can i find (?:those|them|it)|what about (?:that|it)|is (?:that|it) (?:vegan|vegetarian)|and (?:those|them))\b/i.test(query);
-  const retrievalQuery = followUp && priorContext.food ? `${query} ${priorContext.food}`
-    : priorContext.topic === 'ticketing' && /\b(recipient|accept|receive|forward)\b/i.test(query) ? `${query} ticket transfer`
-    : priorContext.topic === 'transport' && /\b(leave|arrive|how long|what time)\b/i.test(query) ? `${query} travel to q2`
+  const retrievalQuery = followUp && context.food ? `${query} ${context.food}`
+    : context.topic === 'ticketing' && /\b(recipient|accept|receive|forward)\b/i.test(query) ? `${query} ticket transfer`
+    : context.topic === 'transport' && /\b(leave|arrive|how long|what time)\b/i.test(query) ? `${query} travel to q2`
     : /\b(player|team|club)\b/i.test(query) && input.messages.slice(0,-1).some(m => m.role === 'user' && /\btryouts?\b/i.test(m.content)) ? `${query} tryout`
     : query;
-  let result = await ground(retrievalQuery, priorContext);
-  if (result.route === 'weather') result = await weatherGrounding(query, result.context);
-  if (result.route === 'club' && !result.answer) result = await clubGrounding(retrievalQuery, result.context);
-  result.context = { ...result.context, topic: result.route };
-  return result;
+  const intents = await semanticPlan(retrievalQuery, context, planIntents(retrievalQuery, context.topic));
+  // Resolve an explicitly requested match before the forecast which depends on it.
+  if(intents.some(i=>i.kind==='club')&&intents.some(i=>i.kind==='weather')) intents.sort((a,b)=>Number(b.kind==='club')-Number(a.kind==='club'));
+  const feed = intents[0]?.kind === 'security' ? undefined : await getInternalFeed();
+  const parts: {query:string;result:Grounding}[] = [];
+  for(const intent of intents) {
+    let result:Grounding;
+    const internal = intent.policy || ['security','weather','club'].includes(intent.kind) ? undefined : lookupFeed(query,context,feed,intent.kind);
+    if(internal) result=internal;
+    else if(intent.kind==='ordering'||intent.kind==='benefits'||intent.kind==='refund'||intent.kind==='security') result=supportGrounding(intent.kind,query,context,knowledge);
+    else if(intent.policy) result=policyGrounding(intent.policy,query,context,knowledge);
+    else if(intent.kind==='transport') result=travelGrounding(query,context,knowledge);
+    else if(intent.kind==='weather') result=await weatherGrounding(query,context);
+    else if(intent.kind==='club') { result=await ground(intent.query,context); if(!result.answer) result=await clubGrounding(intent.query,context); }
+    else {
+      const lookup=intent.kind==='drinks' ? (intents.length>1 ? (context.language==='es'?'bebidas':'drinks') : intent.query) : intent.kind==='ticketing' ? `${intent.query.replace(/\b(?:beer|food|parking|rain|backpack|bottle)\b/gi,'')} ticket` : intent.query;
+      result=await ground(lookup,context);
+      // Retrieved subqueries must not change the language of the actual latest message.
+      result.context={...result.context,language:context.language};
+      if(intent.kind==='concessions'||intent.kind==='drinks') {
+        result.route=intent.kind;
+        if(context.section && context.section>=200 && context.section<300) {
+          result.answer=(context.language==='es' ? `No tengo puestos publicados en el nivel 200 que pueda confirmar cerca de la sección ${context.section}. Los puestos publicados están principalmente en la explanada principal; no voy a llamarlos cercanos a tu asiento. Consulta el mapa o OrderNext para opciones de tu sección.` : `I do not have verified 200-level stands near section ${context.section}. Published options are mainly on the main concourse; I cannot call them nearby to your seat. Check the section guide or OrderNext for options serving your section.`);
+          result.cards=[];
+        }
+      }
+    }
+    context={...context,...result.context,language:context.language};
+    result.context=context;
+    parts.push({query:intent.query,result:addHandoffs(result)});
+  }
+  if(parts.length===1) return {...parts[0].result,context:{...context,topic:parts[0].result.route}};
+  const sources=parts.flatMap(p=>p.result.sources).filter((s,i,a)=>a.findIndex(x=>x.title===s.title&&x.url===s.url)===i);
+  const actions=parts.flatMap(p=>p.result.actions||[]).filter((s,i,a)=>a.findIndex(x=>x.href===s.href)===i);
+  return {route:'multi',context:{...context,topic:'multi'},facts:parts.flatMap(p=>p.result.facts),sources,cards:parts.flatMap(p=>p.result.cards),actions,parts,
+    answer:parts.every(p=>p.result.answer||['concessions','drinks','ticketing','transaction'].includes(p.result.route)) ? parts.map(p=>groundedFallback(p.query,p.result)).join('\n\n') : undefined};
 }
 
 function locationPhrase(section: number | undefined, location: string, language: 'en' | 'es' = 'en') {
@@ -50,6 +91,7 @@ const spanishFood: Record<string, string> = {
 
 export function groundedFallback(query: string, result: Grounding): string {
   if (result.answer) return result.answer;
+  if (result.parts) return result.parts.map(p=>groundedFallback(p.query,p.result)).join('\n\n');
   const es = result.context.language === 'es';
   const facts = result.facts.filter(f => !f.startsWith('Ask ') && !f.startsWith('The stadium calls'));
   if (result.route === 'concessions' || result.route === 'drinks') {
@@ -120,6 +162,13 @@ export function groundedFallback(query: string, result: Grounding): string {
 export async function* answerStream(input: ChatInput, result: Grounding): AsyncGenerator<string> {
   const query = input.messages.at(-1)?.content || '';
   if (result.answer) { yield result.answer; return; }
+  if (result.parts) {
+    for (const [i,part] of result.parts.entries()) {
+      if(i) yield '\n\n';
+      yield* answerStream({...input,messages:[...input.messages.slice(0,-1),{role:'user',content:part.query}]},part.result);
+    }
+    return;
+  }
   const fallback = groundedFallback(query, result);
   if (['concessions', 'drinks', 'transport', 'ticketing', 'transaction'].includes(result.route) || /diaper|pa[nñ]al|childcare bag|\b(bag|backpack|purse|clutch|bolsa|bolso|mochila)\b|water|agua|hydration|refill|water station|sensory|sensorial|botella|bottle/i.test(query)) {
     yield fallback;

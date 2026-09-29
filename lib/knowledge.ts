@@ -1,4 +1,5 @@
 import bundled from '@/data/knowledge.json';
+import { messageLanguage } from './language';
 import type { Card, FanContext, Grounding, Source } from './types';
 
 type Doc = { id: string; title: string; body: string; url: string; checkedAt: string; links: { label: string; url: string }[] };
@@ -31,7 +32,7 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   if (section) context.section = Number(section[1]);
   const origin = query.match(/\b(?:from|starting at|leaving from|located at|i(?:'m| am|m) (?:at|near|in))\s+(.+?)(?=\s+(?:to|get to|for the|how do|where can|what time|and when)\b|[,.!?]|$)/i)?.[1]?.trim();
   if (origin && !/^(?:section|sec\.?|secci[oó]n|here|there|the bar|the stand)\b/i.test(origin)) {
-    context.origin = /\b(?:university of texas(?: at austin)?|ut austin|ut campus)\b/i.test(origin) ? 'UT Austin' : origin.slice(0, 120);
+    context.origin = /\b(?:university of texas(?: at austin)?|ut austin|ut campus|ut)\b/i.test(origin) ? 'UT Austin' : origin.slice(0, 120);
   } else if (/\b(?:university of texas(?: at austin)?|ut austin|ut campus)\b/i.test(query) && /\b(?:travel|train|bus|stadium|q2|there|leave|arrive)\b/i.test(query)) context.origin = 'UT Austin';
   const noDiet = /\b(?:no dietary restrictions|not (?:vegan|vegetarian)|anything is fine)\b/i.test(query);
   if (noDiet) delete context.dietary;
@@ -40,8 +41,18 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   else if (/\b(gluten|celiac|celiaco|celíaco)\b/i.test(query)) context.dietary = 'gluten-aware';
   const food = query.match(/\b(chicken|wings?|tenders?|burgers?|hamburgers?|pizza|tacos?|nachos|bao|barbecue|bbq|shawarma)\b/i);
   if (food) context.food = food[1].toLowerCase();
-  if (/[¿¡]|\b(d[oó]nde|comida|boleto|entrada|estadio|puedo|para|c[oó]mo|quiero|tren|estacionamiento)\b/i.test(query)) context.language = 'es';
-  else if (/\b(english|in english)\b/i.test(query)) context.language = 'en';
+  context.language = messageLanguage(query, previous.language);
+  if (/\b(concert|concierto|festival|non.match|otro evento|private event)\b/i.test(query)) { context.eventKind = 'other'; delete context.event; delete context.kickoffTime; }
+  else if (/\b(match|partido)\b/i.test(query) || (!context.eventKind && /\bkickoff\b/i.test(query))) context.eventKind = 'match';
+  const clock = query.match(/(?:kickoff|start(?:s)?|inicio|empieza|comienza)(?:\s+(?:is|at|a las|es|del partido))*\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i);
+  if (clock && Number(clock[1]) <= 23 && Number(clock[2] || 0) < 60) {
+    let hour = Number(clock[1]);
+    if (clock[3]?.startsWith('a') && hour === 12) hour = 0;
+    else if ((clock[3]?.startsWith('p') || !clock[3]) && hour < 12) hour += 12;
+    context.kickoffTime = `${String(hour).padStart(2,'0')}:${clock[2] || '00'}`;
+  }
+  const duration = query.match(/(\d{1,3})\s*(?:minutes?|mins?|minutos?)\s*(?:trip|travel|drive|ride|journey|viaje|trayecto)?/i);
+  if (duration && Number(duration[1]) > 0 && Number(duration[1]) <= 240) context.travelMinutes = Number(duration[1]);
   return context;
 }
 
@@ -87,8 +98,8 @@ export const MENU_HIGHLIGHTS = [
 
 export function searchDocs(query: string, knowledge: Snapshot, count = 4): Doc[] {
   const normalized = normalize(query);
-  const stop = new Set(['the','and','for','from','where','what','when','there','here','with','can','you','how','are','get','find','stadium','austin','q2','some','about','those','they','them','want','need','please','could','would']);
-  const words = normalized.split(/\s+/).filter(w => w.length > 2 && !stop.has(w));
+  const stop = new Set('the a an i my me is are do does can could would will should it this that there here q2 stadium please tell about what where how when to at in on of for and or with from you your have has be get'.split(' '));
+  const words = normalized.split(/[^a-z0-9]+/).filter(w => w.length > 2 && !stop.has(w));
   const aliases: Record<string, string> = {
     diaper: 'bag childcare', mochila: 'bag', bolsa: 'bag', bolso: 'bag',
     train: 'rail metro capmetro', tren: 'rail metro capmetro', estacionamiento: 'parking',
@@ -104,13 +115,13 @@ export function searchDocs(query: string, knowledge: Snapshot, count = 4): Doc[]
     const title = normalize(d.title), body = normalize(d.body);
     let score = 0;
     for (const term of terms) {
-      if (title.includes(term)) score += 5;
-      if (body.includes(term)) score += 1;
+      if (new RegExp(`\\b${term}\\b`).test(title)) score += 5;
+      if (new RegExp(`\\b${term}\\b`).test(body)) score += 1;
     }
     if (/parking|estacionamiento/.test(normalized) && d.id === 'parking') score += 12;
     if (/rail|train|tren|bus|rideshare|uber|metro/.test(normalized) && d.id === 'directions') score += 12;
     return { d, score };
-  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, count).map(x => x.d);
+  }).filter(x => x.score >= 5).sort((a, b) => b.score - a.score).slice(0, count).map(x => x.d);
 }
 
 function normalize(value: string) { return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
@@ -220,7 +231,7 @@ export async function ground(query: string, oldContext: FanContext): Promise<Gro
     return base;
   }
   if (/\b(next.*(match|game|home|q2|austin fc)|schedule|opponent|roster|players?|goalkeepers?|standings|news|fixture|proximo partido|siguiente partido|calendario|plantilla|alineacion|noticias|porteros?|jugadores?|copa america)\b/.test(q) && !/\b(weather|rain|forecast|lluvia|llovera?|clima|pronostico)\b/.test(q) || /\b(join|tryout|academy)\b.*\b(player|team|club|austin fc)\b/.test(q)) { base.route = 'club'; return base; }
-  if (/\b(weather|rain|temperature|forecast|kickoff|lluvia|llovera?|clima|tiempo|pronostico|inicio del partido)\b/.test(q)) { base.route = 'weather'; return base; }
+  if (/\b(weather|rain|temperature|forecast|lluvia|llovera?|clima|tiempo|pronostico)\b/.test(q)) { base.route = 'weather'; return base; }
   base.route = /\b(train|tren|rail|metro|bus|parking|park|rideshare|uber|transit|estacionamiento|transporte|red line|mckalla|directions|getting there|coming from|how do i get there|how do i get to the stadium|how do i get to q2|how do i get there and what time|student center)\b/.test(q) || (context.origin && /\b(?:from|i am at|i'm at|im at|leaving|starting at)\b/.test(q)) ? 'transport' : /\b(ticket|boleto|entrada|seatgeek|transfer|transferir)\b/.test(q) ? 'ticketing' : 'stadium';
   const transportIds = /\b(parking|park|estacionamiento)\b/.test(q) ? ['parking','policy-ada-accessibility'] : /\b(what time|when|arrive|early)\b/.test(q) ? ['directions','policy-capital-metro','policy-gate-opening-times'] : ['directions','policy-capital-metro'];
   const docs = base.route === 'transport'

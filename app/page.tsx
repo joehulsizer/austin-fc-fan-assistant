@@ -2,11 +2,12 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ArrowRight, MapPin, RotateCcw, Send, Square, ThumbsDown, ThumbsUp, Ticket, Train, Utensils, CloudSun, Menu, X, MessageCircle, BookOpen, CircleHelp, PanelLeftClose, PanelLeftOpen, Share2, Copy, Check } from 'lucide-react';
-import type { Card, FanContext, Source } from '@/lib/types';
+import type { Action, Card, FanContext, Source } from '@/lib/types';
 import { internalGuideHref } from '@/lib/internal-links';
+import { guestActions, isActionHref } from '@/lib/handoffs';
 import './style.css';
 
-type Message = { id:string; role:'user'|'assistant'; content:string; sources?:Source[]; cards?:Card[]; route?:string; rating?:'up'|'down'; feedbackOpen?:boolean; feedbackSaved?:boolean; error?:boolean };
+type Message = { id:string; role:'user'|'assistant'; content:string; sources?:Source[]; cards?:Card[]; actions?:Action[]; route?:string; rating?:'up'|'down'; feedbackOpen?:boolean; feedbackSaved?:boolean; error?:boolean };
 const welcome:Message = {id:'welcome',role:'assistant',content:'Hey, welcome to Q2 Stadium. Ask me about food, getting here, stadium policies, tickets, or the weather. Share your section and I can narrow down the options.'};
 const suggestions = [
   {icon:Utensils,label:'Food near me',text:'I’m in section 123. Where can I get vegan food?'},
@@ -40,7 +41,7 @@ export default function Home(){
   function toggleMenu(){setCollapsed(value=>{localStorage.setItem('austin-fc-menu-collapsed',String(!value));return !value;});}
   async function copyShare(url:string){try{await navigator.clipboard.writeText(url);setShareCopied(true);}catch{setShareCopied(false);}}
   async function createShare(){
-    const snapshot=messages.filter(m=>m.id!=='welcome'&&!m.error&&m.content.trim()).slice(-24).map(({role,content,sources,cards})=>({role,content,sources:sources?.slice(0,4),cards:cards?.slice(0,4)}));
+    const snapshot=messages.filter(m=>m.id!=='welcome'&&!m.error&&m.content.trim()).slice(-24).map(({role,content,sources,cards,actions})=>({role,content,sources:sources?.slice(0,16),cards:cards?.slice(0,12),actions:actions?.slice(0,16)}));
     if(!snapshot.some(m=>m.role==='user')||!snapshot.some(m=>m.role==='assistant')){setShareError('Ask a question and wait for an answer before sharing.');return;}
     setShareBusy(true);setShareError('');setShareCopied(false);
     try{const response=await fetch('/api/share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:snapshot})});const result=await response.json();if(!response.ok||!result.path)throw new Error(result.error||'Could not create share link.');const url=new URL(result.path,window.location.origin).href;setShareUrl(url);await copyShare(url);}
@@ -62,12 +63,12 @@ export default function Home(){
         const part=await reader.read();if(part.done)break;buffer+=decoder.decode(part.value,{stream:true});
         const lines=buffer.split('\n');buffer=lines.pop()||'';
         for(const line of lines){if(!line)continue;const event=JSON.parse(line);
-          if(event.type==='meta'){setContext(event.context);setMessages(old=>old.map(m=>m.id===id?{...m,sources:event.sources,cards:event.cards,route:event.route}:m));}
+          if(event.type==='meta'){setContext(event.context);setMessages(old=>old.map(m=>m.id===id?{...m,sources:event.sources,cards:event.cards,actions:event.actions,route:event.route}:m));}
           if(event.type==='delta')setMessages(old=>old.map(m=>m.id===id?{...m,content:m.content+event.text}:m));
           if(event.type==='error')throw new Error(event.message);
         }
       }
-    }catch{setMessages(old=>old.map(m=>m.id===id?{...m,content:controller.signal.aborted?'Response stopped.':'Something went wrong. Please try again.',error:true}:m));if(!controller.signal.aborted)setRetryText(text);}
+    }catch{setMessages(old=>old.map(m=>m.id===id?{...m,content:controller.signal.aborted?'Response stopped.':'Something went wrong. Please try again.',error:true,actions:guestActions(context.language==='es')}:m));if(!controller.signal.aborted)setRetryText(text);}
     finally{setBusy(false);abort.current=null;input.current?.focus();}
   }
   async function rate(id:string,rating:'up'|'down',comment?:string){
@@ -95,7 +96,8 @@ export default function Home(){
         {messages.length===1&&<div className="hero"><div className="eyebrow">HERE FOR EVERY MATCHDAY</div><h1>Need a hand at <em>Q2?</em></h1><p>From the first train to the final whistle, find the information you need, right when you need it.</p></div>}
         <div className="messages" aria-live="polite">{messages.map(m=><div key={m.id} className={'message '+m.role}><div className="avatar">{m.role==='assistant'?'AF':'YOU'}</div><div className="message-main"><strong>{m.role==='assistant'?'Austin FC Fan Assistant':'You'}</strong><div className={'message-copy '+(m.error?'error':'')}><ReactMarkdown components={{a:({href,children})=><a href={internalGuideHref(href||'')}>{children}</a>}}>{m.content||(busy&&m.id===messages.at(-1)?.id?'Thinking…':'')}</ReactMarkdown></div>
           {!!m.cards?.length&&<div className="cards">{m.cards.slice(0,4).map((c,i)=><a key={i} href={internalGuideHref(c.href,c.title)} className="card"><strong>{c.title}</strong><small>{c.detail}</small><b>View here <ArrowRight size={14}/></b></a>)}</div>}
-          {!!m.sources?.length&&<div className="sources"><span>Sources</span>{m.sources.slice(0,4).map((s,i)=><a key={i} href={internalGuideHref(s.url,s.title)} title={s.checkedAt?'Checked '+new Date(s.checkedAt).toLocaleString():undefined}>{s.title} <ArrowRight size={11}/>{s.checkedAt&&<time>checked {new Date(s.checkedAt).toLocaleDateString()}</time>}</a>)}</div>}
+          {!!m.actions?.length&&<div className="handoffs" aria-label={context.language==='es'?'Acciones y ayuda':'Actions and support'}>{m.actions.filter(a=>isActionHref(a.href)).map((a,i)=><a key={i} href={a.href} target={a.href.startsWith('https:')?'_blank':undefined} rel="noopener noreferrer">{a.label}<ArrowRight size={14}/></a>)}</div>}
+          {!!m.sources?.length&&<div className="sources"><span>Sources</span>{m.sources.slice(0,16).map((s,i)=><a key={i} href={internalGuideHref(s.url,s.title)} title={s.checkedAt?'Checked '+new Date(s.checkedAt).toLocaleString():undefined}>{s.title} <ArrowRight size={11}/>{s.checkedAt&&<time>checked {new Date(s.checkedAt).toLocaleDateString()}</time>}</a>)}</div>}
           {m.role==='assistant'&&m.id!=='welcome'&&!busy&&!m.error&&<div className="feedback">Helpful? <button aria-label="Helpful answer" className={m.rating==='up'?'active':''} onClick={()=>rate(m.id,'up')}><ThumbsUp size={15}/></button><button aria-label="Unhelpful answer" className={m.rating==='down'?'active':''} onClick={()=>rate(m.id,'down')}><ThumbsDown size={15}/></button>{m.feedbackSaved&&<span>Saved</span>}</div>}
           {m.feedbackOpen&&<form className="feedback-form" onSubmit={e=>{e.preventDefault();rate(m.id,'down',feedbackText);}}><label htmlFor={'feedback-'+m.id}>What could be better? (optional)</label><textarea id={'feedback-'+m.id} maxLength={700} value={feedbackText} onChange={e=>setFeedbackText(e.target.value)}/><button type="submit">Send feedback</button></form>}
         </div></div>)}</div>

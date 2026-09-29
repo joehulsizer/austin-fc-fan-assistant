@@ -1,0 +1,22 @@
+name: Production red team
+on: workflow_dispatch
+jobs:
+  redteam:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify authenticated knowledge feed and storage
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: python scripts/test_feed_live.py
+      - run: python scripts/redteam_live.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: redteam-transcripts
+          path: |
+            redteam-live-results.json
+            feed-live-results.json

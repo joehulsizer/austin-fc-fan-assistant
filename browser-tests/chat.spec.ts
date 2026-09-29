@@ -88,7 +88,8 @@ test('share creates a read-only link and explains who can see it', async ({ page
   await page.getByRole('button', { name: 'Create share link' }).click();
   await expect(page.getByRole('textbox', { name: 'Share link' })).toHaveValue(/\/share\/11111111-1111-4111-8111-111111111111/);
   expect(sharedMessages).toHaveLength(2);
-  expect(sharedMessages[1].cards?.length).toBeLessThanOrEqual(4);
+  const savedCardCount=await page.evaluate(()=>JSON.parse(localStorage.getItem('austin-fc-fan-assistant-v1')!).messages.at(-1).cards.length);
+  expect(sharedMessages[1].cards?.length).toBe(savedCardCount);
   expect(sharedMessages[1].sources?.length).toBeLessThanOrEqual(4);
 });
 
@@ -110,4 +111,28 @@ test('a long conversation keeps sending the latest question within the API limit
   expect(Math.max(...lengths)).toBeLessThanOrEqual(16);
   expect(lengths.at(-1)).toBe(16);
   await expect(page.locator('.message.assistant').last().locator('.message-copy strong')).toHaveText('Question 10');
+});
+
+test('bilingual emergency, language switch and relevant source chips work on a phone', async({page})=>{
+  await page.setViewportSize({width:375,height:812});await page.goto('/');
+  await page.getByLabel('Ask a question').fill('Perdí a mi hijo de 6 años cerca de la sección 118');await page.getByLabel('Ask a question').press('Enter');
+  const answer=page.locator('.message.assistant').last();await expect(answer).toContainText('inmediatamente');await expect(answer.locator('a[href="sms:3527583733"]')).toBeVisible();
+  await expect(page.getByLabel('Ask a question')).toBeEnabled();await page.getByLabel('Ask a question').fill('What time do gates open?');await page.getByLabel('Ask a question').press('Enter');
+  await expect(page.locator('.message.assistant').last()).toContainText('90 minutes');
+  await expect(page.locator('.message.assistant').last().locator('.sources a')).toHaveCount(1);
+  await expect(page.locator('.message.assistant').last().locator('.sources a')).toContainText('Gate Opening Times');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2)).toBe(false);
+});
+
+test('seat ordering uses actual OrderNext and share retains handoffs',async({page})=>{
+  let actions:{href:string}[]=[];
+  await page.route('**/api/share',async route=>{actions=route.request().postDataJSON().messages.at(-1).actions;await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({path:'/share/11111111-1111-4111-8111-111111111111'})});});
+  await page.goto('/');await page.getByLabel('Ask a question').fill('Beer and hot dog delivered to my seat in 210');await page.getByLabel('Ask a question').press('Enter');
+  const response=page.locator('.message.assistant').last();await expect(response).toContainText('eligible');await expect(response.locator('.handoffs a').first()).toHaveAttribute('href','https://austinfc.ordernext.com/');
+  await expect(page.getByLabel('Ask a question')).toBeEnabled();await page.getByRole('button',{name:'Share chat'}).click();await page.getByRole('button',{name:'Create share link'}).click();await expect(page.getByRole('textbox',{name:'Share link'})).toHaveValue(/\/share\//);expect(actions.some(a=>a.href.includes('ordernext'))).toBe(true);
+});
+
+test('arrival planner generates a usable chat request with origin, event type, time and duration',async({page})=>{
+  await page.goto('/guide?topic=travel');await page.getByLabel('Starting point').fill('UT Austin');await page.getByLabel('Start time (Austin time)').fill('19:30');await page.getByLabel('Travel duration / planning allowance (minutes)').fill('35');await page.getByRole('button',{name:'Build my arrival plan'}).click();
+  await expect(page.getByLabel('Ask a question')).toHaveValue(/UT Austin.*19:30.*35 minutes/);await page.getByLabel('Ask a question').press('Enter');await expect(page.locator('.message.assistant').last()).toContainText('5:25');await expect(page.locator('.message.assistant').last().getByRole('link',{name:'Bike: Directions in Apple Maps'})).toHaveAttribute('href',/maps.apple.com/);
 });
