@@ -20,6 +20,7 @@ export type ChatInput = {
 };
 export type Grounding = {
   route: string;
+  planner?: 'model' | 'fallback' | 'fixed';
   context: FanContext;
   facts: string[];
   sources: Source[];

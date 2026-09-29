@@ -39,3 +39,5 @@ Maps links use the provided starting point and destination; they do not imply li
 The site retains browser context and shared chats in public Blob snapshots. Account transactions and actual app privacy/data-retention controls belong to the native-app handoff.
 
 Production uses a bounded model classifier for unfamiliar wording, with deterministic routing as the outage fallback. Safety bypasses classification and answer-generation models entirely. Cloud tests exercise the outage fallback; production red-team tests exercise the hosted model path and fallback when needed.
+
+`meta.planner` reports `fixed` for safety, `model` for semantic interpretation, or `fallback` for a provider outage/offline check. Server logs record model token usage without fan messages. Apple cycling links use the current `/directions?mode=cycling` format; Google uses `travelmode=bicycling`. Apple’s unified links require iOS 18.4/macOS 15.4 or later; the Google alternative is also provided. See [Apple documentation](https://developer.apple.com/documentation/mapkit/unified-map-urls) and [Google documentation](https://developers.google.com/maps/documentation/urls/get-started).

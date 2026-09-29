@@ -22,7 +22,7 @@ def evaluate(c):
   return {'id':c['id'],'pass':all(checks.values()),'checks':checks,'transcript':transcript,'latencyMs':round((time.monotonic()-start)*1000)}
  except Exception as e:return {'id':c['id'],'pass':False,'error':str(e),'transcript':transcript}
 with concurrent.futures.ThreadPoolExecutor(max_workers=5) as pool:results=list(pool.map(evaluate,CASES))
-passed=sum(r['pass'] for r in results);report={'createdAt':datetime.now(timezone.utc).isoformat(),'url':BASE,'total':len(results),'passed':passed,'results':results}
+passed=sum(r['pass'] for r in results);report={'createdAt':datetime.now(timezone.utc).isoformat(),'url':BASE,'plannerCounts':{mode:sum(t['meta'].get('planner')==mode for r in results for t in r.get('transcript',[])) for mode in ['fixed','model','fallback']},'total':len(results),'passed':passed,'results':results}
 Path('redteam-live-results.json').write_text(json.dumps(report,indent=2,ensure_ascii=False))
 print(json.dumps({'total':len(results),'passed':passed,'failures':[{k:v for k,v in r.items() if k!='transcript'} for r in results if not r['pass']]},indent=2))
 if passed!=len(results):raise SystemExit(1)
