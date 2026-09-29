@@ -2,6 +2,7 @@ import { streamText } from 'ai';
 import { detectContext, ground, sectionZone, getKnowledge } from './knowledge';
 import { safetyGrounding } from './safety';
 import { planIntents } from './intents';
+import { semanticPlan } from './model-planner';
 import { policyGrounding } from './policies';
 import { travelGrounding } from './travel';
 import { supportGrounding } from './support';
@@ -32,7 +33,7 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     : context.topic === 'transport' && /\b(leave|arrive|how long|what time)\b/i.test(query) ? `${query} travel to q2`
     : /\b(player|team|club)\b/i.test(query) && input.messages.slice(0,-1).some(m => m.role === 'user' && /\btryouts?\b/i.test(m.content)) ? `${query} tryout`
     : query;
-  const intents = planIntents(retrievalQuery, context.topic);
+  const intents = await semanticPlan(retrievalQuery, context, planIntents(retrievalQuery, context.topic));
   // Resolve an explicitly requested match before the forecast which depends on it.
   if(intents.some(i=>i.kind==='club')&&intents.some(i=>i.kind==='weather')) intents.sort((a,b)=>Number(b.kind==='club')-Number(a.kind==='club'));
   const feed = intents[0]?.kind === 'security' ? undefined : await getInternalFeed();
@@ -47,7 +48,7 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     else if(intent.kind==='weather') result=await weatherGrounding(query,context);
     else if(intent.kind==='club') { result=await ground(intent.query,context); if(!result.answer) result=await clubGrounding(intent.query,context); }
     else {
-      const lookup=intent.kind==='drinks' ? (context.language==='es'?'bebidas':'drinks') : intent.kind==='ticketing' ? `${intent.query.replace(/\b(?:beer|food|parking|rain|backpack|bottle)\b/gi,'')} ticket` : intent.query;
+      const lookup=intent.kind==='drinks' ? (intents.length>1 ? (context.language==='es'?'bebidas':'drinks') : intent.query) : intent.kind==='ticketing' ? `${intent.query.replace(/\b(?:beer|food|parking|rain|backpack|bottle)\b/gi,'')} ticket` : intent.query;
       result=await ground(lookup,context);
       // Retrieved subqueries must not change the language of the actual latest message.
       result.context={...result.context,language:context.language};
