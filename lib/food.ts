@@ -19,7 +19,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
  const doc=k.documents.find(d=>d.title==='Food and Beverage');
  const src=(title:string,url:string,checkedAt=k.checkedAt):Source=>({title,url,checkedAt});
  if(context.section&&context.section>=200&&context.section<300) {
-  result.answer=es?`No tengo puestos publicados en el nivel 200 que pueda confirmar cerca de la sección ${context.section}. Revisa OrderNext para opciones que sirvan tu sección; no puedo garantizar entrega al asiento.`:`I do not have verified 200-level stands near section ${context.section}. Check OrderNext for options serving your section; I cannot guarantee seat delivery.`;
+  result.answer=es?`No tengo puestos publicados en el nivel 200 que pueda confirmar cerca de la sección ${context.section}. Revisa OrderNext para opciones que sirvan tu sección; no puedo garantizar entrega al asiento.`:`I do not have verified 200-level stands near section ${context.section}. Published stands are mainly on the main concourse; I cannot call them nearby to your seat. Check OrderNext for options serving your section; I cannot guarantee seat delivery.`;
   return result;
  }
  if(kind==='drinks') {
@@ -62,7 +62,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
  const category=/\b(chicken|wings?|tenders?|pollo|alitas)\b/.test(q)?'chicken':/\b(burgers?|hamburgers?|hamburguesa)\b/.test(q)?'burger':undefined;
  if(category) {
   if((vegan||vegetarian)&&category==='chicken'||vegan&&category==='burger') {
-   result.answer=es?`No puedo confirmar ${category==='chicken'?'pollo':'una hamburguesa'} ${vegan?'vegano':'vegetariano'} en las fuentes publicadas. ${category==='burger'?'La Impossible Good Burger figura como vegetariana, lo que no confirma que sea vegana.':'El pollo publicado es pollo convencional; no lo voy a presentar como vegetal.'} Puedes buscar alternativas veganas en Verde Vegan, sección 119, o el bao Creamy Veggie de Bao’d Up, sección 101.`:`I cannot verify a ${vegan?'vegan':'vegetarian'} ${category==='chicken'?'chicken option':'burger'} in the published sources. ${category==='burger'?'The Impossible Good Burger is labeled vegetarian; that does not establish that it is vegan.':'The published chicken options are conventional chicken, so I will not present them as plant-based.'} Verified vegan alternatives include Verde Vegan at section 119 and the Creamy Veggie bao at Bao’d Up, section 101.`;
+   result.answer=es?`No puedo confirmar ${category==='chicken'?'pollo':'una hamburguesa'} ${vegan?'vegano':'vegetariano'} en las fuentes publicadas. ${category==='burger'?'La Impossible Good Burger figura como vegetariana, lo que no confirma que sea vegana.':'El pollo publicado es pollo convencional; no lo voy a presentar como vegetal.'} Puedes buscar alternativas veganas en Verde Vegan, sección 119, o el bao Creamy Veggie de Bao’d Up, sección 101.`:`I cannot verify a ${vegan?'vegan':'vegetarian'} ${category==='chicken'?'chicken option':'burger'} in the published sources. ${category==='burger'?'The Impossible Good Burger is labeled vegetarian; that does not establish that it is vegan.':'The chicken in the published menu is conventional chicken, so I will not present them as plant-based.'} Verified vegan alternatives include Verde Vegan at section 119 and the Creamy Veggie bao at Bao’d Up, section 101.`;
   } else {
    const matches=MENU_HIGHLIGHTS.filter(m=>m.category===category&&(!gluten||m.name==='Shawarma Point')).sort((a,b)=>proximity(context.section,sections(a.location))-proximity(context.section,sections(b.location)));
    result.facts=matches.map(m=>`${m.name}: ${m.item}, ${m.location}.`);result.cards=matches.map(m=>({title:m.name,detail:`${m.item} · ${m.location}`,href:MAP_URL,label:es?'Ver ubicación':'View location'}));
@@ -80,13 +80,13 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
    'Eastside Eats':{vegan:'Popcorn',vegetarian:'Cheese nachos, popcorn or soft pretzels','gluten-aware':'Cheese nachos or popcorn (avoiding gluten)'}
   };
   const foodItem=q.match(/\b(tacos?|pizza|nachos|bao|shawarma|barbecue|bbq|popcorn|chili dog|hot dog|empanadas?)\b/)?.[1];
-  const named=k.vendors.filter(v=>q.includes(normalized(v.name)));
+  const named=k.vendors.filter(v=>q.includes(normalized(v.name)) || /verde vegan/.test(q)&&v.name.startsWith('Verde Vegan'));
   let matches=k.vendors.filter(v=> {
-   if(!named.length && /Bar|Draft|Heineken|Michelob/.test(v.name))return false;
+   if(!named.length && !labels[v.name] && /Bar|Draft|Heineken|Michelob/.test(v.name))return false;
    const detail=context.dietary?labels[v.name]?.[context.dietary]:v.description;
    if(context.dietary&&!detail)return false;
    if(named.length&&!named.some(n=>n.name===v.name))return false;
-   if(foodItem){const text=normalized(v.name+' '+(detail||''));return foodItem.startsWith('taco')?/taco|queso|quesobirria/.test(text):new RegExp(foodItem.replace(/s$/,'')).test(text);}
+   if(foodItem){const text=normalized(v.name+' '+(detail||'')+' '+(context.dietary?'':Object.values(labels[v.name]||{}).join(' ')));return foodItem.startsWith('taco')?/taco|queso|quesobirria/.test(text):new RegExp(foodItem.replace(/s$/,'')).test(text);}
    return context.dietary||named.length||! /\b(sushi|lobster|steak|ramen|pasta)\b/.test(q);
   });
   matches.sort((a,b)=>proximity(context.section,a.sections)-proximity(context.section,b.sections));
