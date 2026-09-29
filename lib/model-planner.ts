@@ -18,6 +18,13 @@ Separate multiple requests into intents with short standalone subqueries in the 
     console.info(JSON.stringify({event:'intent_plan',model:'openai/gpt-5.4-mini',inputTokens:result.usage.inputTokens,outputTokens:result.usage.outputTokens}));
     const planned=result.object.intents.map(i=>({...i,policy:i.kind==='stadium'?(i.policy||policyTopics(i.query)[0]):undefined}));
     const intents=planned.filter((i,index,all)=>all.findIndex(x=>x.kind===i.kind&&x.policy===i.policy)===index);
+    // Reject invented benefit/order requests while retaining unfamiliar phrasing.
+    const benefitRequested=/\b(stm|members?|membership|season|abonado|socio|benefits?|discount|perks?|holder|descuento|beneficio|ventajas)\b/i.test(query);
+    const orderRequested=/\b(order|ordering|deliver\w*|delivery|pedido|pedir|pide|entreg\w*|asiento|seat|purchase|buy|grab|collect|pickup|recoger|recogida)\b|pick.up/i.test(query);
+    for(let i=intents.length-1;i>=0;i--) {
+      if(intents[i].kind==='benefits'&&!benefitRequested) intents.splice(i,1);
+      else if(intents[i].kind==='ordering'&&!orderRequested) intents.splice(i,1);
+    }
     // Fixed, recognized requested policies must not disappear from the model's plan.
     for(const known of fallback.filter(i=>i.policy||['ordering','benefits','refund','ticketing','account'].includes(i.kind)))if(!intents.some(i=>i.kind===known.kind&&i.policy===known.policy))intents.push({kind:known.kind as Exclude<Intent['kind'],'security'>,query:known.query,policy:known.policy});
     // Ordering items do not imply a separate request to locate a stand.
@@ -26,6 +33,9 @@ Separate multiple requests into intents with short standalone subqueries in the 
     }
     if(fallback.some(i=>i.kind==='account')) {
       for(let i=intents.length-1;i>=0;i--) if(intents[i].kind==='benefits' && !fallback.some(x=>x.kind==='benefits')) intents.splice(i,1);
+    }
+    if(!intents.some(i=>['ordering','benefits','refund'].includes(i.kind))) {
+      for(const known of fallback.filter(i=>['concessions','drinks'].includes(i.kind))) if(!intents.some(i=>i.kind===known.kind)) intents.push({kind:known.kind as 'concessions'|'drinks',query:known.query,policy:undefined});
     }
     if(context.eventKind==='other') { const safe=intents.filter(i=>i.kind!=='club'); return {intents:safe.length?safe:fallback,mode:'model'}; }
     return {intents:intents.length?intents:fallback,mode:'model'};
