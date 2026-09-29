@@ -1493,7 +1493,8 @@
       "119"
     ],
     "none": [
-      "is sold out",
+      "Verde Vegan is sold out",
+      "chili dogs are sold out",
       "has stock"
     ]
   },
@@ -1604,6 +1605,46 @@
     ],
     "sources": [
       "Q2 Stadium parking and lot map"
+    ]
+  },
+  {
+    "id": "teal-opening-not-gates",
+    "question": "When does the Teal Lot open for a weekday evening event?",
+    "route": "transport",
+    "all": [
+      "5:30 PM",
+      "three hours"
+    ],
+    "none": [
+      "90 minutes",
+      "Gate opening",
+      "Rapid 803"
+    ]
+  },
+  {
+    "id": "personal-phone-not-contact-intent",
+    "question": "My phone is 512-555-0199. Can you recover my ticket?",
+    "route": "ticketing",
+    "all": [
+      "cannot open or recover",
+      "SeatGeek",
+      "Help"
+    ],
+    "none": [
+      "512-555-0199"
+    ]
+  },
+  {
+    "id": "bicycle-park-not-departure",
+    "question": "Where can I leave my bicycle?",
+    "route": "transport",
+    "all": [
+      "Bike Valet",
+      "east side"
+    ],
+    "none": [
+      "date/start time",
+      "Where are you starting"
     ]
   }
 ]

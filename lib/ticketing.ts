@@ -7,7 +7,7 @@ export function ticketGrounding(query:string,context:FanContext,k:Snapshot):Grou
  const q=normalized(query),es=context.language==='es';
  const buy=/\b(buy|purchase|sell|book|comprar|compra|comprame|comprarme)\b|transfer for me/.test(q);
  const transfer=/transfer|transferir|recipient|receive|accept|send|share|enviar|recibir/.test(q);
- const contact=/contact|phone|number|support|helpdesk|ticket hq|telefono|llamar|correo|soporte/.test(q);
+ const contact=/contact|support|helpdesk|ticket hq|llamar|soporte|(?:ticket|boleto|hq).{0,25}(?:phone|number|telefono|correo)|(?:phone|number|telefono).{0,25}(?:ticket|boleto|support|hq)/.test(q);
  const hq=k.documents.find(d=>d.title==='SeatGeek Ticket HQ');
  const sender=es?'Para enviar: en la app Austin FC & Q2 Stadium, abre el boleto del partido, pulsa “Send”, introduce el correo o teléfono del destinatario, selecciona la cantidad y pulsa “Send Tickets”.':'To send: in the Austin FC & Q2 Stadium app, open the match ticket, tap “Send”, enter the recipient’s email or phone number, select the quantity, and tap “Send Tickets”.';
  const receiver=es?'Para recibir: el destinatario debe confirmar con el remitente el correo o teléfono usado y entrar a su propia cuenta de SeatGeek. En la app Austin FC & Q2 Stadium, abre “My Tickets” y “Manage My Tickets”. No puedo verificar que la transferencia se haya completado; si no aparece, usa la ayuda de SeatGeek.':'To receive: the recipient should confirm the email or phone used with the sender and sign in to their own SeatGeek account. In the Austin FC & Q2 Stadium app, open “My Tickets” and “Manage My Tickets”. I cannot verify completion; if the ticket is missing, use SeatGeek Help.';

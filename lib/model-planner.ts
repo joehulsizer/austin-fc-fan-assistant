@@ -31,8 +31,13 @@ Separate multiple requests into intents with short standalone subqueries in the 
     for(let i=intents.length-1;i>=0;i--) {
       const intent=intents[i];
       if(intent.kind==='stadium' && (foodKnown||drinksKnown) && !fallback.some(x=>x.kind==='stadium') && !amenitiesRequested) intents.splice(i,1);
-      else if(intent.policy && requestedPolicies.length && !requestedPolicies.includes(intent.policy)) intents.splice(i,1);
+      else if(intent.policy && (requestedPolicies.length && !requestedPolicies.includes(intent.policy) || intent.policy==='gates' && /\b(lot|garage|parking|estacionamiento)\b/i.test(query) && !/\b(gates?|puertas?|entry|entrance)\b/i.test(query))) intents.splice(i,1);
       else if(intent.kind==='concessions' && drinksKnown && !foodKnown && !/\b(food|eat|snacks?|meal|comida|comer|and|y)\b/i.test(query)) intents.splice(i,1);
+    }
+    if(fallback.some(i=>i.kind==='transport')) {
+      // An accessible Uber journey is still a journey, not a wheelchair-loan question.
+      for(let i=intents.length-1;i>=0;i--)if(intents[i].kind==='stadium' && !intents[i].policy && /uber|lyft|rideshare|drop.?off|pick.?up|lot|parking|train|bus|rail|bike/i.test(intents[i].query))intents.splice(i,1);
+      if(!intents.some(i=>i.kind==='transport'))intents.push({kind:'transport',query,policy:undefined});
     }
     // Fixed, recognized requested policies must not disappear from the model's plan.
     for(const known of fallback.filter(i=>i.policy||['ordering','benefits','refund','ticketing','account'].includes(i.kind)))if(!intents.some(i=>i.kind===known.kind&&i.policy===known.policy))intents.push({kind:known.kind as Exclude<Intent['kind'],'security'>,query:known.query,policy:known.policy});
