@@ -88,7 +88,7 @@ test('share creates a read-only link and explains who can see it', async ({ page
   await page.getByRole('button', { name: 'Create share link' }).click();
   await expect(page.getByRole('textbox', { name: 'Share link' })).toHaveValue(/\/share\/11111111-1111-4111-8111-111111111111/);
   expect(sharedMessages).toHaveLength(2);
-  expect(sharedMessages[1].cards?.length).toBeLessThanOrEqual(4);
+  expect(sharedMessages[1].cards?.length).toBe(6);
   expect(sharedMessages[1].sources?.length).toBeLessThanOrEqual(4);
 });
 

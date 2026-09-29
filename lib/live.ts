@@ -30,7 +30,7 @@ export async function weatherGrounding(query: string, context: FanContext): Prom
   const base: Grounding = { route: 'weather', context, facts: [], sources: [{ title: 'National Weather Service: Q2 Stadium forecast', url: WEATHER_SOURCE, checkedAt: new Date().toISOString() }], cards: [{ title: 'Hourly forecast', detail: 'Q2 Stadium area', href: WEATHER_SOURCE, label: spanish ? 'Ver pronóstico' : 'View forecast' }] };
   const q = query.toLowerCase();
   if (/kickoff|inicio del partido/.test(q) && !context.event?.startsAt) {
-    base.answer = spanish ? '¿De qué partido hablas? Dime la fecha o el rival para consultar el pronóstico a la hora de inicio.' : 'Which match do you mean? Give me the date or opponent so I can check the kickoff forecast.';
+    base.answer = context.eventKind === 'other' ? (spanish ? '¿Qué fecha y hora tiene ese evento? Necesito la fecha para consultar el pronóstico.' : 'What date and time is that event? I need the date to check its forecast.') : (spanish ? '¿De qué partido hablas? Dime la fecha o el rival para consultar el pronóstico a la hora de inicio.' : 'Which match do you mean? Give me the date or opponent so I can check the kickoff forecast.');
     return base;
   }
   const now = new Date();

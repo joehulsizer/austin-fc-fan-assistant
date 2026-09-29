@@ -3,8 +3,8 @@ import { answerStream, prepare } from '@/lib/assistant';
 
 export const maxDuration = 120;
 const inputSchema = z.object({
-  messages: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().max(1500) })).min(1).max(16),
-  context: z.object({ section: z.number().int().min(101).max(400).optional(), dietary: z.enum(['vegan', 'vegetarian', 'gluten-aware']).optional(), language: z.enum(['en', 'es']).optional(), origin: z.string().min(2).max(120).optional(), food: z.string().max(40).optional(), topic: z.string().max(30).optional(), event: z.object({ title: z.string().max(150), startsAt: z.string().max(40).optional(), source: z.string().url().optional() }).optional() }).default({}),
+  messages: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().max(7000) })).min(1).max(16),
+  context: z.object({ section: z.number().int().min(101).max(400).optional(), dietary: z.enum(['vegan', 'vegetarian', 'gluten-aware']).optional(), language: z.enum(['en', 'es']).optional(), origin: z.string().min(2).max(120).optional(), food: z.string().max(40).optional(), topic: z.string().max(30).optional(), kickoffTime: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/).optional(), travelMinutes: z.number().int().min(1).max(240).optional(), eventKind:z.enum(['match','other']).optional(), event: z.object({ title: z.string().max(150), startsAt: z.string().max(40).optional(), source: z.string().url().optional() }).optional() }).default({}),
 });
 
 export async function POST(request: Request) {
@@ -12,14 +12,15 @@ export async function POST(request: Request) {
   try { input = inputSchema.parse(await request.json()); }
   catch { return Response.json({ error: 'Invalid chat request' }, { status: 400 }); }
   if (input.messages.at(-1)?.role !== 'user') return Response.json({ error: 'Last message must be from the user' }, { status: 400 });
+  if(input.messages.some(m=>m.role==='user'&&m.content.length>1500)) return Response.json({error:'Question too long'},{status:400});
   const started = Date.now();
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
-      const send = (value: object) => controller.enqueue(encoder.encode(JSON.stringify(value) + '\n'));
+      const send = (value: object) => { if(!request.signal.aborted) controller.enqueue(encoder.encode(JSON.stringify(value) + '\n')); };
       try {
         const result = await prepare(input);
-        send({ type: 'meta', context: result.context, sources: result.sources, cards: result.cards, route: result.route });
+        send({ type: 'meta', context: result.context, sources: result.sources, cards: result.cards, actions: result.actions, route: result.route });
         let length = 0;
         for await (const delta of answerStream(input, result)) {
           if (request.signal.aborted) break;
