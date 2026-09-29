@@ -77,7 +77,7 @@ export default function Home(){
     if(rating==='down'&&comment===undefined)return;
     try{
       const index=messages.findIndex(m=>m.id===id),question=[...messages.slice(0,index)].reverse().find(m=>m.role==='user')?.content;
-      const response=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rating,comment,route:message.route,question})});
+      const response=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rating,comment,route:message.route,question:question?.slice(0,500)})});
       if(!response.ok)throw new Error('Save failed');
       setMessages(old=>old.map(m=>m.id===id?{...m,feedbackOpen:false,feedbackSaved:true}:m));setFeedbackText('');
     }catch{setMessages(old=>old.map(m=>m.id===id?{...m,feedbackOpen:true,feedbackSaved:false}:m));}
