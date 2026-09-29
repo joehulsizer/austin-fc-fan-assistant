@@ -1,6 +1,6 @@
 import { policyTopics, type Policy } from './policies';
 import { normalized } from './safety';
-export type Intent = { kind: 'ordering' | 'benefits' | 'refund' | 'transport' | 'weather' | 'club' | 'ticketing' | 'concessions' | 'drinks' | 'stadium' | 'security'; query: string; policy?: Policy };
+export type Intent = { kind: 'ordering' | 'benefits' | 'refund' | 'transport' | 'weather' | 'club' | 'ticketing' | 'concessions' | 'drinks' | 'stadium' | 'security' | 'account'; query: string; policy?: Policy };
 export function planIntents(query: string, priorTopic?: string): Intent[] {
   const q = normalized(query), intents: Intent[] = [];
   const push = (kind: Intent['kind'], subquery = query, policy?:Policy) => { if (!intents.some(i=>i.kind===kind&&i.policy===policy)) intents.push({kind,query:subquery,policy}); };
@@ -8,6 +8,7 @@ export function planIntents(query: string, priorTopic?: string): Intent[] {
   const ordering = /\b(order|ordering|deliver\w*|delivery|ordernext|pedido|pedir|pide|entreg\w*)\b/.test(q) && /\b(food|beer|hot dog|drink|seat|concession|mobile|comida|cerveza|asiento|comer|bebida)\b/.test(q);
   const benefit = /\b(stm|season ticket|season.?ticket|member|membership|abonado|socio)\b/.test(q) && /\b(discount|benefit|food|comida|descuento|beneficio)\b/.test(q);
   const refund = /refund|charged|payment|paid|never received|didn.t receive|missing order|reembolso|cobro|cobraron|devolucion/.test(q);
+  if (/\b(balance|loyalty wallet|wallet balance|account balance|loyalty points|saldo|billetera|puntos de lealtad)\b/.test(q)) push('account');
   if (refund) push('refund');
   else if (benefit) push('benefits');
   else if (ordering) push('ordering');

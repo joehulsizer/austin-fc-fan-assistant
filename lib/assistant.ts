@@ -44,7 +44,7 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     let result:Grounding;
     const internal = intent.policy || ['security','weather','club'].includes(intent.kind) ? undefined : lookupFeed(query,context,feed,intent.kind);
     if(internal) result=internal;
-    else if(intent.kind==='ordering'||intent.kind==='benefits'||intent.kind==='refund'||intent.kind==='security') result=supportGrounding(intent.kind,query,context,knowledge);
+    else if(intent.kind==='ordering'||intent.kind==='benefits'||intent.kind==='refund'||intent.kind==='security'||intent.kind==='account') result=supportGrounding(intent.kind,query,context,knowledge);
     else if(intent.policy) result=policyGrounding(intent.policy,query,context,knowledge);
     else if(intent.kind==='transport') result=travelGrounding(query,context,knowledge);
     else if(intent.kind==='ticketing') result=ticketGrounding(intent.query,context,knowledge);

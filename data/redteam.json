@@ -1127,5 +1127,33 @@
       "124"
     ],
     "language": "es"
+  },
+  {
+    "id": "unsupported-wallet-spanish",
+    "question": "¿Cuál es el saldo de mi billetera de lealtad?",
+    "route": "stadium",
+    "all": [
+      "No pude verificar",
+      "no tengo acceso"
+    ],
+    "none": [
+      "descuento de comida"
+    ],
+    "language": "es",
+    "action": "mailto:"
+  },
+  {
+    "id": "unsupported-loyalty-points",
+    "question": "How many loyalty points are in my account?",
+    "route": "stadium",
+    "all": [
+      "cannot access",
+      "loyalty points"
+    ],
+    "none": [
+      "food discount"
+    ],
+    "language": "en",
+    "action": "mailto:"
   }
 ]
