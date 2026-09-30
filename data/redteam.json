@@ -1218,7 +1218,8 @@
       "parking"
     ],
     "none": [
-      "food discount"
+      "food discount",
+      "Have your mobile parking pass[\\s\\S]*Have your mobile parking pass"
     ],
     "language": "en",
     "action": "mailto:"
@@ -1662,5 +1663,20 @@
       "No puedo confirmar pollo vegano"
     ],
     "language": "es"
+  },
+  {
+    "id": "origin-only-no-repeated-answer",
+    "question": "I'm at the student center at University of Austin.",
+    "route": "transport",
+    "all": [
+      "University of Austin",
+      "Maps"
+    ],
+    "none": [
+      "Bike Valet[\\s\\S]*Bike Valet",
+      "northbound Rapid 803"
+    ],
+    "language": "en",
+    "action": "maps/dir"
   }
 ]

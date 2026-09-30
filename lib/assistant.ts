@@ -15,6 +15,14 @@ import { clubGrounding, weatherGrounding } from './live';
 import { fixtureMentioned } from './schedule';
 import type { ChatInput, Grounding } from './types';
 
+type AnswerPart = { query: string; result: Grounding };
+export function distinctAnswerParts(parts: AnswerPart[]): AnswerPart[] {
+  // Two planner labels can resolve to the same grounded answer. Keep one rather
+  // than repeating the whole response and marking one request as multipart.
+  return parts.filter((part, index) => !part.result.answer ||
+    !parts.slice(0, index).some(previous => previous.result.route === part.result.route && previous.result.answer === part.result.answer));
+}
+
 export async function prepare(input: ChatInput): Promise<Grounding> {
   const query = input.messages.at(-1)?.content?.trim() || '';
   let context = input.context;
@@ -43,7 +51,7 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
   // Resolve an explicitly requested match before the forecast which depends on it.
   if(intents.some(i=>i.kind==='club')&&intents.some(i=>i.kind==='weather')) intents.sort((a,b)=>Number(b.kind==='club')-Number(a.kind==='club'));
   const feed = intents[0]?.kind === 'security' ? undefined : await getInternalFeed();
-  const parts: {query:string;result:Grounding}[] = [];
+  let parts: AnswerPart[] = [];
   for(const intent of intents) {
     let result:Grounding;
     const internal = intent.policy || ['security','weather','club'].includes(intent.kind) ? undefined : lookupFeed(query,context,feed,intent.kind);
@@ -65,6 +73,7 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     result.context=context;
     parts.push({query:intent.query,result:addHandoffs(result)});
   }
+  parts = distinctAnswerParts(parts);
   if(parts.length===1) return {...parts[0].result,planner:planning.mode,context:{...context,topic:parts[0].result.route}};
   const sources=parts.flatMap(p=>p.result.sources).filter((s,i,a)=>a.findIndex(x=>x.title===s.title&&x.url===s.url)===i);
   const actions=parts.flatMap(p=>p.result.actions||[]).filter((s,i,a)=>a.findIndex(x=>x.href===s.href)===i);
