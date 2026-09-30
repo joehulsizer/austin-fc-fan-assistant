@@ -60,3 +60,8 @@ test('classifier outage retains every fixed requested policy and ordering scope'
   assert.equal(r.mode,'fallback');assert.deepEqual(r.intents.filter(i=>i.policy).map(i=>i.policy),['bag','water','alcohol']);assert.ok(r.intents.some(i=>i.kind==='ordering'));
  }finally{global.fetch=original;if(vercel===undefined)delete process.env.VERCEL;else process.env.VERCEL=vercel;}
 });
+test('changing origin or transport mode clears an old travel-time estimate',()=>{
+ assert.equal(detectContext("I'm at Downtown Austin, how do I get to Q2?",{origin:'UT Austin',travelMinutes:35,travelMode:'car'}).travelMinutes,undefined);
+ assert.equal(detectContext('What about going by bus instead?',{origin:'UT Austin',travelMinutes:35,travelMode:'car'}).travelMinutes,undefined);
+ assert.equal(detectContext('My bus trip takes 40 minutes',{origin:'UT Austin',travelMinutes:35,travelMode:'car'}).travelMinutes,40);
+});

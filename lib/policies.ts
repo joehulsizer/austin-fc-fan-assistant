@@ -5,7 +5,7 @@ import { guestActions } from './handoffs';
 export type Policy = 'bag' | 'water' | 'alcohol' | 'gates' | 'sensory' | 'guest';
 export function policyTopics(query: string): Policy[] {
   const q = normalized(query), topics: Policy[] = [];
-  if (/\b(bags?|backpacks?|purses?|clutches?|totes?|satchel|bolsas?|bolsos?|mochila|diaper|panalera|panales)\b/.test(q) && !/\b(popcorn|palomitas)\b/.test(q)) topics.push('bag');
+  if (/\b(bags?|backpacks?|purses?|clutch(?:es)?|totes?|satchel|bolsas?|bolsos?|mochila|diaper|panalera|panales)\b/.test(q) && !/\b(popcorn|palomitas)\b/.test(q)) topics.push('bag');
   if (/\b(bottle|hydroflask|thermos|sippy cup|botella|refill|refillable|hydration|sealed|rellenar|hidratacion)\b|bring.{0,20}water|llevar.{0,20}agua|water (?:policy|fountain|station)/.test(q)) topics.push('water');
   if (/(?:dejan|deja|paran|cortan).{0,25}(?:vender|venta|servir).{0,20}(?:cerveza|alcohol|bebidas)|\b(alcohol|beer|cerveza|drinks?|bebidas?)\b.{0,70}\b(cut.?off|stop|end|last call|serve|serving|vender|dejan|termina)|\b(cut.?off|last call|hasta cuando)\b.{0,50}\b(beer|alcohol|cerveza|drinks?)|\b(alcohol policy|politica de alcohol)\b/.test(q)) topics.push('alcohol');
   if (/\b(gates?|puertas?|entry|entrance|entrar)\b.{0,50}\b(open|opening|time|early|when|abren|apertura|hora)|\b(when|what time|cuando|hora)\b.{0,40}\b(gates?|puertas?|enter|entrar)|\bgate times?\b|how early.{0,30}(?:get in|enter)|when.{0,25}(?:get inside|go in)/.test(q)) topics.push('gates');

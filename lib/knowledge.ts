@@ -1,7 +1,7 @@
 import bundled from '@/data/knowledge.json';
 import { foodGrounding, type Beverage } from './food';
 import { amenityGrounding } from './amenities';
-import { travelGrounding } from './travel';
+import { travelGrounding, travelModes } from './travel';
 import { ticketGrounding } from './ticketing';
 import { messageLanguage } from './language';
 import type { Card, FanContext, Grounding, Source } from './types';
@@ -38,6 +38,10 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   if (origin && !/^(?:section|sec\.?|secci[oó]n|here|there|the bar|the stand|the app|la app|app|my phone|mi telefono|my account|mi cuenta)\b/i.test(origin)) {
     context.origin = /\b(?:university of texas(?: at austin)?|ut austin|ut campus|ut)\b/i.test(origin) ? 'UT Austin' : origin.slice(0, 120);
   } else if (/\b(?:university of texas(?: at austin)?|ut austin|ut campus)\b/i.test(query) && /\b(?:travel|train|bus|stadium|q2|there|leave|arrive)\b/i.test(query)) context.origin = 'UT Austin';
+  if(context.origin!==previous.origin)delete context.travelMinutes;
+  if(previous.travelMode && /\b(car|driving|drive|rideshare|uber|lyft|train|rail|bus|bike|bicycle|parking|tren|autobus|bicicleta)\b/i.test(query)) {
+    const modes=travelModes(query,context);if(modes.length===1&&modes[0]!==previous.travelMode)delete context.travelMinutes;
+  }
   const noDiet = /\b(?:no dietary restrictions|not (?:vegan|vegetarian)|anything is fine|(?:ya )?no soy (?:vegan[oa]|vegetarian[oa])|sin restricciones alimentarias)\b/i.test(query);
   if (noDiet) delete context.dietary;
   else if (/\b(vegan|vegab|vegano|vegana)\b/i.test(query)) context.dietary = 'vegan';
