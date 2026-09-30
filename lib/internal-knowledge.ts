@@ -33,7 +33,7 @@ export function feedUrl(): string | undefined {
 export async function getInternalFeed():Promise<InternalFeed|undefined> {
   const url=feedUrl();if(!url)return;
   try {
-    const r=await fetch(url,{next:{revalidate:60},signal:AbortSignal.timeout(2500)});
+    const r=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(2500)});
     if(!r.ok)return;
     return internalFeedSchema.parse(await r.json());
   } catch{return;}

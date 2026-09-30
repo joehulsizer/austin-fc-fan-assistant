@@ -1,4 +1,5 @@
 import { getKnowledge } from '@/lib/knowledge';
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const knowledge = await getKnowledge();

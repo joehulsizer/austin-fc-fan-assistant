@@ -10,6 +10,7 @@ type Doc = { id: string; title: string; body: string; url: string; checkedAt: st
 type Vendor = { name: string; sections: number[]; location: string; description: string; url: string; checkedAt: string };
 export type Snapshot = { version: string; checkedAt: string; documents: Doc[]; vendors: Vendor[]; sources: { url: string; sha256: string }[]; beverages?: Beverage[]; featuredMatch?: { title: string; startsAt: string; url: string; checkedAt: string } | null; roster?: { number: number; name: string; position: string; url: string }[]; news?: { title: string; summary: string; url: string }[] };
 export const staticKnowledge = bundled as Snapshot;
+let lastWorkingKnowledge = staticKnowledge;
 export const MAP_URL = 'https://www.q2stadium.com/stadium-maps/';
 export const TICKET_URL = 'https://www.austinfc.com/tickets/';
 export const MOBILE_TICKET_URL = 'https://www.austinfc.com/tickets/mobile-ticketing';
@@ -20,12 +21,15 @@ export async function getKnowledge(): Promise<Snapshot> {
   const pointer = process.env.KNOWLEDGE_BLOB_URL;
   if (!pointer) return staticKnowledge;
   try {
-    const response = await fetch(pointer, { next: { revalidate: 60 }, signal: AbortSignal.timeout(4000) });
+    // Blob already has a 60-second CDN cache. A second persistent Next data cache
+    // can keep serving a superseded snapshot after an approved upload.
+    const response = await fetch(pointer, { cache: 'no-store', signal: AbortSignal.timeout(4000) });
     if (!response.ok) throw new Error('Knowledge unavailable');
     const value = await response.json();
-    if ((value.documents?.length ?? 0) < 40 || (value.vendors?.length ?? 0) < 15 || (value.roster?.length ?? 0) < 15 || (value.news?.length ?? 0) < 3) throw new Error('Knowledge incomplete');
-    return value as Snapshot;
-  } catch { return staticKnowledge; }
+    if ((value.documents?.length ?? 0) < 40 || (value.vendors?.length ?? 0) < 15 || (value.roster?.length ?? 0) < 15 || (value.news?.length ?? 0) < 3 || (value.beverages?.length ?? 0) < 40) throw new Error('Knowledge incomplete');
+    lastWorkingKnowledge = value as Snapshot;
+    return lastWorkingKnowledge;
+  } catch { return lastWorkingKnowledge; }
 }
 
 export function detectContext(query: string, previous: FanContext): FanContext {

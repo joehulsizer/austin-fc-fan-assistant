@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { prepare } from '../lib/assistant';
+import { prepare, distinctAnswerParts } from '../lib/assistant';
 import { detectContext, staticKnowledge } from '../lib/knowledge';
 import { foodGrounding } from '../lib/food';
 import { safetyGrounding } from '../lib/safety';
@@ -16,6 +16,14 @@ test('the reported two messages differ in answer, sources, actions and event con
  assert.equal(second.context.eventKind,'other');assert.equal(second.context.kickoffTime,undefined);
  assert.deepEqual(second.sources.map(s=>s.title),['Q2 Stadium parking and lot map']);
  assert.equal(second.actions?.length,3);assert.equal(second.context.origin,'UT Austin');
+});
+test('overlapping plans do not duplicate a travel answer, while different food answers remain',()=>{
+ const origin={origin:'the student center at University of Austin',language:'en' as const};
+ const travel=travelGrounding("I'm at the student center at University of Austin.",origin,staticKnowledge);
+ const food=foodGrounding('concessions','Where are tacos?',origin,staticKnowledge);
+ const drink=foodGrounding('drinks','Where is Sprite?',origin,staticKnowledge);
+ const parts=distinctAnswerParts([{query:'starting point',result:travel},{query:'journey',result:travel},{query:'tacos',result:food},{query:'Sprite',result:drink}]);
+ assert.equal(parts.length,3);assert.deepEqual(parts.map(p=>p.result.route),['transport','concessions','drinks']);
 });
 test('published dietary label does not become a vegan chicken or burger claim',()=>{
  for(const question of ['vegan chicken','vegan burger']){
