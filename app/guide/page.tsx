@@ -50,7 +50,7 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
       <nav className="guide-tabs" aria-label="Guide topics">{sections.map(s => <Link key={s.id} className={topic === s.id ? 'active' : ''} href={`/guide?topic=${s.id}`}>{s.label}</Link>)}</nav>
 
       {topic === 'food' && <section>
-        <div className="guide-callout">Published locations are listed below. Ask the chat about a diet and your section for an approximate area. “Avoiding gluten” is a published menu label, not an allergy guarantee.</div>
+        <div className="guide-callout">Published locations are listed below. The official pages conflict on YETI Bar (124/125) and Kesos (105/106; 312 agrees); confirm those main-concourse stands with Guest Services behind 124. Ask the chat about a diet and your section for an approximate area. “Avoiding gluten” is a published menu label, not an allergy guarantee.</div>
         <div className="handoffs"><a href={ORDER_URL} target="_blank" rel="noopener noreferrer">Order food in OrderNext <ArrowRight size={14}/></a></div>
         <h2 className="guide-subhead">Published burger and chicken options</h2><div className="guide-grid">{MENU_HIGHLIGHTS.map(item => <article className="guide-card" key={item.name}><div className="guide-card-top"><MapPin size={17}/><span>{item.location}</span></div><h2>{item.name}</h2><p>{item.item}</p><small>Q2 Stadium food and dietary guide / vendor directory · checked {checked} CT</small></article>)}</div>
         <h2 className="guide-subhead">Published beverage menu</h2>

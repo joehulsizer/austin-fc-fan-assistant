@@ -69,3 +69,9 @@ test('retesting kickoff in the existing concert chat restores match timing',asyn
  const r=await prepare({messages:[{role:'user',content:"I'm at UT, kickoff is 7:30, fastest way to Q2?"},{role:'assistant',content:'Earlier answer.'},{role:'user',content:'Concert at Q2 next month, where do I park?'},{role:'assistant',content:'Earlier answer.'},{role:'user',content:"I'm at UT, kickoff is 7:30, fastest way to Q2?"}],context:{eventKind:'other',origin:'UT Austin',travelMode:'parking'}});
  assert.equal(r.context.eventKind,'match');assert.match(r.answer!,/6:00 PM/);assert.doesNotMatch(r.answer!,/6:30 PM/);
 });
+test('a taco location conflict is visible rather than overwritten by the generic answer',()=>{
+ const r=foodGrounding('concessions','Where are tacos?',{},staticKnowledge);
+ assert.match(r.answer!,/Kesos location conflicts.*105.*312.*106/);
+ assert.ok(r.sources.some(s=>s.title==='Q2 Stadium food and dietary guide'));
+ assert.match(r.cards.find(c=>c.title==='Kesos Tacos')!.detail,/conflicts/);
+});
