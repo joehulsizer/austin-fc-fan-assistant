@@ -33,7 +33,7 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   if (context.origin === 'ut-austin') context.origin = 'UT Austin';
   if (/(?:not sure|don.t know|don.t remember|haven.t got|no idea).{0,40}(?:section|seat|sitting)|(?:section|seat).{0,25}(?:unknown|not sure|don.t know)/i.test(query)) delete context.section;
   const section = query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin|cerca de la)\s*#?\s*(\d{3})\b/i);
-  if (section) context.section = Number(section[1]);
+  if (section) { if(Number(section[1])>=101&&Number(section[1])<=400)context.section=Number(section[1]);else delete context.section; }
   const origin = query.match(/\b(?:from|starting at|leaving from|located at|i(?:'m| am|m) (?:at|near|in)|desde|salgo de|somos de|estoy en)\s+(.+?)(?=\s+(?:to|get to|for the|how do|where can|what time|and when|para el|hacia|y cuando)\b|[,.!?]|$)/i)?.[1]?.trim();
   if (origin && !/^(?:section|sec\.?|secci[oó]n|here|there|the bar|the stand|the app|la app|app|my phone|mi telefono|my account|mi cuenta)\b/i.test(origin)) {
     context.origin = /\b(?:university of texas(?: at austin)?|ut austin|ut campus|ut)\b/i.test(origin) ? 'UT Austin' : origin.slice(0, 120);

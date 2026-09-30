@@ -75,3 +75,9 @@ test('a taco location conflict is visible rather than overwritten by the generic
  assert.ok(r.sources.some(s=>s.title==='Q2 Stadium food and dietary guide'));
  assert.match(r.cards.find(c=>c.title==='Kesos Tacos')!.detail,/conflicts/);
 });
+test('an invalid section does not poison the next request or delay safety',async()=>{
+ const r=await prepare({messages:[{role:'user',content:'Where is food near section 999?'}],context:{section:123}});
+ assert.match(r.answer!,/cannot match section 999/);assert.equal(r.context.section,undefined);
+ const follow=await prepare({messages:[{role:'user',content:'What about section 123?'}],context:r.context});assert.equal(follow.context.section,123);
+ const emergency=await prepare({messages:[{role:'user',content:'My child cannot breathe in section 999'}],context:{}});assert.equal(emergency.route,'safety');assert.match(emergency.answer!,/911/);
+});

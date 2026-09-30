@@ -26,6 +26,8 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
   const knowledge = await getKnowledge();
   const safety = safetyGrounding(query, context, knowledge);
   if (safety) return addHandoffs({ ...safety, planner:'fixed', context: { ...context, topic: 'safety' } });
+  const suppliedSection=query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin)\s*#?\s*(\d{3})\b/i);
+  if(suppliedSection&&(Number(suppliedSection[1])<101||Number(suppliedSection[1])>400))return addHandoffs({route:'stadium',planner:'fixed',context:{...context,section:undefined},facts:[],sources:[{title:'Official stadium map',url:'https://www.q2stadium.com/stadium-maps/',checkedAt:knowledge.checkedAt}],cards:[],answer:context.language==='es'?`No puedo identificar la sección ${suppliedSection[1]} en la guía de secciones. Confirma el número en tu boleto; no voy a inventar puestos cercanos.`:`I cannot match section ${suppliedSection[1]} to the section guide. Please confirm the number on your ticket; I will not invent nearby stands.`});
   const mentioned = context.eventKind !== 'other' ? fixtureMentioned(query) : undefined;
   if (mentioned && /\b(match|game|kickoff|partido|there|stadium|q2|weather|rain|lluvia)\b/i.test(query)) {
     context = { ...context, eventKind: 'match', event: { title: mentioned.title, startsAt: mentioned.startsAt, source: mentioned.url || 'https://www.austinfc.com/schedule/' } };
