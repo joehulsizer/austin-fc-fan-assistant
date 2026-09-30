@@ -1218,7 +1218,8 @@
       "parking"
     ],
     "none": [
-      "food discount"
+      "food discount",
+      "Have your mobile parking pass[\\s\\S]*Have your mobile parking pass"
     ],
     "language": "en",
     "action": "mailto:"
