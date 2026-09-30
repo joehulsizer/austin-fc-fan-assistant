@@ -848,11 +848,14 @@
     "question": "I'm at UT Austin. Kickoff is 7:30 PM. My trip takes 35 minutes. When should I leave?",
     "route": "transport",
     "all": [
-      "5:25",
-      "35 minutes",
-      "you supplied"
+      "7:30 PM CT",
+      "6:00 PM CT",
+      "leave by 5:25 PM CT"
     ],
-    "none": [],
+    "none": [
+      "7:30 AM",
+      "5:25 AM"
+    ],
     "language": "en",
     "action": "maps/dir"
   },
@@ -1048,7 +1051,13 @@
       "Send Tickets",
       "mochilas"
     ],
-    "language": "es"
+    "language": "es",
+    "none": [
+      "This modern",
+      "Choose from",
+      "Published vendor",
+      "Offering unique"
+    ]
   },
   {
     "id": "buy-plus-bag",
@@ -1568,7 +1577,8 @@
     "none": [
       "Supporter Section",
       "Rapid 803",
-      "Red Line"
+      "Red Line",
+      "Tell me your section"
     ]
   },
   {
@@ -1675,6 +1685,22 @@
     "none": [
       "Bike Valet[\\s\\S]*Bike Valet",
       "northbound Rapid 803"
+    ],
+    "language": "en",
+    "action": "maps/dir"
+  },
+  {
+    "id": "morning-explicit-meridiem",
+    "question": "I'm driving from UT. Kickoff is 7:30 AM and my trip takes 35 minutes. When should I leave?",
+    "route": "transport",
+    "all": [
+      "7:30 AM CT",
+      "6:00 AM CT",
+      "leave by 5:25 AM CT"
+    ],
+    "none": [
+      "7:30 PM",
+      "5:25 PM"
     ],
     "language": "en",
     "action": "maps/dir"
