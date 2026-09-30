@@ -7,6 +7,7 @@ export type FanContext = {
   topic?: string;
   kickoffTime?: string;
   travelMinutes?: number;
+  travelMode?: 'parking' | 'car' | 'rideshare' | 'rail' | 'bus' | 'bike' | 'all';
   eventKind?: 'match' | 'other';
   event?: { title: string; startsAt?: string; source?: string };
 };

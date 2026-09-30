@@ -1,6 +1,19 @@
 name: Cloud checks
 on: [push, workflow_dispatch]
 jobs:
+  sources:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install lxml==6.0.2
+      - run: python scripts/ingest.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: checked-source-snapshot
+          path: data/knowledge.json
   checks:
     runs-on: ubuntu-latest
     steps:

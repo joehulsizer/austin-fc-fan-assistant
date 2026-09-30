@@ -10,3 +10,7 @@ data/raw/
 .vercel
 evaluation-results.json
 live-evaluation-results.json
+
+redteam-live-results.json
+feed-live-results.json
+conversation-evaluation-results.json

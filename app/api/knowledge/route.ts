@@ -7,6 +7,7 @@ const schema = z.object({
   sources: z.array(z.object({ url: z.string().url(), sha256: z.string().length(64) })).min(5),
   documents: z.array(z.object({ id: z.string(), title: z.string(), body: z.string().min(20), url: z.string().url(), checkedAt: z.string(), links: z.array(z.object({ label: z.string(), url: z.string().url() })) })).min(40),
   vendors: z.array(z.object({ name: z.string(), sections: z.array(z.number().int()).min(1), location: z.string(), description: z.string(), url: z.string().url(), checkedAt: z.string() })).min(15),
+  beverages: z.array(z.object({name:z.string(),category:z.string(),locations:z.array(z.string()).min(1),url:z.string().url(),checkedAt:z.string()})).min(40),
   mapPins: z.array(z.unknown()),
   featuredMatch: z.object({ title: z.string(), startsAt: z.string(), url: z.string().url(), checkedAt: z.string() }).nullable().optional(),
   roster: z.array(z.object({ number: z.number().int(), name: z.string(), position: z.string(), url: z.string().url() })).min(15),

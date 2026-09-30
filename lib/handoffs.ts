@@ -4,7 +4,7 @@ export const STADIUM_TEXT = 'sms:3527583733';
 export const GUEST_EMAIL = 'mailto:GuestServices@AustinFC.com';
 export const SEATGEEK_URL = 'https://seatgeek.com/account';
 export function isActionHref(value: string): boolean {
-  if ([STADIUM_TEXT, GUEST_EMAIL, 'tel:911'].includes(value)) return true;
+  if ([STADIUM_TEXT, GUEST_EMAIL, 'tel:911', 'tel:5129532858', 'mailto:tickethq@austinfc.com'].includes(value)) return true;
   try {
     const u = new URL(value);
     return u.protocol === 'https:' && !u.username && !u.password && [

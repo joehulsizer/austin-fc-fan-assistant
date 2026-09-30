@@ -7,6 +7,8 @@ import { ticketGrounding } from './ticketing';
 import { policyGrounding } from './policies';
 import { travelGrounding } from './travel';
 import { supportGrounding } from './support';
+import { foodGrounding } from './food';
+import { amenityGrounding } from './amenities';
 import { addHandoffs } from './handoffs';
 import { getInternalFeed, lookupFeed } from './internal-knowledge';
 import { clubGrounding, weatherGrounding } from './live';
@@ -24,6 +26,8 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
   const knowledge = await getKnowledge();
   const safety = safetyGrounding(query, context, knowledge);
   if (safety) return addHandoffs({ ...safety, planner:'fixed', context: { ...context, topic: 'safety' } });
+  const suppliedSection=query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin)\s*#?\s*(\d{3})\b/i);
+  if(suppliedSection&&(Number(suppliedSection[1])<101||Number(suppliedSection[1])>400))return addHandoffs({route:'stadium',planner:'fixed',context:{...context,section:undefined},facts:[],sources:[{title:'Official stadium map',url:'https://www.q2stadium.com/stadium-maps/',checkedAt:knowledge.checkedAt}],cards:[],answer:context.language==='es'?`No puedo identificar la sección ${suppliedSection[1]} en la guía de secciones. Confirma el número en tu boleto; no voy a inventar puestos cercanos.`:`I cannot match section ${suppliedSection[1]} to the section guide. Please confirm the number on your ticket; I will not invent nearby stands.`});
   const mentioned = context.eventKind !== 'other' ? fixtureMentioned(query) : undefined;
   if (mentioned && /\b(match|game|kickoff|partido|there|stadium|q2|weather|rain|lluvia)\b/i.test(query)) {
     context = { ...context, eventKind: 'match', event: { title: mentioned.title, startsAt: mentioned.startsAt, source: mentioned.url || 'https://www.austinfc.com/schedule/' } };
@@ -46,22 +50,16 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     if(internal) result=internal;
     else if(intent.kind==='ordering'||intent.kind==='benefits'||intent.kind==='refund'||intent.kind==='security'||intent.kind==='account') result=supportGrounding(intent.kind,query,context,knowledge);
     else if(intent.policy) result=policyGrounding(intent.policy,query,context,knowledge);
-    else if(intent.kind==='transport') result=travelGrounding(query,context,knowledge);
-    else if(intent.kind==='ticketing') result=ticketGrounding(intent.query,context,knowledge);
+    else if(intent.kind==='transport') result=travelGrounding(intents.length===1?query:intent.query,context,knowledge);
+    else if(intent.kind==='ticketing') result=ticketGrounding(intents.length===1?query:intent.query,context,knowledge);
+    else if(intent.kind==='concessions'||intent.kind==='drinks') result=foodGrounding(intent.kind,intents.length===1?retrievalQuery:intent.query,context,knowledge);
+    else if(intent.kind==='stadium' && amenityGrounding(intents.length===1?query:intent.query,context,knowledge)) result=amenityGrounding(intents.length===1?query:intent.query,context,knowledge)!;
     else if(intent.kind==='weather') result=await weatherGrounding(query,context);
     else if(intent.kind==='club') { result=await ground(intent.query,context); if(!result.answer) result=await clubGrounding(intent.query,context); }
     else {
-      const lookup=intent.kind==='drinks' ? (intents.length>1 ? (context.language==='es'?'bebidas':'drinks') : intent.query) : intent.kind==='concessions' && intents.length>1 ? intent.query.replace(/\b(?:bags?|backpacks?|purse|clutch|bolsas?|bolsos?|mochila|diaper|bottle|botella|water|agua|tickets?|boletos?|entradas?|transfer|transferir|recipient|parking|park|kickoff|gates?|rain|forecast|beer|drinks?|cerveza|bebidas?)\b/gi,'')+' food' : intent.query;
-      result=await ground(lookup,context);
-      // Retrieved subqueries must not change the language of the actual latest message.
-      result.context={...result.context,language:context.language};
-      if(intent.kind==='concessions'||intent.kind==='drinks') {
-        result.route=intent.kind;
-        if(context.section && context.section>=200 && context.section<300) {
-          result.answer=(context.language==='es' ? `No tengo puestos publicados en el nivel 200 que pueda confirmar cerca de la sección ${context.section}. Los puestos publicados están principalmente en la explanada principal; no voy a llamarlos cercanos a tu asiento. Consulta el mapa o OrderNext para opciones de tu sección.` : `I do not have verified 200-level stands near section ${context.section}. Published options are mainly on the main concourse; I cannot call them nearby to your seat. Check the section guide or OrderNext for options serving your section.`);
-          result.cards=[];
-        }
-      }
+      result=await ground(intents.length===1?retrievalQuery:intent.query,context);
+      // A standalone retrieval query cannot rewrite the fan's supplied context.
+      result.context={...context};
     }
     context={...context,...result.context,language:context.language};
     result.context=context;
