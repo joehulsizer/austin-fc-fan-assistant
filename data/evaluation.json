@@ -292,7 +292,7 @@
     "kind": "drinks",
     "question": "Bebidas en sección 125",
     "route": "drinks",
-    "mustMatch": "bar",
+    "mustMatch": "(?:Wine by the Glass|Vino por copa).*125",
     "sourceDomain": "q2stadium.com"
   },
   {
