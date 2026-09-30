@@ -36,7 +36,8 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   const context: FanContext = { ...previous };
   if (context.origin === 'ut-austin') context.origin = 'UT Austin';
   if (/(?:not sure|don.t know|don.t remember|haven.t got|no idea).{0,40}(?:section|seat|sitting)|(?:section|seat).{0,25}(?:unknown|not sure|don.t know)/i.test(query)) delete context.section;
-  const section = query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin|cerca de la)\s*#?\s*(\d{3})\b/i);
+  const section = query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin|cerca de la)\s*#?\s*(\d{3})\b/i)
+    || (/\b(food|eat|drinks?|beers?|tacos?|pizza|nachos|restrooms?|bathrooms?|comida|comer|bebidas?|cerveza|baños?)\b/i.test(query) ? query.match(/\b(?:near|by|around|cerca de)\s*#?\s*(\d{3})\b/i) : null);
   if (section) { if(Number(section[1])>=101&&Number(section[1])<=400)context.section=Number(section[1]);else delete context.section; }
   const origin = query.match(/\b(?:from|starting at|leaving from|located at|i(?:'m| am|m) (?:at|near|in)|desde|salgo de|somos de|estoy en)\s+(.+?)(?=\s+(?:to|get to|for the|how do|where can|what time|and when|para el|hacia|y cuando)\b|[,.!?]|$)/i)?.[1]?.trim();
   if (origin && !/^(?:section|sec\.?|secci[oó]n|here|there|the bar|the stand|the app|la app|app|my phone|mi telefono|my account|mi cuenta)\b/i.test(origin)) {
@@ -60,10 +61,11 @@ export function detectContext(query: string, previous: FanContext): FanContext {
     context.eventKind = 'match';
   }
   const clock = query.match(/(?:kickoff|start(?:s)?|inicio|empieza|comienza)(?:\s+(?:is|at|a las|es|del partido))*\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i);
-  if (clock && Number(clock[1]) <= 23 && Number(clock[2] || 0) < 60) {
+  const meridiem = clock?.[3]?.toLowerCase();
+  if (clock && Number(clock[1]) <= (meridiem ? 12 : 23) && (!meridiem || Number(clock[1]) >= 1) && Number(clock[2] || 0) < 60) {
     let hour = Number(clock[1]);
-    if (clock[3]?.startsWith('a') && hour === 12) hour = 0;
-    else if ((clock[3]?.startsWith('p') || !clock[3]) && hour < 12) hour += 12;
+    if (meridiem?.startsWith('a') && hour === 12) hour = 0;
+    else if ((meridiem?.startsWith('p') || !meridiem) && hour < 12) hour += 12;
     context.kickoffTime = `${String(hour).padStart(2,'0')}:${clock[2] || '00'}`;
   }
   const duration = query.match(/(?:trip|travel|drive|ride|journey|maps|viaje|trayecto|tarda)(?:\s+(?:takes|is|says|shows|about|de|dura|indica))*\s+(\d{1,3})\s*(?:minutes?|mins?|minutos?)/i) || query.match(/(\d{1,3})\s*(?:minutes?|mins?|minutos?)\s*(?:trip|travel|drive|ride|journey|viaje|trayecto)/i) || (previous.topic==='transport' && /^\s*(\d{1,3})\s*(?:minutes?|mins?|minutos?)[.!?]?\s*$/i.exec(query));

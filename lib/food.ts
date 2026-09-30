@@ -105,7 +105,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
   matches.sort((a,b)=>proximity(context.section,a.sections)-proximity(context.section,b.sections));
   matches=matches.slice(0,6);
   const inventory=/sold out|stock|inventory|available right now|agotad|inventario/.test(q);
-  result.facts=matches.map(v=>`${v.name}: ${v.location}. ${context.dietary?labels[v.name]?.[context.dietary]:v.description.split('. ')[0].slice(0,180)||'Published vendor; confirm menu options at the stand.'}`);
+  result.facts=matches.map(v=>`${v.name}: ${v.location}. ${context.dietary?labels[v.name]?.[context.dietary]:es?'Consulta el menú y las opciones actuales en el puesto.':'Published vendor; confirm the current menu at the stand.'}`);
   result.cards=matches.map(v=>({title:v.name,detail:v.name==='Kesos Tacos'?'Section 312; main-concourse 105/106 location conflicts':v.location,href:MAP_URL,label:es?'Ver ubicación':'View location'}));
   result.answer=(inventory?(es?'No tengo inventario en vivo ni puedo saber si está agotado. ':'I cannot check live inventory or whether an item is sold out. '):'')+(matches.length?(es?'Opciones publicadas:':'Published options:')+'\n'+result.facts.map(f=>'• '+f).join('\n'):(es?'No pude confirmar esa opción con tus preferencias en los listados publicados.':'I could not verify that item with your preferences in the published listings.'));
   result.sources=[src('Q2 Stadium vendors',FOOD_URL),...(context.dietary?[src('Q2 Stadium food and dietary guide',POLICY_URL,doc?.checkedAt)]:[])];

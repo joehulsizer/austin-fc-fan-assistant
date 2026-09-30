@@ -49,6 +49,23 @@ test('leave time requires supplied travel duration and does not reuse unrelated 
  const timed=travelGrounding('When should I leave?',follow,staticKnowledge);
  assert.match(timed.answer!,/5:25 PM/);
 });
+test('clock meridiem survives uppercase, dotted notation, noon and midnight',()=>{
+ for(const [clock,expected] of [['7:30 PM','19:30'],['7:30 pm','19:30'],['7:30 P.M.','19:30'],['19:30','19:30'],['12:30 AM','00:30'],['12:30 PM','12:30'],['7:30 AM','07:30']]){
+  assert.equal(detectContext(`Kickoff is ${clock}`,{}).kickoffTime,expected,clock);
+ }
+ const context=detectContext('Kickoff is 7:30 PM. My trip takes 35 minutes.',{});
+ const r=travelGrounding('When should I leave?',context,staticKnowledge);
+ assert.match(r.answer!,/leave by 5:25 PM CT/);assert.doesNotMatch(r.answer!,/5:25 AM|7:30 AM/);
+});
+test('section shorthand is recognized in food questions but not travel street addresses',async()=>{
+ const r=await prepare({messages:[{role:'user',content:'Where are tacos near 123, can I bring a water bottle, and where do I park for a concert?'}],context:{}});
+ assert.equal(r.context.section,123);assert.doesNotMatch(r.answer!,/Tell me your section/);
+ assert.equal(detectContext("I'm near 123 Main Street; how do I get to Q2?",{}).section,undefined);
+});
+test('Spanish vendor answers do not copy English marketing paragraphs',()=>{
+ const r=foodGrounding('concessions','¿Dónde hay comida?',{language:'es'},staticKnowledge);
+ assert.match(r.answer!,/Consulta el menú/);assert.doesNotMatch(r.answer!,/This modern|Choose from|Offering unique|Published vendor/);
+});
 test('a new event clears an old measured travel duration',()=>{
  const context=detectContext('Concert at Q2 next month, where do I park?',{travelMinutes:35,kickoffTime:'19:30',eventKind:'match'});
  assert.equal(context.travelMinutes,undefined);assert.equal(context.kickoffTime,undefined);
