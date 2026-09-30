@@ -51,7 +51,10 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   if (food) context.food = food[1].toLowerCase();
   context.language = messageLanguage(query, previous.language);
   if (/\b(concert|concierto|festival|non.match|otro evento|private event|comedy show|comedia|other event)\b/i.test(query)) { context.eventKind = 'other'; delete context.event; delete context.kickoffTime; delete context.travelMinutes; }
-  else if (/\b(match|partido)\b/i.test(query) || (!context.eventKind && /\bkickoff\b/i.test(query))) context.eventKind = 'match';
+  else if (/\b(match|game|partido|kickoff)\b/i.test(query)) {
+    if(context.eventKind==='other'){delete context.event;delete context.kickoffTime;delete context.travelMinutes;}
+    context.eventKind = 'match';
+  }
   const clock = query.match(/(?:kickoff|start(?:s)?|inicio|empieza|comienza)(?:\s+(?:is|at|a las|es|del partido))*\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i);
   if (clock && Number(clock[1]) <= 23 && Number(clock[2] || 0) < 60) {
     let hour = Number(clock[1]);

@@ -107,6 +107,10 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
   const inventory=/sold out|stock|inventory|available right now|agotad|inventario/.test(q);
   result.facts=matches.map(v=>`${v.name}: ${v.location}. ${context.dietary?labels[v.name]?.[context.dietary]:v.description.split('. ')[0].slice(0,180)||'Published vendor; confirm menu options at the stand.'}`);
   result.cards=matches.map(v=>({title:v.name,detail:v.location,href:MAP_URL,label:es?'Ver ubicación':'View location'}));
+  if(matches.some(v=>v.name==='Kesos Tacos')) {
+   result.answer+=(es?'\nKesos: el directorio dice 105 y 312, pero la política y el menú de bebidas dicen 106 y 312. La sección 312 coincide; confirma el puesto de la explanada principal con Guest Services detrás de 124.':'\nKesos location conflicts: the vendor directory lists 105 and 312; the policy and drink menu list 106 and 312. Section 312 agrees; confirm the main-concourse location with Guest Services behind 124.');
+   result.sources.push(src('Q2 Stadium food and dietary guide',POLICY_URL,doc?.checkedAt));
+  }
   result.answer=(inventory?(es?'No tengo inventario en vivo ni puedo saber si está agotado. ':'I cannot check live inventory or whether an item is sold out. '):'')+(matches.length?(es?'Opciones publicadas:':'Published options:')+'\n'+result.facts.map(f=>'• '+f).join('\n'):(es?'No pude confirmar esa opción con tus preferencias en los listados publicados.':'I could not verify that item with your preferences in the published listings.'));
   result.sources=[src('Q2 Stadium vendors',FOOD_URL),...(context.dietary?[src('Q2 Stadium food and dietary guide',POLICY_URL,doc?.checkedAt)]:[])];
  }

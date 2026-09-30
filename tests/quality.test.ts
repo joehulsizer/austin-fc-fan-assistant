@@ -65,3 +65,7 @@ test('changing origin or transport mode clears an old travel-time estimate',()=>
  assert.equal(detectContext('What about going by bus instead?',{origin:'UT Austin',travelMinutes:35,travelMode:'car'}).travelMinutes,undefined);
  assert.equal(detectContext('My bus trip takes 40 minutes',{origin:'UT Austin',travelMinutes:35,travelMode:'car'}).travelMinutes,40);
 });
+test('retesting kickoff in the existing concert chat restores match timing',async()=>{
+ const r=await prepare({messages:[{role:'user',content:"I'm at UT, kickoff is 7:30, fastest way to Q2?"},{role:'assistant',content:'Earlier answer.'},{role:'user',content:'Concert at Q2 next month, where do I park?'},{role:'assistant',content:'Earlier answer.'},{role:'user',content:"I'm at UT, kickoff is 7:30, fastest way to Q2?"}],context:{eventKind:'other',origin:'UT Austin',travelMode:'parking'}});
+ assert.equal(r.context.eventKind,'match');assert.match(r.answer!,/6:00 PM/);assert.doesNotMatch(r.answer!,/6:30 PM/);
+});
