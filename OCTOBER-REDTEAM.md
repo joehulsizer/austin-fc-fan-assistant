@@ -43,12 +43,12 @@ This repair addresses Harrison’s deeper English/Spanish red team. The initial 
 | Guest Services buttons on every answer | Removed from successful general policy, greeting, travel and food responses. Safety, ticket help and actual dead ends retain useful handoffs. Food keeps OrderNext; travel keeps relevant Maps/provider actions. |
 | Non-JS guide topics were wrong | Dynamic server rendering plus explicit `/guide/[topic]` routes. Tests cover legacy query URLs and physical topic URLs with JavaScript disabled. |
 | 390px webview untested | Browser checks cover overflow, sources, policies, safety, keyboard actions, streaming, queue, reset and public share. |
-| Knowledge feed had no real intake/review flow | Private submit endpoint and staff console; separate submission/reviewer keys; another reviewer must approve; server stamps approver/review time; expiry excludes stale answers. Conditional writes prevent conflicting publication. |
+| Knowledge feed had no real intake/review flow | Private submit endpoint and staff console; separate submission/reviewer keys; another reviewer must approve; server stamps approver/review time; expiry excludes stale answers. Conditional writes against the private canonical feed prevent conflicting publication; the public copy is projected for display. |
 | Fallthroughs were not reproducible from logs | Private, scrubbed per-question diagnostic records now retain current question, route, planner, templates, source titles and latency. Authenticated export is paginated. Old logs did not retain question text, so those exact prompts cannot be reconstructed; report prompts and the initial production replay supply the regression cases. |
 | Unclear safety implementation | Hardcoded intent/response table in `lib/safety.ts`; safety returns before semantic planning or model generation. |
 | No enforced rate/cost bounds | Distributed client request limits, conservative daily AI reservations, model-call cap and routing-provider cap. Paid calls fail closed when budget storage is unavailable. |
 
-Additional coverage includes food words such as “hot dog” not matching animal policy, food pickup not matching rideshare, re-entry not adding ticket help, outside-food policy, Apple/Google Pay, new-origin duration reset, forged notices, source injection, expired feed entries, and concurrent limit reservations.
+Approved feed retrieval also accepts bilingual member synonyms and different word order without matching unrelated food queries. Additional coverage includes food words such as “hot dog” not matching animal policy, food pickup not matching rideshare, re-entry not adding ticket help, outside-food policy, Apple/Google Pay, new-origin duration reset, forged notices, source injection, expired feed entries, and concurrent limit reservations.
 
 ## Club knowledge submission and approval
 
@@ -56,7 +56,7 @@ Additional coverage includes food words such as “hot dog” not matching anima
 2. Enter a name/role and edit the supplied JSON example: stable ID, title, topic, English/Spanish keyword phrases, English/Spanish public answer, official provenance URL, expiry and optional approved action links.
 3. Submit a private draft. It is not used by fan chat. Submission credentials cannot view or approve the review queue.
 4. A different reviewer enters reviewer credentials and name, loads the queue, checks the facts, bilingual wording, provenance and expiry, then approves or rejects.
-5. Approval stamps review time and approver, writes an immutable public version and atomically updates the approved feed. Chat can read it within 60 seconds. Expired entries are excluded automatically; repeat an ID to update an existing answer through another review.
+5. Approval stamps review time and approver, writes an immutable public version and atomically updates the private approved feed and projects the public copy. Chat can read it within 60 seconds. Expired entries are excluded automatically; repeat an ID to update an existing answer through another review.
 
 Needed club inputs remain: approved STM benefits, complete 200-level concessions/club/market map, coaching staff and any child-ticket exceptions. The workflow operates without these inputs and never invents them. A published general child policy already answers ordinary age questions.
 
@@ -71,4 +71,23 @@ Needed club inputs remain: approved STM benefits, complete 200-level concessions
 
 ## Verification evidence
 
-Evidence will be recorded here after the final deployed checks complete. The suites include 302 automated tests, a fixed 120-case evaluation, 19 multi-turn conversation turns, 125 existing red-team cases, 124 October report cases and desktop/390px browser acceptance.
+Verified on October 1, 2026:
+
+| Check | Result / evidence |
+| --- | --- |
+| Cloud build, source ingestion, automated regressions | **308/308** including URL bounds, concurrent publication and smoking/evacuation distinction. [Cloud run](https://github.com/joehulsizer/austin-fc-fan-assistant/actions/runs/36926829380) |
+| Public production red team | **125/125 original + 124/124 October cases**, complete answer/source transcripts. [Production run](https://github.com/joehulsizer/austin-fc-fan-assistant/actions/runs/36925943239) |
+| Public 120-case acceptance | **120/120, zero critical failures**, plus **19/19** conversation turns. [Acceptance run](https://github.com/joehulsizer/austin-fc-fan-assistant/actions/runs/36924726416) |
+| Fresh public desktop/mobile browser | **19/19**, including the previously skipped live share test, 390px and non-JS guides. [Browser run](https://github.com/joehulsizer/austin-fc-fan-assistant/actions/runs/36924726199) |
+| Actual model/planner/source-injection probe | All passed; real generated response/token usage, structured planning and poisoned-source resistance. Recorded in production red-team artifacts. |
+| Actual private draft → different reviewer → live bilingual answer | All 12 workflow checks passed, including unauthenticated denial, role separation, self-approval denial, pending invisibility, expiry, injected instructions and rejection; original feed restored. |
+| Live routing | UT driving estimate 17 minutes / 14.6 km gave a 5:43 PM leave-by for a 7:30 PM start and 90-minute arrival buffer. Domain walking estimate 22 minutes / 1.6 km. Both explicitly exclude live traffic and identify travel mode. |
+| Real request throttle | 30 accepted + 2 HTTP 429 in one minute; medical question remained HTTP 200 / fixed safety answer after throttling. |
+| Durable feedback and public share | Feedback write/read passed, contacts redacted, and same receipt read successfully after redeployment. Public redacted share loaded anonymously. Seven existing shares inspected; none needed rewriting. |
+| Diagnostic export | 619 retained private records, 388 unique fallback/template review candidates exported across all pages in the final red-team run. Latest budget at that point: 145 paid calls, **$3.08 reserved** (not actual spend), 7 routing-provider calls. |
+
+An older retained-log sample had 50 unique chat metadata records and no question text. Pagination returned repeated records, so a complete old history was not recoverable through that endpoint. We did not invent past prompts or count duplicate records as additional evidence. New private diagnostics provide the missing question/route/template records for subsequent reviews.
+
+The production approval test initially exposed stale ETags on the public CDN copy. Approval now commits to a private canonical snapshot with conditional writes; fans read that snapshot and a public projection is maintained separately. A concurrent-approval regression verifies that independent entries and updates are preserved.
+
+Reviewed transcripts explicitly included the self-harm lead, harassment, lightning, dead phone, family run-on, Spanish bag/alcohol cutoff, walking from Domain, Saturday and post-November schedule answers. Passing these fixed cases is grounds for another independent red team; it is not a claim of perfect interpretation for every future message. The suites include 309 automated tests, a fixed 120-case evaluation, 19 multi-turn conversation turns, 125 existing red-team cases, 124 October report cases and desktop/390px browser acceptance.
