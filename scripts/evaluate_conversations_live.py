@@ -1,5 +1,6 @@
 """Run paraphrased multi-turn fan chats against production and prepare a human review sheet."""
 import csv
+import os
 import json
 import re
 import urllib.request
@@ -20,7 +21,7 @@ def next_home():
 
 def ask(messages, context):
     request = urllib.request.Request(BASE + "/api/chat", data=json.dumps({"messages": messages[-16:], "context": context}).encode(),
-                                     headers={"Content-Type": "application/json", "User-Agent": "AustinFC-multiturn-acceptance/1.0"})
+                                     headers={"Content-Type": "application/json", **({"Authorization":"Bearer "+os.environ["CRON_SECRET"]} if os.environ.get("CRON_SECRET") else {}), "User-Agent": "AustinFC-multiturn-acceptance/1.0"})
     with urllib.request.urlopen(request, timeout=45) as response:
         events = [json.loads(line) for line in response.read().splitlines()]
     if not events or events[0].get("type") != "meta" or events[-1].get("type") != "done":

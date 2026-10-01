@@ -1,5 +1,6 @@
 """Exercise all fixed acceptance questions against the public production API."""
 import concurrent.futures
+import os
 import json
 import re
 import time
@@ -21,7 +22,7 @@ def evaluate(case):
         try:
             request = urllib.request.Request(
                 BASE + "/api/chat", data=json.dumps(payload).encode(),
-                headers={"Content-Type": "application/json", "User-Agent": "AustinFC-acceptance/1.0"},
+                headers={"Content-Type": "application/json", **({"Authorization":"Bearer "+os.environ["CRON_SECRET"]} if os.environ.get("CRON_SECRET") else {}), "User-Agent": "AustinFC-acceptance/1.0"},
             )
             with urllib.request.urlopen(request, timeout=40) as response:
                 events = [json.loads(line) for line in response.read().splitlines()]

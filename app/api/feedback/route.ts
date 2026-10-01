@@ -1,7 +1,7 @@
 import { get, put } from '@vercel/blob';
 import { z } from 'zod';
 import { requestAllowed } from '@/lib/limits';
-import { scrubText } from '@/lib/redaction';
+import { scrubPrivateText } from '@/lib/redaction';
 
 const schema = z.object({ rating: z.enum(['up', 'down']), comment: z.string().max(700).optional(), route: z.string().max(50).optional(), question: z.string().max(500).optional() });
 export async function POST(request: Request) {
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   catch { return Response.json({ error: 'Invalid feedback' }, { status: 400 }); }
   if (!process.env.FEEDBACK_READ_WRITE_TOKEN || !process.env.FEEDBACK_STORE_ID) return Response.json({ error: 'Feedback storage unavailable' }, { status: 503 });
   if(!await requestAllowed(request,'feedback'))return Response.json({error:'Too many feedback requests'},{status:429});
-  value={...value,comment:value.comment?scrubText(value.comment):undefined,question:value.question?scrubText(value.question):undefined};
+  value={...value,comment:value.comment?scrubPrivateText(value.comment):undefined,question:value.question?scrubPrivateText(value.question):undefined};
   try {
     const id = crypto.randomUUID();
     await put(`feedback/${new Date().toISOString().slice(0, 10)}/${id}.json`, JSON.stringify({ ...value, createdAt: new Date().toISOString() }),

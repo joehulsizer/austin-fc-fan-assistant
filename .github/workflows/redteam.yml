@@ -12,7 +12,16 @@ jobs:
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: python scripts/test_feed_live.py
-      - run: python scripts/redteam_live.py
+      - name: Original red-team cases on production
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: python scripts/redteam_live.py
+      - name: October red-team cases on production
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          REDTEAM_CASES: data/october-redteam.json
+          REDTEAM_OUTPUT: october-live-results.json
+        run: python scripts/redteam_live.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -20,3 +29,4 @@ jobs:
           path: |
             redteam-live-results.json
             feed-live-results.json
+            october-live-results.json
