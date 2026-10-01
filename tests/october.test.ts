@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {POST as chatPost} from '../app/api/chat/route';
 import assert from 'node:assert/strict';
 import cases from '../data/october-redteam.json';
 import {prepare,groundedFallback,answerStream} from '../lib/assistant';
@@ -86,4 +87,9 @@ test('smoking policy wording never triggers an evacuation, while reported smoke 
   const r=await prepare({messages:[{role:'user',content:question}],context:{}});assert.equal(r.route,'stadium');assert.ok(!r.actions?.some(a=>a.href==='tel:911'));
  }
  const r=await prepare({messages:[{role:'user',content:"There is smoke in section 118"}],context:{}});assert.equal(r.route,'safety');assert.match(r.answer!,/staff/);
+});
+
+test('oversized context URLs are rejected before any model planning or paid reservation',async()=>{
+ const r=await chatPost(new Request('http://localhost/api/chat',{method:'POST',body:JSON.stringify({messages:[{role:'user',content:'Hi'}],context:{event:{title:'test',source:'https://www.austinfc.com/?q='+ 'x'.repeat(2000)}}}),headers:{'Content-Type':'application/json'}}));
+ assert.equal(r.status,400);assert.equal((await r.json()).error,'Invalid chat request');
 });
