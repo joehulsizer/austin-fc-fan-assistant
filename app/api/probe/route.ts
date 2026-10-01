@@ -1,10 +1,10 @@
 import { redactLegacyShares } from '@/lib/share-maintenance';
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { put } from '@vercel/blob';
+import { put, get, head } from '@vercel/blob';
 import { answerStream } from '@/lib/assistant';
 import { semanticPlan } from '@/lib/model-planner';
-import { reserveAI } from '@/lib/limits';
+import { reserveAI, privateOptions } from '@/lib/limits';
 import { planIntents } from '@/lib/intents';
 import type { ChatInput, Grounding } from '@/lib/types';
 export const maxDuration=120;
@@ -12,6 +12,14 @@ export async function POST(req:Request){
   if(!process.env.CRON_SECRET || req.headers.get('authorization')!==`Bearer ${process.env.CRON_SECRET}`) return Response.json({error:'Unauthorized'},{status:401});
   const {kind,cursor}=await req.json();
   try {
+    if(kind==='private-consistency'){
+      const path='knowledge/internal/approved.json';
+      const metadata=await head(path,privateOptions());
+      const compressed=await get(path,{access:'private',...privateOptions(),useCache:false});
+      const identity=await get(path,{access:'private',...privateOptions(),useCache:false,headers:{'Accept-Encoding':'identity'}});
+      await compressed?.stream?.cancel();await identity?.stream?.cancel();
+      return Response.json({ok:metadata.etag===identity?.blob.etag,originEtag:metadata.etag,defaultEtag:compressed?.blob.etag,identityEtag:identity?.blob.etag});
+    }
     if(kind==='redact-shares')return Response.json({ok:true,...await redactLegacyShares(typeof cursor==='string'?cursor:undefined)});
     if(kind==='planner'){
       const query='Where is vegan food and how do I transfer my ticket?';

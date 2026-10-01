@@ -10,7 +10,7 @@ export async function privateRead<T>(path:string):Promise<{value:T;etag:string}|
     if(process.env.VERCEL)throw new Error('Private storage unavailable');
     return memory.get(path) as {value:T;etag:string}|undefined;
   }
-  const r=await get(path,{access:'private',...privateOptions(),useCache:false,abortSignal:AbortSignal.timeout(5000)});
+  const r=await get(path,{access:'private',...privateOptions(),useCache:false,headers:{'Accept-Encoding':'identity'},abortSignal:AbortSignal.timeout(5000)});
   if(!r||!r.stream)return;
   return {value:await new Response(r.stream).json() as T,etag:r.blob.etag};
 }
