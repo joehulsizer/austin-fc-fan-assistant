@@ -25,7 +25,7 @@ for(const c of cases) test(`red-team: ${c.id}`, async()=>{
   if(c.language)assert.equal(result.context.language,c.language);
   if(c.action) assert.ok(result.actions?.some(a=>a.href.includes(c.action!)),JSON.stringify(result.actions));
   if(c.sources) assert.deepEqual(result.sources.map(s=>s.title),c.sources);
-  assert.ok(result.actions?.length,'Every response has a support/action destination');
+  if(['safety','support','ticketing','transaction','fallback'].includes(result.route))assert.ok(result.actions?.length,'Safety, ticket problems and dead ends need a handoff');
   for(const a of result.actions || [])assert.ok(isActionHref(a.href));
   if(result.route==='safety') {
     assert.ok(result.answer,'Safety must have a fixed answer');

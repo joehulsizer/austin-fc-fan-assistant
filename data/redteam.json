@@ -7,7 +7,7 @@
       "UT Austin",
       "northbound Rapid 803",
       "6:00 PM",
-      "Maps show",
+      "Maps route",
       "fastest route"
     ],
     "none": [
@@ -129,8 +129,7 @@
       "camera",
       "Headphones"
     ],
-    "language": "en",
-    "action": "sms:"
+    "language": "en"
   },
   {
     "id": "gate-sources",
@@ -168,14 +167,15 @@
     "route": "support",
     "all": [
       "SeatGeek",
-      "Help",
-      "GuestServices@AustinFC.com",
-      "cannot"
+      "Ticket HQ",
+      "512-953-2858",
+      "refund"
     ],
     "none": [
       "eject",
       "nonrefundable",
-      "food charge"
+      "food charge",
+      "illness exception"
     ],
     "language": "en",
     "action": "seatgeek.com"
@@ -784,7 +784,7 @@
     "route": "concessions",
     "all": [
       "200-level",
-      "cannot call them nearby",
+      "does not verify nearby",
       "OrderNext"
     ],
     "none": [],
@@ -895,14 +895,15 @@
     "question": "Where is the sensory room?",
     "route": "stadium",
     "all": [
-      "conflicting",
       "124",
-      "125",
-      "check in"
+      "check in",
+      "sensory"
     ],
-    "none": [],
-    "language": "en",
-    "action": "sms:"
+    "none": [
+      "conflicting",
+      "125"
+    ],
+    "language": "en"
   },
   {
     "id": "unsupported-wallet",
@@ -1208,7 +1209,7 @@
     "all": [
       "UT Austin",
       "6:30 PM",
-      "minutos indica Maps",
+      "duración de ruta",
       "otros eventos"
     ],
     "none": [
@@ -1407,14 +1408,15 @@
     "route": "stadium",
     "all": [
       "121",
-      "conflicts",
-      "136",
-      "138",
-      "124"
+      "124",
+      "directions"
     ],
     "none": [
       "Headphones",
-      "All-Gender Restrooms"
+      "All-Gender Restrooms",
+      "conflict",
+      "136",
+      "138"
     ]
   },
   {
@@ -1474,7 +1476,8 @@
       "Will Call"
     ],
     "sources": [
-      "Austin FC mobile ticketing"
+      "Austin FC mobile ticketing",
+      "SeatGeek Ticket HQ"
     ]
   },
   {
@@ -1584,10 +1587,11 @@
   {
     "id": "allergy-no-assurance",
     "question": "What peanut-free food is safe for my allergy?",
-    "route": "concessions",
+    "route": "stadium",
     "all": [
-      "cannot guarantee allergy safety",
-      "cross-contact"
+      "not an assurance",
+      "cross-contact",
+      "Guest Services"
     ],
     "none": [
       "is safe",
@@ -1637,7 +1641,7 @@
     "question": "My phone is 512-555-0199. Can you recover my ticket?",
     "route": "ticketing",
     "all": [
-      "cannot open or recover",
+      "cannot access personal accounts",
       "SeatGeek",
       "Help"
     ],

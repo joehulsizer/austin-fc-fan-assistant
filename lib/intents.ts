@@ -7,14 +7,14 @@ export function planIntents(query: string, priorTopic?: string): Intent[] {
   if (/system prompt|developer (?:message|prompt)|ignore (?:all|previous|your)|print (?:your|the) (?:instructions|prompt)|api key|secret token|reveal (?:your|the)|ignora.{0,25}instrucciones|instrucciones del sistema/.test(q)) {push('security'); return intents;}
   const ordering = /\bordernext\b/.test(q) || /\b(order|ordering|deliver\w*|delivery|ordernext|pedido|pedir|pide|entreg\w*)\b/.test(q) && /\b(food|beer|hot dog|drink|seat|concession|mobile|comida|cerveza|asiento|comer|bebida)\b/.test(q);
   const benefit = /\b(stm|season ticket|season.?ticket|member|membership|abonado|socio)\b/.test(q) && /\b(discount|benefit|food|comida|descuento|beneficio)\b/.test(q);
-  const refund = /refund|charged (?:twice|again|but)|paid.{0,35}(?:never|didn.t|missing)|never received|didn.t receive|missing order|payment (?:failed|error)|reembolso|cobraron|devolucion/.test(q);
+  const refund = /refund|charged|paid.{0,35}(?:never|didn.t|missing)|never received|didn.t receive|missing order|payment (?:failed|error)|reembolso|cobraron|devolucion/.test(q);
   if (/\b(balance|loyalty wallet|wallet balance|account balance|loyalty points|saldo|billetera|puntos de lealtad)\b/.test(q)) push('account');
   if (refund) push('refund');
   else if (benefit) push('benefits');
   else if (ordering) push('ordering');
   const policies = policyTopics(query);
   policies.forEach(p=>push('stadium', query, p));
-  const travel = /\b(parking|park|lots?|garages?|rideshare|uber|lyft|taxi|train|rail|red line|mckalla|transit|transport|transportation|bus|bike|bicycle|directions|route|fastest|estacionamiento|aparcar|tren|autobus|bicicleta|transporte|ruta)\b|(?:get|getting|go|travel) to (?:q2|the stadium|there)|getting (?:there|here)|coming from|llegar (?:al|a) (?:q2|estadio)|como llego|when should i leave|what time should i (?:leave|do it)|leave.by|salir|salimos|desde.{0,80}(?:q2|estadio|llegar)|student center/.test(q) || priorTopic==='transport' && /how long|arrive|leave|departure|cuanto tarda|salir|llegar/.test(q);
+  const travel = /\b(parking|park|lots?|garages?|rideshare|uber|lyft|taxi|train|rail|red line|mckalla|transit|transport|transportation|bus|bike|bicycle|walk|walking|on foot|caminar|caminando|a pie|directions|route|fastest|estacionamiento|aparcar|tren|autobus|bicicleta|transporte|ruta)\b|(?:get|getting|go|travel) to (?:q2|the stadium|there)|getting (?:there|here)|coming from|llegar (?:al|a) (?:q2|estadio)|como llego|when should i leave|what time should i (?:leave|do it)|leave.by|salir|salimos|desde.{0,80}(?:q2|estadio|llegar)|student center|drop.?off|pick.?up/.test(q) || priorTopic==='transport' && /how long|arrive|leave|departure|cuanto tarda|salir|llegar/.test(q);
   if ((travel||/park.?and.?ride|fare|umo|pay.{0,30}(?:capmetro|train|bus)|tarifa|pagar.{0,30}(?:tren|autobus)/.test(q)) && !policies.some(p=>['tailgating','vehicle','ev','smoking','entrance'].includes(p))) push('transport');
   if (!policies.includes('weatherpolicy') && /(?:hot|cold|windy|wind).{0,30}(?:kickoff|today|tomorrow|tonight|outside)|\b(weather|rain|raining|raincoat|temperature|forecast|lluvia|llovera|clima|pronostico|llover|frio|calor)\b/.test(q)) push('weather');
   const other = /concert|concierto|festival|non.match|private event/.test(q);

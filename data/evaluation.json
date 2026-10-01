@@ -179,7 +179,7 @@
     "id": "gluten-03",
     "kind": "gluten",
     "question": "Can you guarantee allergy-safe gluten free food?",
-    "route": "concessions",
+    "route": "stadium",
     "mustMatch": "gluten|cel[ií]ac",
     "sourceDomain": "q2stadium.com"
   },
@@ -316,7 +316,7 @@
     "kind": "drinks",
     "question": "Where is the YETI Bar?",
     "route": "drinks",
-    "mustMatch": "YETI Bar location conflicts.*125.*124",
+    "mustMatch": "YETI Bar.*Guest Services.*124",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -644,7 +644,7 @@
     "kind": "sensory",
     "question": "Where is the sensory room?",
     "route": "stadium",
-    "mustMatch": "125",
+    "mustMatch": "Guest Services.*124|124.*Guest Services",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -652,7 +652,7 @@
     "kind": "sensory",
     "question": "Do you have a sensory room?",
     "route": "stadium",
-    "mustMatch": "125",
+    "mustMatch": "Guest Services.*124|124.*Guest Services",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -660,7 +660,7 @@
     "kind": "sensory",
     "question": "Sensory space for my child?",
     "route": "stadium",
-    "mustMatch": "125",
+    "mustMatch": "Guest Services.*124|124.*Guest Services",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -668,7 +668,7 @@
     "kind": "sensory",
     "question": "Need a quiet sensory room",
     "route": "stadium",
-    "mustMatch": "125",
+    "mustMatch": "Guest Services.*124|124.*Guest Services",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -676,7 +676,7 @@
     "kind": "sensory",
     "question": "Which section is the sensory room behind?",
     "route": "stadium",
-    "mustMatch": "125",
+    "mustMatch": "Guest Services.*124|124.*Guest Services",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -684,7 +684,7 @@
     "kind": "sensory",
     "question": "¿Dónde está la sala sensorial?",
     "route": "stadium",
-    "mustMatch": "125",
+    "mustMatch": "Guest Services.*124|124.*Guest Services",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -692,7 +692,7 @@
     "kind": "sensory",
     "question": "¿Hay espacio sensorial?",
     "route": "stadium",
-    "mustMatch": "125",
+    "mustMatch": "Guest Services.*124|124.*Guest Services",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -700,7 +700,7 @@
     "kind": "sensory",
     "question": "Can I get a sensory kit?",
     "route": "stadium",
-    "mustMatch": "125",
+    "mustMatch": "Guest Services.*124|124.*Guest Services",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -708,7 +708,7 @@
     "kind": "sensory",
     "question": "Where do I go for sensory support?",
     "route": "stadium",
-    "mustMatch": "125",
+    "mustMatch": "Guest Services.*124|124.*Guest Services",
     "sourceDomain": "q2stadium.com"
   },
   {
@@ -716,7 +716,7 @@
     "kind": "sensory",
     "question": "Sensory room near section 125?",
     "route": "stadium",
-    "mustMatch": "125",
+    "mustMatch": "Guest Services.*124|124.*Guest Services",
     "sourceDomain": "q2stadium.com"
   },
   {

@@ -4,7 +4,8 @@ export function parseOrigin(query:string,travelFollowup=false):string|undefined 
   const q=normalized(query);
   if(/official notice|guest services:|system:|developer:|ignore|ignora|print.*prompt|base64/.test(q))return;
   const travel=/q2|stadium|estadio|kickoff|travel|fastest|train|bus|walk|drive|ride|arriv|leave|llegar|caminar|salir|parking|coming|vengo/.test(q)||travelFollowup;
-  if(!travel)return;
+  const statement=/^\s*(?:i(?:'m| am|m) (?:at|near|in)|staying at|from|desde|somos de|salgo de|estoy en)\s+/i.test(query);
+  if(!travel&&!statement)return;
   if(/\b(?:aus|austin(?:-bergstrom)? (?:airport|aeropuerto)|airport|aeropuerto)\b/.test(q))return 'Austin-Bergstrom International Airport (AUS)';
   if(/\b(?:the domain|el domain|domain)\b/.test(q)&&! /to the domain|hacia el domain/.test(q))return 'The Domain, Austin, TX';
   if(/\b(?:ut austin|ut campus|university of texas(?: at austin)?|ut)\b/.test(q))return 'UT Austin';

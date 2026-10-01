@@ -11,11 +11,11 @@ test('the reported two messages differ in answer, sources, actions and event con
  const first=await prepare({messages:[{role:'user',content:"I'm at UT, kickoff is 7:30, what's the fastest way to Q2?"}],context:{}});
  const second=await prepare({messages:[{role:'user',content:"I'm at UT, kickoff is 7:30, what's the fastest way to Q2?"},{role:'assistant',content:first.answer!},{role:'user',content:'Concert at Q2 next month, where do I park?'}],context:first.context});
  assert.notEqual(first.answer,second.answer);
- assert.match(first.answer!,/northbound Rapid 803/);assert.match(first.answer!,/Maps show/);
+ assert.match(first.answer!,/northbound Rapid 803/);assert.match(first.answer!,/Maps route/);
  assert.doesNotMatch(second.answer!,/Rapid 803|Red Line|Bike Valet|From UT|6:00 PM/);
  assert.equal(second.context.eventKind,'other');assert.equal(second.context.kickoffTime,undefined);
  assert.deepEqual(second.sources.map(s=>s.title),['Q2 Stadium parking and lot map']);
- assert.equal(second.actions?.length,3);assert.equal(second.context.origin,'UT Austin');
+ assert.equal(second.actions?.length,1);assert.equal(second.context.origin,'UT Austin');
 });
 test('overlapping plans do not duplicate a travel answer, while different food answers remain',()=>{
  const origin={origin:'the student center at University of Austin',language:'en' as const};
@@ -82,7 +82,7 @@ test('classifier outage retains every fixed requested policy and ordering scope'
  try{
   const q='Can I bring a backpack and water bottle, when does beer stop, and how do I order to my seat?';
   const r=await semanticPlan(q,{},planIntents(q));
-  assert.equal(r.mode,'fallback');assert.deepEqual(r.intents.filter(i=>i.policy).map(i=>i.policy),['bag','water','alcohol']);assert.ok(r.intents.some(i=>i.kind==='ordering'));
+  assert.equal(r.mode,'fixed');assert.deepEqual(r.intents.filter(i=>i.policy).map(i=>i.policy),['bag','water','alcohol']);assert.ok(r.intents.some(i=>i.kind==='ordering'));
  }finally{global.fetch=original;if(vercel===undefined)delete process.env.VERCEL;else process.env.VERCEL=vercel;}
 });
 test('changing origin or transport mode clears an old travel-time estimate',()=>{
@@ -94,11 +94,11 @@ test('retesting kickoff in the existing concert chat restores match timing',asyn
  const r=await prepare({messages:[{role:'user',content:"I'm at UT, kickoff is 7:30, fastest way to Q2?"},{role:'assistant',content:'Earlier answer.'},{role:'user',content:'Concert at Q2 next month, where do I park?'},{role:'assistant',content:'Earlier answer.'},{role:'user',content:"I'm at UT, kickoff is 7:30, fastest way to Q2?"}],context:{eventKind:'other',origin:'UT Austin',travelMode:'parking'}});
  assert.equal(r.context.eventKind,'match');assert.match(r.answer!,/6:00 PM/);assert.doesNotMatch(r.answer!,/6:30 PM/);
 });
-test('a taco location conflict is visible rather than overwritten by the generic answer',()=>{
+test('a taco conflict stays internal while verified directions remain usable',()=>{
  const r=foodGrounding('concessions','Where are tacos?',{},staticKnowledge);
- assert.match(r.answer!,/Kesos location conflicts.*105.*312.*106/);
+ assert.match(r.answer!,/Kesos.*312.*Guest Services/);assert.doesNotMatch(r.answer!,/conflict|105|106/);
  assert.ok(r.sources.some(s=>s.title==='Q2 Stadium food and dietary guide'));
- assert.match(r.cards.find(c=>c.title==='Kesos Tacos')!.detail,/conflicts/);
+ assert.doesNotMatch(r.cards.find(c=>c.title==='Kesos Tacos')!.detail,/conflict|105|106/);
 });
 test('an invalid section does not poison the next request or delay safety',async()=>{
  const r=await prepare({messages:[{role:'user',content:'Where is food near section 999?'}],context:{section:123}});

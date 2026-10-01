@@ -79,8 +79,8 @@ test('recipient ticket follow-up uses the mobile-ticket guide rather than unrela
   assert.equal(result.route, 'ticketing');
   assert.match(answer, /app/);
   assert.ok(result.sources.some(s => s.url.includes('austinfc.com/tickets/mobile-ticketing')));
-  assert.deepEqual(result.sources.map(s=>s.title),['Austin FC mobile ticketing']);
-  assert.ok(!result.sources.some(s => /re.entry|seatgeek ticket hq/i.test(s.title)));
+  assert.deepEqual(result.sources.map(s=>s.title),['Austin FC mobile ticketing','SeatGeek Ticket HQ']);
+  assert.ok(!result.sources.some(s => /re.entry|alcohol|bag/i.test(s.title)));
 });
 
 test('dietary claim stays gluten aware and never promises allergy safety', async () => {
