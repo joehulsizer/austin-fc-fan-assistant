@@ -1,3 +1,4 @@
+import { redactLegacyShares } from '@/lib/share-maintenance';
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { put } from '@vercel/blob';
@@ -9,8 +10,9 @@ import type { ChatInput, Grounding } from '@/lib/types';
 export const maxDuration=120;
 export async function POST(req:Request){
   if(!process.env.CRON_SECRET || req.headers.get('authorization')!==`Bearer ${process.env.CRON_SECRET}`) return Response.json({error:'Unauthorized'},{status:401});
-  const {kind}=await req.json();
+  const {kind,cursor}=await req.json();
   try {
+    if(kind==='redact-shares')return Response.json({ok:true,...await redactLegacyShares(typeof cursor==='string'?cursor:undefined)});
     if(kind==='planner'){
       const query='Where is vegan food and how do I transfer my ticket?';
       const result=await semanticPlan(query,{language:'en'},planIntents(query));
