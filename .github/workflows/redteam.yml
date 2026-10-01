@@ -18,15 +18,22 @@ jobs:
           KNOWLEDGE_SUBMIT_SECRET: ${{ secrets.KNOWLEDGE_SUBMIT_SECRET }}
         run: python scripts/test_workflow_live.py
       - name: Original red-team cases on production
+        id: original
+        continue-on-error: true
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: python scripts/redteam_live.py
       - name: October red-team cases on production
+        id: october
+        continue-on-error: true
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           REDTEAM_CASES: data/october-redteam.json
           REDTEAM_OUTPUT: october-live-results.json
         run: python scripts/redteam_live.py
+      - name: Require both public suites to pass
+        if: always()
+        run: test '${{ steps.original.outcome }}' = 'success' && test '${{ steps.october.outcome }}' = 'success'
       - name: Export retained fallback and template hits for review
         if: always()
         env:
