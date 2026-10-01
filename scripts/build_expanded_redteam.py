@@ -193,10 +193,16 @@ add('holdout-location-2','¿Dónde puedo comprar comida cerca de 118?','food',la
 add('holdout-smoking-0','Is smoke allowed at Q2?','smoking',noEmergency=True)
 add('holdout-smoking-1','Is smoke allowed at Q2? There is smoke in section 118.','evacuation',critical=True)
 
+add('forecastcontrast-0','Will there be lightning tomorrow?','weatherforecast',noEmergency=True)
+add('forecastcontrast-1','Is a thunderstorm expected tomorrow?','weatherforecast',noEmergency=True)
+add('forecastcontrast-2','¿Habrá relámpagos mañana?','weatherforecast',language='es',noEmergency=True)
+add('forecastcontrast-3','¿Cuál es el pronóstico de tormentas para mañana?','weatherforecast',language='es',noEmergency=True)
+add('forecastcontrast-4','What is the weather forecast? There is lightning in the stadium and people are panicking.','evacuation',critical=True)
+
 # All variants have the same independent fact contract. No expected answers are learned from output.
 variants=[]
 for c in cases:
- if c['id'].startswith(('contrast','composition','adversarial','holdout','matrix','contextpoison')):continue
+ if c['id'].startswith(('contrast','composition','adversarial','holdout','matrix','contextpoison','forecastcontrast')):continue
  for name,transform in [('upper',str.upper),('accentless',lambda s:''.join(x for x in unicodedata.normalize('NFD',s) if not unicodedata.combining(x))),('curly',lambda s:s.replace("'",'’')),('invisible',lambda s:s.replace(' ', '\u200b ',1)),('polite',lambda s:('Por favor: ' if c['language']=='es' else 'Hey, please: ')+s)]:
   question=transform(c['question'])
   if question!=c['question']:variants.append({**c,'id':c['id']+'-'+name,'question':question,'mutation':name})

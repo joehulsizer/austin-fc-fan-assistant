@@ -63,3 +63,8 @@ test('browser event metadata cannot fabricate an official match or kickoff forec
  const context={event:{title:'Austin FC vs Fake United',startsAt:'2030-10-10T19:30:00-05:00',source:'https://www.austinfc.com/schedule/'}};
  const r=await ask('Will it rain at kickoff?',context);assert.equal(r.context.event,undefined);assert.match(r.answer!,/Which match/);
 });
+
+test('hazard forecasts do not become evacuation reports, while actual danger still wins',async()=>{
+ for(const q of ['Will there be lightning tomorrow?', 'Is a thunderstorm expected tomorrow?', '¿Habrá relámpagos mañana?', '¿Cuál es el pronóstico de tormentas para mañana?'])assert.deepEqual(safetyIntents(q),[],q);
+ assert.ok(safetyIntents('What is the weather forecast? There is lightning in the stadium and people are panicking.').includes('evacuation'));
+});

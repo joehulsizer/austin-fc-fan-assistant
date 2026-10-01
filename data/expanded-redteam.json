@@ -2830,6 +2830,55 @@
       "context": {}
     },
     {
+      "id": "forecastcontrast-0",
+      "family": "forecastcontrast",
+      "question": "Will there be lightning tomorrow?",
+      "contract": "weatherforecast",
+      "language": "en",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "forecastcontrast-1",
+      "family": "forecastcontrast",
+      "question": "Is a thunderstorm expected tomorrow?",
+      "contract": "weatherforecast",
+      "language": "en",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "forecastcontrast-2",
+      "family": "forecastcontrast",
+      "question": "¿Habrá relámpagos mañana?",
+      "contract": "weatherforecast",
+      "language": "es",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "forecastcontrast-3",
+      "family": "forecastcontrast",
+      "question": "¿Cuál es el pronóstico de tormentas para mañana?",
+      "contract": "weatherforecast",
+      "language": "es",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "forecastcontrast-4",
+      "family": "forecastcontrast",
+      "question": "What is the weather forecast? There is lightning in the stadium and people are panicking.",
+      "contract": "evacuation",
+      "language": "en",
+      "critical": true,
+      "context": {}
+    },
+    {
       "id": "stroller-0-upper",
       "family": "stroller",
       "question": "CAN I TAKE A PUSHCHAIR THROUGH SECURITY?",
