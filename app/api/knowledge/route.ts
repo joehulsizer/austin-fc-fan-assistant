@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   let value;
   try { value = schema.parse(await request.json()); }
   catch { return Response.json({ error: 'Snapshot failed validation; retained the last working version' }, { status: 400 }); }
-  if (value.sources.some(s => !s.url.startsWith('https://www.q2stadium.com/'))) return Response.json({ error: 'Unexpected source origin' }, { status: 400 });
+  if (value.sources.some(s => !['www.q2stadium.com','www.austinfc.com','www.capmetro.org'].includes(new URL(s.url).hostname))) return Response.json({ error: 'Unexpected source origin' }, { status: 400 });
   const encoded = JSON.stringify(value);
   try {
     await put(`knowledge/versions/${value.version.replace(/[:+]/g, '-')}.json`, encoded, { access: 'public', addRandomSuffix: false, contentType: 'application/json' });

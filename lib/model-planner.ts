@@ -7,7 +7,7 @@ import { policyTopics } from './policies';
 const schema=z.object({intents:z.array(z.object({
   kind:z.enum(['ordering','benefits','refund','transport','weather','club','ticketing','concessions','drinks','stadium','account']),
   query:z.string().min(1).max(700),
-  policy:z.enum(['bag','water','alcohol','gates','sensory','guest']).nullable(),
+  policy:z.enum(['bag','water','alcohol','gates','sensory','guest','stroller','elevators','animals','reentry','ev','cashless','cameras','drones','prohibited','smoking','tailgating','sunscreen','children','restrooms','phonecharge','weatherpolicy','vehicle','entrance','allergy']).nullable(),
 })).min(1).max(8)});
 /** Semantic planning helps with unfamiliar fan wording; bounded fallback still works during outages. */
 export async function semanticPlan(query:string,context:FanContext,fallback:Intent[]):Promise<{intents:Intent[];mode:'model'|'fallback'|'fixed';errorKind?:string;errorStatus?:number}> {
@@ -45,7 +45,7 @@ Separate multiple requests into intents with short standalone subqueries in the 
       if(!intents.some(i=>i.kind==='transport'))intents.push({kind:'transport',query,policy:undefined});
     }
     // Fixed, recognized requested policies must not disappear from the model's plan.
-    for(const known of fallback.filter(i=>i.policy||['ordering','benefits','refund','ticketing','account'].includes(i.kind)))if(!intents.some(i=>i.kind===known.kind&&i.policy===known.policy))intents.push({kind:known.kind as Exclude<Intent['kind'],'security'>,query:known.query,policy:known.policy as typeof intents[number]['policy']});
+    for(const known of fallback.filter(i=>i.policy||['ordering','benefits','refund','ticketing','account'].includes(i.kind)))if(!intents.some(i=>i.kind===known.kind&&i.policy===known.policy))intents.push({kind:known.kind as Exclude<Intent['kind'],'security'>,query:known.query,policy:known.policy});
     // A model cannot invent an extra unspecified stadium request next to explicit
     // requests; this was stacking a generic dead end after a working OrderNext reply.
     if(fallback.some(i=>i.policy||i.kind!=='stadium'))for(let i=intents.length-1;i>=0;i--) {

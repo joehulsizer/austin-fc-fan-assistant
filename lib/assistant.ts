@@ -82,7 +82,7 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     else if(intent.kind==='concessions'||intent.kind==='drinks') result=foodGrounding(intent.kind,intents.length===1?retrievalQuery:intent.query,context,knowledge);
     else if(intent.kind==='stadium' && amenityGrounding(intents.length===1?query:intent.query,context,knowledge)) result=amenityGrounding(intents.length===1?query:intent.query,context,knowledge)!;
     else if(intent.kind==='weather') result=await weatherGrounding(query,context);
-    else if(intent.kind==='club') { result=await clubGrounding(intent.query,context); }
+    else if(intent.kind==='club') { result=/^\s*tryouts?\s*\??\s*$/i.test(intent.query)?await ground(intent.query,context):await clubGrounding(intent.query,context); }
     else {
       const docs=searchDocs(intents.length===1?retrievalQuery:intent.query,knowledge,2);
       result={route:'stadium',context,facts:docs.map(d=>`${d.title}: ${d.body}`),sources:docs.map(d=>({title:d.title,url:d.url,checkedAt:d.checkedAt})),cards:[]};

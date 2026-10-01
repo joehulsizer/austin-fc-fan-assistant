@@ -9,8 +9,9 @@ async function geocode(origin:string):Promise<{lat:number;lon:number;label:strin
   const key=`operations/geocode/${privateKey(origin.toLowerCase())}.json`,cached=await privateRead<{lat:number;lon:number;label:string}>(key);
   if(cached)return cached.value;
   if(!await reserveRouting('nominatim'))return;
+  if(/\d{1,6}\s+\w|my (?:home|house|address)|mi (?:casa|direccion)/i.test(origin))return;
   const query=origin==='UT Austin'?'University of Texas at Austin':origin;
-  const u=new URL('https://nominatim.openstreetmap.org/search');
+  const u=new URL(process.env.NOMINATIM_ENDPOINT||'https://nominatim.openstreetmap.org/search');
   u.search=new URLSearchParams({q:/texas|austin|antonio/i.test(query)?query:query+', Texas, USA',format:'jsonv2',countrycodes:'us',limit:'1'}).toString();
   const r=await fetch(u,{headers:{'User-Agent':agent},signal:AbortSignal.timeout(5000),cache:'no-store'});
   if(!r.ok)return;
@@ -35,7 +36,7 @@ export async function liveRoute(context:FanContext,mode:string):Promise<RouteEst
     } else {
       const point=await geocode(context.origin);if(!point||!await reserveRouting('osrm'))return;
       const profile=mode==='walk'?'foot':mode==='bike'?'bike':'car';
-      const u=`https://routing.openstreetmap.de/routed-${profile}/route/v1/driving/${point.lon},${point.lat};${DEST.longitude},${DEST.latitude}?overview=false&steps=false`;
+      const u=`${process.env.OSRM_API_BASE||'https://routing.openstreetmap.de'}/routed-${profile}/route/v1/driving/${point.lon},${point.lat};${DEST.longitude},${DEST.latitude}?overview=false&steps=false`;
       const r=await fetch(u,{headers:{'User-Agent':agent},signal:AbortSignal.timeout(6500),cache:'no-store'});
       const d=await r.json(),route=d.routes?.[0];
       if(r.ok&&d.code==='Ok'&&Number.isFinite(route?.duration))value={minutes:Math.ceil(route.duration/60),distanceKm:route.distance/1000,provider:'OpenStreetMap / OSRM',traffic:false,mode,checkedAt:new Date().toISOString(),originLabel:context.origin};

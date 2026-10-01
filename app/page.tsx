@@ -99,7 +99,7 @@ export default function Home(){
       const response=await fetch('/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rating,comment,route:message.route,question:question?.slice(0,500)})});
       if(!response.ok)throw new Error('Save failed');
       updateMessages(old=>old.map(m=>m.id===id?{...m,feedbackOpen:false,feedbackSaved:true}:m));setFeedbackText('');
-    }catch(error){if(generation!==epoch.current)return;updateMessages(old=>old.map(m=>m.id===id?{...m,feedbackOpen:true,feedbackSaved:false}:m));}
+    }catch{updateMessages(old=>old.map(m=>m.id===id?{...m,feedbackOpen:true,feedbackSaved:false}:m));}
   }
   return <div className="app">
     <aside className={'sidebar '+(drawer?'open':collapsed?'collapsed':'')}>

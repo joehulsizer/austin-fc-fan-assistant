@@ -17,7 +17,7 @@ export function internalGuideHref(url: string, title = ''): string {
     : /policy/.test(path) ? 'policies'
     : /vendor|food|drink/.test(name) ? 'food'
     : host.includes('austinfc.com') || host.includes('mlssoccer.com') ? 'club'
-    : host.includes('capmetro.org') ? 'travel'
+    : host.includes('capmetro.org') || host.includes('openstreetmap') || host.includes('maps.googleapis.com') || /routes/i.test(name) ? 'travel'
     : host.includes('q2stadium.com') ? 'policies'
     : 'sources';
   if (topic === 'policies' && !/policy and dietary|q2 stadium policy/i.test(name) && title) {
