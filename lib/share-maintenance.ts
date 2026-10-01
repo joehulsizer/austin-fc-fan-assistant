@@ -10,7 +10,7 @@ export async function redactLegacyShares(cursor?:string){
   if(!parsed.success){invalid++;continue;}
   examined++;const clean={...parsed.data,...sanitizeShare(parsed.data)},json=JSON.stringify(clean);
   if(JSON.stringify(parsed.data)===json)continue;
-  await put(`operations/share-backups/${parsed.data.id}.json`,raw,{access:'private',...privateOptions(),addRandomSuffix:false,contentType:'application/json'});
+  await put(`operations/share-backups/${parsed.data.id}/${crypto.randomUUID()}.json`,raw,{access:'private',...privateOptions(),addRandomSuffix:false,contentType:'application/json'});
   await put(item.pathname,json,{access:'public',addRandomSuffix:false,allowOverwrite:true,ifMatch:read.blob.etag,cacheControlMaxAge:60,contentType:'application/json'});redacted++;
  }
  return {examined,redacted,invalid,cursor:page.hasMore?page.cursor:null};
