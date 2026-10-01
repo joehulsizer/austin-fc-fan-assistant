@@ -37,6 +37,24 @@ function austinDay(now:Date):string {
   return ['year','month','day'].map(t=>parts.find(p=>p.type===t)?.value).join('-');
 }
 
+/** NWS condition text is English even when the fan asks in Spanish. */
+export function localizedForecast(value:string,spanish:boolean):string {
+ if(!spanish)return value;
+ const terms:[string,string][]=[
+  ['Slight Chance(?: of)?','ligera probabilidad de'],['Chance(?: of)?','probabilidad de'],
+  ['Patchy Fog','niebla dispersa'],['Dense Fog','niebla densa'],['Freezing Rain','lluvia helada'],
+  ['Freezing Drizzle','llovizna helada'],['Rain And Snow','lluvia y nieve'],['Mostly Clear','mayormente despejado'],
+  ['Partly Cloudy','parcialmente nublado'],['Mostly Cloudy','mayormente nublado'],['Mostly Sunny','mayormente soleado'],
+  ['Areas of','areas de'],['Thunderstorms?','tormentas'],['Showers?','chubascos'],['Likely','probables'],
+  ['Scattered','dispersos'],['Isolated','aislados'],['Occasional','ocasionales'],['Sunny','soleado'],
+  ['Clear','despejado'],['Cloudy','nublado'],['Overcast','cubierto'],['Rain','lluvia'],['Snow','nieve'],
+  ['Sleet','aguanieve'],['Drizzle','llovizna'],['Fog','niebla'],['Haze','calima'],['Smoke','humo'],
+  ['Windy','ventoso'],['Breezy','con brisa'],['Blizzard','ventisca'],['Hot','caluroso'],['Cold','frio'],
+  ['Light','ligera'],['Heavy','intensa'],['Patchy','dispersa'],['Then','luego'],['And','y'],['Precipitation','precipitacion']
+ ];
+ return terms.reduce((text,[from,to])=>text.replace(new RegExp(`\\b${from}\\b`,'gi'),to),value);
+}
+
 export async function weatherGrounding(query: string, context: FanContext): Promise<Grounding> {
   const spanish = context.language === 'es';
   const base: Grounding = { route: 'weather', context, facts: [], sources: [{ title: 'National Weather Service: Q2 Stadium forecast', url: WEATHER_SOURCE, checkedAt: new Date().toISOString() }], cards: [{ title: 'Hourly forecast', detail: 'Q2 Stadium area', href: WEATHER_SOURCE, label: spanish ? 'Ver pronóstico' : 'View forecast' }] };
@@ -73,8 +91,8 @@ export async function weatherGrounding(query: string, context: FanContext): Prom
     const local = new Intl.DateTimeFormat(spanish ? 'es-US' : 'en-US', { timeZone: 'America/Chicago', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(period.startTime));
     const rain = period.probabilityOfPrecipitation?.value;
     base.answer = spanish
-      ? `Pronóstico por hora para la zona de Q2 Stadium (${local}): ${period.shortForecast}, ${period.temperature}°${period.temperatureUnit}${rain === null || rain === undefined ? '' : `, probabilidad de precipitación ${rain}%`}. Viento: ${period.windSpeed}. Pronóstico consultado ${new Date().toLocaleString('es-US', { timeZone: 'America/Chicago' })}.`
-      : `Hourly forecast for the Q2 Stadium area (${local}): ${period.shortForecast}, ${period.temperature}°${period.temperatureUnit}${rain === null || rain === undefined ? '' : `, ${rain}% chance of precipitation`}. Wind: ${period.windSpeed}. Checked ${new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' })}.`;
+      ? `Pronóstico por hora para la zona de Q2 Stadium (${local}): ${localizedForecast(period.shortForecast,spanish)}, ${period.temperature}°${period.temperatureUnit}${rain === null || rain === undefined ? '' : `, probabilidad de precipitación ${rain}%`}. Viento: ${period.windSpeed}. Pronóstico consultado ${new Date().toLocaleString('es-US', { timeZone: 'America/Chicago' })}.`
+      : `Hourly forecast for the Q2 Stadium area (${local}): ${localizedForecast(period.shortForecast,spanish)}, ${period.temperature}°${period.temperatureUnit}${rain === null || rain === undefined ? '' : `, ${rain}% chance of precipitation`}. Wind: ${period.windSpeed}. Checked ${new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' })}.`;
     base.facts = [base.answer];
     return base;
   } catch {

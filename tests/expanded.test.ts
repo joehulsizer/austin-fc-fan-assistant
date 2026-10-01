@@ -1,6 +1,7 @@
 import test from 'node:test';
 import expandedData from '../data/expanded-redteam.json';
 import assert from 'node:assert/strict';
+import {localizedForecast} from '../lib/live';
 import {prepare,groundedFallback} from '../lib/assistant';
 import {detectContext} from '../lib/knowledge';
 import {safetyIntents,normalized} from '../lib/safety';
@@ -67,4 +68,10 @@ test('browser event metadata cannot fabricate an official match or kickoff forec
 test('hazard forecasts do not become evacuation reports, while actual danger still wins',async()=>{
  for(const q of ['Will there be lightning tomorrow?', 'Is a thunderstorm expected tomorrow?', '¿Habrá relámpagos mañana?', '¿Cuál es el pronóstico de tormentas para mañana?'])assert.deepEqual(safetyIntents(q),[],q);
  assert.ok(safetyIntents('What is the weather forecast? There is lightning in the stadium and people are panicking.').includes('evacuation'));
+});
+
+test('Spanish weather translates upstream English conditions without changing probabilities or temperatures',()=>{
+ assert.equal(localizedForecast('Showers And Thunderstorms Likely',true),'chubascos y tormentas probables');
+ assert.equal(localizedForecast('Mostly Cloudy then Slight Chance Rain Showers',true),'mayormente nublado luego ligera probabilidad de lluvia chubascos');
+ assert.equal(localizedForecast('Sunny',false),'Sunny');
 });
