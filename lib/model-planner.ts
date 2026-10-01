@@ -27,7 +27,8 @@ Separate multiple requests into intents with short standalone subqueries in the 
     const benefitRequested=/\b(stm|members?|membership|season|abonado|socio|benefits?|discount|perks?|holder|descuento|beneficio|ventajas)\b/i.test(query);
     const orderRequested=/\b(order|ordering|deliver\w*|delivery|pedido|pedir|pide|entreg\w*|asiento|seat|purchase|buy|grab|collect|pickup|recoger|recogida)\b|pick.up/i.test(query);
     for(let i=intents.length-1;i>=0;i--) {
-      if(intents[i].kind==='benefits'&&!benefitRequested) intents.splice(i,1);
+      if(intents[i].kind==='account'&&!fallback.some(i=>i.kind==='account'))intents.splice(i,1);
+      else if(intents[i].kind==='benefits'&&!benefitRequested) intents.splice(i,1);
       else if(intents[i].kind==='ordering'&&(!orderRequested || fallback.some(f=>f.kind==='refund')&&!/new order|another order|order again|nuevo pedido|pedir otra vez/i.test(query))) intents.splice(i,1);
     }
     const foodKnown=fallback.some(i=>i.kind==='concessions'),drinksKnown=fallback.some(i=>i.kind==='drinks');

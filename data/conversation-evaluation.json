@@ -13,7 +13,7 @@
     {"id":"section-diet-and-reset","turns":[
       {"question":"I'm in section 119. Where can I get vegan food?","route":"concessions","mustMatch":"Verde Vegan.*119","sourceDomain":"q2stadium.com","context":{"section":119,"dietary":"vegan"}},
       {"question":"What about drinks?","route":"drinks","mustMatch":"Bar","sourceDomain":"q2stadium.com","context":{"section":119,"dietary":"vegan"}},
-      {"question":"I'm still vegan but not sure where I'm sitting.","route":"concessions","mustMatch":"section","sourceDomain":"q2stadium.com","context":{"dietary":"vegan"},"contextAbsent":["section"]}
+      {"question":"I'm still vegan but not sure where I'm sitting.","route":"concessions","mustMatch":"section","mustNotMatch":"personal account|recover your account","sourceDomain":"q2stadium.com","context":{"dietary":"vegan"},"contextAbsent":["section"]}
     ]},
     {"id":"food-pronoun","turns":[
       {"question":"What chicken food is there?","route":"concessions","mustMatch":"Pluckers.*135","sourceDomain":"q2stadium.com","context":{"food":"chicken"}},
