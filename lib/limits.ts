@@ -2,7 +2,7 @@ import { get, put } from '@vercel/blob';
 import { createHash, createHmac } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
 
-export const LIMITS={requestsPerMinute:30,sharesPerHour:10,feedbackPerHour:30,aiCallsPerDay:500,aiReserveUsdPerDay:10,routingCallsPerDay:200};
+export const LIMITS={requestsPerMinute:30,sharesPerHour:10,feedbackPerHour:30,aiCallsPerDay:1000,aiReserveUsdPerDay:25,routingCallsPerDay:200};
 export const EVALUATION_LIMITS={aiCallsPerDay:1000,aiReserveUsdPerDay:20,routingCallsPerDay:200};
 const evaluationScope=new AsyncLocalStorage<{offline:boolean}>();
 /** Only the authenticated red-team endpoint enters this separately capped test scope. */
