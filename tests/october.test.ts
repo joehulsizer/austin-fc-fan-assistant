@@ -104,3 +104,8 @@ test('short greetings select their own language and Vietnamese receives the fixe
  for(const [q,language] of [['Thanks','en'],['Gracias','es']]){const r=await prepare({messages:[{role:'user',content:q}],context:{language:language==='en'?'es':'en'}});assert.equal(r.context.language,language);assert.equal(r.route,'greeting');}
  const r=await prepare({messages:[{role:'user',content:'Chỗ đỗ xe ở đâu?'}],context:{}});assert.equal(r.route,'language');assert.match(r.answer!,/English or Spanish/);
 });
+
+test('season-ticket wording in a food-benefit question does not invent a ticket request',async()=>{
+ const r=await prepare({messages:[{role:'user',content:'Do season ticket members get a discount on food?'}],context:{}});assert.equal(r.route,'benefits');assert.doesNotMatch(r.answer||'',/Ticket HQ/);
+ const multi=await prepare({messages:[{role:'user',content:'Do season ticket members get a discount on food and how do I transfer my ticket?'}],context:{}});assert.equal(multi.route,'multi');assert.match(multi.answer||'',/Send Tickets/);
+});
