@@ -13,7 +13,7 @@ def chat(q):
  req=urllib.request.Request(BASE+'/api/chat',data=json.dumps({'messages':[{'role':'user','content':q}],'context':{}}).encode(),headers={'Content-Type':'application/json','Authorization':'Bearer '+REVIEW})
  with urllib.request.urlopen(req,timeout=90) as r:events=[json.loads(x) for x in r.read().splitlines()]
  assert events[-1]['type']=='done';return ''.join(e.get('text','') for e in events if e['type']=='delta'),events[0]
-now=datetime.now(timezone.utc);stamp=lambda:datetime.now(timezone.utc).isoformat();saved=call('/api/internal-knowledge');marker='POC workflow validation';entry={'id':'poc-workflow-validation','title':marker,'topic':'general','keywords':[marker,'validación del flujo POC','POC STM food discount validation'],'answer':{'en':'Approved POC workflow validation answer.','es':'Respuesta de validación del flujo POC aprobada.'},'sourceUrl':'https://www.austinfc.com/','expiresAt':(now+timedelta(hours=1)).isoformat(),'actions':[]}
+now=datetime.now(timezone.utc);stamp=lambda:datetime.now(timezone.utc).isoformat();saved=call('/api/internal-knowledge');marker='POC workflow validation';entry={'id':'poc-workflow-validation','title':marker,'topic':'general','keywords':[marker,'validación del flujo POC'],'answer':{'en':'Approved POC workflow validation answer.','es':'Respuesta de validación del flujo POC aprobada.'},'sourceUrl':'https://www.austinfc.com/','expiresAt':(now+timedelta(hours=1)).isoformat(),'actions':[]}
 result={}
 try:
  denied('/api/internal-knowledge/drafts','POST',{'submittedBy':'POC Submitter','entry':entry},'',401);result['anonymousDenied']=True
@@ -30,6 +30,9 @@ try:
   assert time.monotonic()<deadline,'Approval did not become visible';time.sleep(5)
  assert meta['sources'][0]['title']=='Club knowledge: '+marker;assert not meta.get('actions');result['publishedAnswerAndSource']=True
  answer,meta=chat('¿Puedes mostrar la validación del flujo POC?');assert 'Respuesta de validación' in answer;assert meta['context']['language']=='es';result['spanish']=True
+ benefit={**entry,'id':'poc-benefit-validation','topic':'benefits','keywords':['POC STM food discount validation']}
+ submitted=call('/api/internal-knowledge/drafts','POST',{'submittedBy':'POC Submitter','entry':benefit},SUBMIT)
+ call('/api/internal-knowledge/drafts','PATCH',{'id':submitted['id'],'reviewedBy':'POC Reviewer','decision':'approve'})
  answer,meta=chat('POC validation: do season ticket members get a discount on food?');assert 'Approved POC workflow' in answer;assert not meta.get('actions');result['memberParaphrase']=True
  answer,meta=chat('POC validation: ¿qué descuento hay para abonados en comida?');assert 'Respuesta de validación' in answer;assert not meta.get('actions');result['spanishMemberParaphrase']=True
  for topic,policy,keyword,question in [('stadium','children','POC child ticket validation','POC child ticket validation: does a 3-year-old need a ticket and can I bring a stroller?'),('club',None,'POC coaching staff validation','POC coaching staff validation: who is the coach?')]:
