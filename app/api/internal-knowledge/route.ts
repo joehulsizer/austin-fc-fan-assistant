@@ -1,4 +1,4 @@
-import { put } from '@vercel/blob';
+import { replaceApprovedFeed } from '@/lib/feed-workflow';
 import { internalFeedSchema } from '@/lib/internal-knowledge';
 export const maxDuration=60;
 export async function POST(request:Request) {
@@ -10,9 +10,7 @@ export async function POST(request:Request) {
     feed=internalFeedSchema.parse(JSON.parse(body));
   } catch{return Response.json({error:'Invalid feed; previous approved answers retained'},{status:400});}
   try {
-    const json=JSON.stringify(feed),stamp=feed.version.replace(/[:+]/g,'-');
-    await put(`knowledge/internal/versions/${stamp}.json`,json,{access:'public',addRandomSuffix:false,contentType:'application/json'});
-    await put('knowledge/internal/latest.json',json,{access:'public',addRandomSuffix:false,allowOverwrite:true,cacheControlMaxAge:60,contentType:'application/json'});
+    await replaceApprovedFeed(feed);
     return Response.json({ok:true,version:feed.version,entries:feed.entries.length},{headers:{'Cache-Control':'no-store'}});
   } catch{return Response.json({error:'Storage unavailable; previous feed retained'},{status:503});}
 }

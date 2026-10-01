@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { FanContext, Grounding } from './types';
 import { guestActions, isActionHref } from './handoffs';
+import { privateRead } from './limits';
+export const APPROVED_FEED_PATH='knowledge/internal/approved.json';
 import { normalized } from './safety';
 const operatingInstruction = /ignore (?:all|previous|your)|system prompt|developer message|reveal.{0,20}(?:secret|token|key)|ignora.{0,30}instrucciones|<\/?(?:system|script)|javascript:/i;
 const text = (max:number) => z.string().min(3).max(max).refine(v=>!operatingInstruction.test(v),'Use fan-facing facts, not operating instructions');
@@ -31,6 +33,7 @@ export function feedUrl(): string | undefined {
   const u=new URL(process.env.KNOWLEDGE_BLOB_URL);u.pathname='/knowledge/internal/latest.json';u.search='';return u.href;
 }
 export async function getInternalFeed():Promise<InternalFeed|undefined> {
+  if(process.env.FEEDBACK_READ_WRITE_TOKEN||process.env.FEEDBACK_STORE_ID){try{const current=await privateRead<unknown>(APPROVED_FEED_PATH);if(current)return internalFeedSchema.parse(current.value);}catch{console.warn(JSON.stringify({event:'approved_feed_private_read_failed'}));}}
   const url=feedUrl();if(!url)return;
   try {
     const r=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(2500)});
