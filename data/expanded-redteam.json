@@ -2784,6 +2784,52 @@
       ]
     },
     {
+      "id": "holdout-location-0",
+      "family": "holdout",
+      "question": "I'm going to grab a hot dog in 118. Where is food?",
+      "contract": "food",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-location-1",
+      "family": "holdout",
+      "question": "Where can I buy food near section 118?",
+      "contract": "food",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-location-2",
+      "family": "holdout",
+      "question": "¿Dónde puedo comprar comida cerca de 118?",
+      "contract": "food",
+      "language": "es",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-smoking-0",
+      "family": "holdout",
+      "question": "Is smoke allowed at Q2?",
+      "contract": "smoking",
+      "language": "en",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "holdout-smoking-1",
+      "family": "holdout",
+      "question": "Is smoke allowed at Q2? There is smoke in section 118.",
+      "contract": "evacuation",
+      "language": "en",
+      "critical": true,
+      "context": {}
+    },
+    {
       "id": "stroller-0-upper",
       "family": "stroller",
       "question": "CAN I TAKE A PUSHCHAIR THROUGH SECURITY?",
