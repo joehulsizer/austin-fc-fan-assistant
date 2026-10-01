@@ -6,7 +6,7 @@ export function planIntents(query: string, priorTopic?: string): Intent[] {
   const push = (kind: Intent['kind'], subquery = query, policy?:Policy) => { if (!intents.some(i=>i.kind===kind&&i.policy===policy)) intents.push({kind,query:subquery,policy}); };
   if (/system prompt|developer (?:message|prompt)|ignore (?:all|previous|your)|print (?:your|the) (?:instructions|prompt)|api key|secret token|reveal (?:your|the)|ignora.{0,25}instrucciones|instrucciones del sistema/.test(q)) {push('security'); return intents;}
   const ordering = /\bordernext\b/.test(q) || /\b(order|ordering|deliver\w*|delivery|ordernext|pedido|pedir|pide|entreg\w*)\b/.test(q) && /\b(food|beer|hot dog|drink|seat|concession|mobile|comida|cerveza|asiento|comer|bebida)\b/.test(q);
-  const benefit = /\b(stm|season ticket|season.?ticket|member|membership|abonados?|socios?)\b/.test(q) && /\b(discount|benefit|food|comida|descuento|beneficio)\b/.test(q);
+  const benefit = /\b(stm|season ticket|season.?ticket|members?|membership|abonados?|socios?)\b/.test(q) && /\b(discounts?|benefits?|cheaper|perks?|savings|food|drinks?|beer|comida|bebidas?|descuentos?|beneficios?)\b/.test(q);
   const refund = /refund|charged|paid.{0,35}(?:never|didn.t|missing)|never received|didn.t receive|missing order|payment (?:failed|error)|reembolso|cobraron|devolucion/.test(q);
   if (/\b(balance|loyalty wallet|wallet balance|account balance|loyalty points|saldo|billetera|puntos de lealtad)\b/.test(q)) push('account');
   if (refund) push('refund');

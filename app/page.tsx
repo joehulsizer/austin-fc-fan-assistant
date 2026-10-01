@@ -61,7 +61,7 @@ export default function Home(){
   }
   function send(question?:string,isRetry=false){
     const text=(question??draft).trim();if(!text)return;
-    setDraft('');setRetryText(null);setShareReviewed(false);
+    if(!isRetry)setDraft('');setRetryText(null);setShareReviewed(false);
     if(busyRef.current){queue.current.push({text,retry:isRetry});setQueued(queue.current.map(q=>q.text));return;}
     void processSend(text,isRetry);
   }

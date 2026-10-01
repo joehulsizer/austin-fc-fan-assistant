@@ -60,7 +60,7 @@ EN_ES={
  'chicken':[r'(?:Pluckers|chicken|pollo)'],
  'upperfood':[r'(?:OrderNext)',r'(?:does not verify|no tengo|no.*(?:confirma|publicad))'],
  'unknownfood':[r'(?:could not verify|could not confirm|cannot confirm|couldn.t verify|not.*published|no pude confirmar|no.*(?:verific|confirm|publicad))'],
- 'travel':[r'(?:Maps|CapMetro|Red Line|803|McKalla|mapa)'],
+ 'travel':[r'(?:Maps|CapMetro|Red Line|803|McKalla|mapa|event.specific parking pass|pase de estacionamiento)'],
  'entrance':[r'(?:ticket|boleto)',r'(?:map)',r'(?:does not confirm|no confirma)'],
  'food':[r'(?:Published|publicad|Verde Vegan|Bao)',r'(?:101|119|127|128|105|123|section|seccion)'],
  'drink':[r'(?:Published drink|bebida.*publicad|menu publicado)'],
