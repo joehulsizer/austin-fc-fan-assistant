@@ -12,7 +12,26 @@ jobs:
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: python scripts/test_feed_live.py
-      - run: python scripts/redteam_live.py
+      - name: Verify private submission and approval workflow
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          KNOWLEDGE_SUBMIT_SECRET: ${{ secrets.KNOWLEDGE_SUBMIT_SECRET }}
+        run: python scripts/test_workflow_live.py
+      - name: Original red-team cases on production
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: python scripts/redteam_live.py
+      - name: October red-team cases on production
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          REDTEAM_CASES: data/october-redteam.json
+          REDTEAM_OUTPUT: october-live-results.json
+        run: python scripts/redteam_live.py
+      - name: Export retained fallback and template hits for review
+        if: always()
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: python scripts/export_diagnostics.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -20,3 +39,6 @@ jobs:
           path: |
             redteam-live-results.json
             feed-live-results.json
+            october-live-results.json
+            workflow-live-results.json
+            diagnostic-review-candidates.json

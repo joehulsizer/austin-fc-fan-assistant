@@ -34,7 +34,13 @@ jobs:
       - run: npm run eval:conversations
         id: conversations
         continue-on-error: true
-      - run: npx playwright install --with-deps chromium
+      - name: Use cloud runner Chrome or install Chromium
+        run: |
+          if command -v google-chrome >/dev/null; then
+            echo 'PLAYWRIGHT_CHANNEL=chrome' >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
       - name: Browser acceptance checks
         run: |
           npm run start > /tmp/austin-server.log 2>&1 &

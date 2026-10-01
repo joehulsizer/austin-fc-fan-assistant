@@ -15,6 +15,7 @@ PAGES = {
     "directions": "https://www.q2stadium.com/directions/",
     "parking": "https://www.q2stadium.com/parking/",
     "drinks": "https://www.q2stadium.com/food-and-drink/drink-menu/",
+    "capmetro-fares":"https://www.capmetro.org/fare/general-fares-overview/fares",
 }
 PREVIEW_URL = "https://www.austinfc.com/news/match-preview-presented-by-lexus-austin-fc-vs-san-diego-fc-september-26-2026"
 ROSTER_URL = "https://www.austinfc.com/roster/"
@@ -53,13 +54,17 @@ def main():
                      "body": body, "url": PAGES["policy"], "checkedAt": checked,
                      "links": [{"label": clean(a.text_content()) or "Official link", "url": a.get("href").strip()}
                                for a in body_nodes[0].xpath('.//a[@href]') if (a.get("href") or "").strip().startswith("https://")]})
-    for key, title in [("directions", "Transportation and directions"), ("parking", "Parking")]:
+    for key, title in [("directions", "Transportation and directions"), ("parking", "Parking"), ("capmetro-fares","CapMetro current fares and payment")]:
         main_nodes = parsed[key].xpath("//main")
         if not main_nodes:
             raise ValueError(f"No main content at {PAGES[key]}")
         for garbage in main_nodes[0].xpath('.//script|.//style'):
             garbage.drop_tree()
         body = clean(main_nodes[0].text_content())[:14000]
+        if key == 'directions':
+            body = re.sub(r'after March 1[^.]*\.', 'See current CapMetro fares for payment instructions.', body, flags=re.I)
+        if key == 'capmetro-fares' and not all(s.lower() in body.lower() for s in ['Umo','credit/debit','two rides']):
+            raise ValueError('CapMetro payment guidance changed; review before publication')
         docs.append({"id": key, "title": title, "body": body, "url": PAGES[key], "checkedAt": checked,
                      "links": [{"label": clean(a.text_content()) or "Official link", "url": a.get("href").strip()}
                                for a in main_nodes[0].xpath('.//a[@href]') if (a.get("href") or "").strip().startswith("https://")]})

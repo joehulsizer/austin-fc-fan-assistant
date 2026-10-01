@@ -2,7 +2,7 @@ import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { sharedChatSchema } from '@/lib/share';
+import { sharedChatSchema,sanitizeShare } from '@/lib/share';
 import { internalGuideHref } from '@/lib/internal-links';
 import { isActionHref } from '@/lib/handoffs';
 import '../../style.css';
@@ -20,6 +20,7 @@ export default async function SharedChat({ params }: { params: Promise<{ id: str
     if (!response.ok) notFound();
     parsed = sharedChatSchema.parse(await response.json());
     if (parsed.id !== id) notFound();
+    parsed={...parsed,...sanitizeShare(parsed)};
   } catch { notFound(); }
   return <main className="guide-page"><div className="guide-wrap shared-wrap">
     <header className="guide-header"><Link href="/"><ArrowLeft size={16}/> Open assistant</Link><Link href="/try">Questions to try <ArrowRight size={15}/></Link></header>

@@ -51,7 +51,7 @@ groups = [
         "¿Puedes comprarme las entradas?", "Please buy me a ticket", "Buy my game tickets",
         "Can you purchase Austin FC tickets for us?",
     ]),
-    ("sensory", "stadium", ["125"], "q2stadium.com", [
+    ("sensory", "stadium", ["124"], "q2stadium.com", [
         "Where is the sensory room?", "Do you have a sensory room?", "Sensory space for my child?",
         "Need a quiet sensory room", "Which section is the sensory room behind?",
         "¿Dónde está la sala sensorial?", "¿Hay espacio sensorial?", "Can I get a sensory kit?",
