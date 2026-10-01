@@ -1,0 +1,36 @@
+name: Expanded adversarial testing
+on:
+  workflow_dispatch:
+    inputs:
+      base_only:
+        description: Initial independent seeds only
+        type: boolean
+        default: false
+      chat_path:
+        description: Authenticated test handler or public fan handler
+        default: /api/redteam
+      only:
+        description: Optional comma-separated case IDs or families
+        default: ''
+jobs:
+  expanded:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Red-team the grader with deliberately incorrect answers
+        run: python scripts/test_redteam_oracle.py
+      - name: Independent facts, contrast pairs, mutations, conversations and provider failures
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          EXPANDED_BASE_ONLY: ${{ inputs.base_only && '1' || '' }}
+          REDTEAM_CHAT_PATH: ${{ inputs.chat_path }}
+          EXPANDED_ONLY: ${{ inputs.only }}
+        run: python scripts/expanded_redteam_live.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: expanded-adversarial-results
+          path: expanded-redteam-results.json
