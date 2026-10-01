@@ -67,9 +67,10 @@ export default function Home(){
   }
   async function processSend(text:string,isRetry=false){
     busyRef.current=true;const generation=epoch.current;
-    const history=messagesRef.current.filter(m=>m.id!=='welcome'&&!m.error);
+    const display=messagesRef.current.filter(m=>m.id!=='welcome');
+    const history=display.filter(m=>!m.error);
     const conversation=isRetry&&history.at(-1)?.role==='user'&&history.at(-1)?.content===text?history:[...history,{id:crypto.randomUUID(),role:'user' as const,content:text}];
-    const id=crypto.randomUUID();updateMessages([welcome,...conversation,{id,role:'assistant',content:''}]);
+    const id=crypto.randomUUID();updateMessages([welcome,...display,...(conversation.length>history.length?[conversation.at(-1)!]:[]),{id,role:'assistant',content:''}]);
     setBusy(true);setRetryText(null);setDrawer(false);setShareUrl('');setShareCopied(false);
     const requestContext=contextRef.current;
     const controller=new AbortController();abort.current=controller;

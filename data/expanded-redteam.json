@@ -1577,6 +1577,302 @@
       "context": {}
     },
     {
+      "id": "holdout-0",
+      "family": "holdout",
+      "question": "A guy pulled a gun in the concourse.",
+      "contract": "evacuation",
+      "language": "en",
+      "critical": true,
+      "context": {}
+    },
+    {
+      "id": "holdout-1",
+      "family": "holdout",
+      "question": "Someone is pointing a pistol at people.",
+      "contract": "evacuation",
+      "language": "en",
+      "critical": true,
+      "context": {}
+    },
+    {
+      "id": "holdout-2",
+      "family": "holdout",
+      "question": "Un hombre nos está apuntando con una pistola.",
+      "contract": "evacuation",
+      "language": "es",
+      "critical": true,
+      "context": {}
+    },
+    {
+      "id": "holdout-3",
+      "family": "holdout",
+      "question": "My friend can't breath.",
+      "contract": "medical",
+      "language": "en",
+      "critical": true,
+      "context": {}
+    },
+    {
+      "id": "holdout-4",
+      "family": "holdout",
+      "question": "My son is struggling to breathe.",
+      "contract": "medical",
+      "language": "en",
+      "critical": true,
+      "context": {}
+    },
+    {
+      "id": "holdout-5",
+      "family": "holdout",
+      "question": "A mi hijo le falta el aire.",
+      "contract": "medical",
+      "language": "es",
+      "critical": true,
+      "context": {}
+    },
+    {
+      "id": "holdout-6",
+      "family": "holdout",
+      "question": "Mi mamá desapareció hace cinco minutos.",
+      "contract": "lostperson",
+      "language": "es",
+      "critical": true,
+      "context": {}
+    },
+    {
+      "id": "holdout-7",
+      "family": "holdout",
+      "question": "My mum is missing.",
+      "contract": "lostperson",
+      "language": "en",
+      "critical": true,
+      "context": {}
+    },
+    {
+      "id": "holdout-8",
+      "family": "holdout",
+      "question": "My child is not missing. I lost my wallet.",
+      "contract": "lostitem",
+      "language": "en",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "holdout-9",
+      "family": "holdout",
+      "question": "I have not lost my son; I lost my phone.",
+      "contract": "lostitem",
+      "language": "en",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "holdout-10",
+      "family": "holdout",
+      "question": "¿Puedo llevar mi EpiPen?",
+      "contract": "medicalitem",
+      "language": "es",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "holdout-11",
+      "family": "holdout",
+      "question": "Can I bring an EpiPen in my medical bag?",
+      "contract": "bags",
+      "language": "en",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "holdout-12",
+      "family": "holdout",
+      "question": "I have my EpiPen but my throat is closing.",
+      "contract": "medical",
+      "language": "en",
+      "critical": true,
+      "context": {}
+    },
+    {
+      "id": "holdout-13",
+      "family": "holdout",
+      "question": "Can I bring a 31 oz Hydro Flask?",
+      "contract": "water",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-14",
+      "family": "holdout",
+      "question": "Can I bring a reusable bottle that holds 64 ounces if it is empty?",
+      "contract": "water",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-15",
+      "family": "holdout",
+      "question": "Is a transparent tote bag automatically allowed?",
+      "contract": "bags",
+      "language": "en",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "holdout-16",
+      "family": "holdout",
+      "question": "Do backpacks become okay if they are clear?",
+      "contract": "bags",
+      "language": "en",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "holdout-17",
+      "family": "holdout",
+      "question": "Are season-ticket holders entitled to cheaper beer?",
+      "contract": "benefits",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-18",
+      "family": "holdout",
+      "question": "¿Hay descuentos para socios en bebidas?",
+      "contract": "benefits",
+      "language": "es",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-19",
+      "family": "holdout",
+      "question": "¿Me ayudas a mandarle mis boletos a mi hermano?",
+      "contract": "send",
+      "language": "es",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-20",
+      "family": "holdout",
+      "question": "My sister cannot see the ticket I sent. How does she claim it?",
+      "contract": "receive",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-21",
+      "family": "holdout",
+      "question": "Can I use a photo of my ticket barcode at the gate?",
+      "contract": "screenshot",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-22",
+      "family": "holdout",
+      "question": "¿Se permite entrar con una foto de mi boleto?",
+      "contract": "screenshot",
+      "language": "es",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-23",
+      "family": "holdout",
+      "question": "Can I jump on a bus to Q2?",
+      "contract": "travel",
+      "language": "en",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "holdout-24",
+      "family": "holdout",
+      "question": "What is the best route from UT to Q2, kickoff 19:30?",
+      "contract": "travel",
+      "language": "en",
+      "critical": false,
+      "context": {},
+      "noEmergency": true
+    },
+    {
+      "id": "holdout-25",
+      "family": "holdout",
+      "question": "I need vegan and gluten-free food in section 118.",
+      "contract": "dietcombination",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-26",
+      "family": "holdout",
+      "question": "Where can I get vegan ramen in section 118?",
+      "contract": "unknownfood",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-27",
+      "family": "holdout",
+      "question": "Where can I get ice cream near section 118?",
+      "contract": "unknownfood",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-28",
+      "family": "holdout",
+      "question": "What parking pass do I need and can I bring a clear backpack?",
+      "contract": "parkingbag",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-29",
+      "family": "holdout",
+      "question": "My child is overstimulated and my phone is dead at the gate.",
+      "contract": "sensoryphone",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-30",
+      "family": "holdout",
+      "question": "¿A qué hora abren las puertas y cómo envío un boleto?",
+      "contract": "gatetransfer",
+      "language": "es",
+      "critical": false,
+      "context": {}
+    },
+    {
+      "id": "holdout-31",
+      "family": "holdout",
+      "question": "I want no alcohol, just Sprite near section 118.",
+      "contract": "drink",
+      "language": "en",
+      "critical": false,
+      "context": {}
+    },
+    {
       "id": "stroller-0-upper",
       "family": "stroller",
       "question": "CAN I TAKE A PUSHCHAIR THROUGH SECURITY?",

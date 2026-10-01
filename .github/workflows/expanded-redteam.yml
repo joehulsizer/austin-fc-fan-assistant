@@ -20,6 +20,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Require the exact deployed commit
+        run: |
+          python - <<'PYCODE'
+          import json,os,time,urllib.request
+          for attempt in range(60):
+              try:
+                  with urllib.request.urlopen('https://austin-fc-fan-assistant.vercel.app/api/health',timeout=15) as r:
+                      live=json.load(r)
+                  if live.get('deploymentCommit')==os.environ['GITHUB_SHA']:
+                      print('Verified deployed commit:',os.environ['GITHUB_SHA']);break
+              except Exception:pass
+              time.sleep(2)
+          else:raise SystemExit('Expected deployment did not become live')
+          PYCODE
       - name: Red-team the grader with deliberately incorrect answers
         run: python scripts/test_redteam_oracle.py
       - name: Independent facts, contrast pairs, mutations, conversations and provider failures
