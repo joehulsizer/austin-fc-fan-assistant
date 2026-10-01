@@ -14,8 +14,12 @@ function proximity(section:number|undefined,locations:number[]) {
 }
 const sections=(s:string)=>[...s.matchAll(/\b([134]\d\d)\b/g)].map(m=>Number(m[1]));
 export function foodGrounding(kind:'concessions'|'drinks',query:string,context:FanContext,k:Snapshot):Grounding {
- const q=normalized(query),es=context.language==='es';
- const result:Grounding={route:kind,context,facts:[],sources:[],cards:[]};
+ const q=normalized(query),es=context.language==='es',savedContext=context;
+ const otherPerson=/for (?:my|a|the) (?:friend|partner|wife|husband|son|daughter)|para (?:mi|un|una) (?:amigo|amiga|pareja|hijo|hija)/.test(q);
+ const itemVegan=/\b(?:is|are) (?:that|it|this|those).{0,25}vegan|(?:eso|esa|ese).{0,15}vegan/.test(q);
+ if(otherPerson)context={...context,dietary:undefined,avoidGluten:undefined};
+ else if(itemVegan)context={...context,dietary:'vegan'};
+ const result:Grounding={route:kind,context:savedContext,facts:[],sources:[],cards:[]};
  const doc=k.documents.find(d=>d.title==='Food and Beverage');
  const src=(title:string,url:string,checkedAt=k.checkedAt):Source=>({title,url,checkedAt});
  if(context.section&&context.section>=200&&context.section<300) {
@@ -67,7 +71,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
   if(!context.section)result.answer+=es?'\n¿En qué sección estás?':'\nWhat section are you in?';
   result.facts=lines;result.sources=[src('Q2 Stadium beverage menu',DRINK_URL,selected[0]?.checkedAt||beverageData.checkedAt)];return result;
  }
- const vegan=context.dietary==='vegan',vegetarian=context.dietary==='vegetarian',gluten=context.dietary==='gluten-aware';
+ const vegan=context.dietary==='vegan',vegetarian=context.dietary==='vegetarian',gluten=context.dietary==='gluten-aware'||!!context.avoidGluten;
  if(/peanut|nut.?free|dairy|milk|halal|kosher|leche|sin lactosa|sin frutos secos/.test(q) || /allerg|ingredients|alerg|ingredientes/.test(q)&&!gluten) {
   result.answer=es?'No tengo esa clasificación dietética confirmada ni puedo garantizar seguridad para una alergia. Consulta ingredientes y contacto cruzado con el puesto antes de pedir; Guest Services puede ayudarte.':'I do not have that dietary label verified and cannot guarantee allergy safety. Ask the stand about ingredients and cross-contact before ordering; Guest Services can help.';
   result.sources=doc?[src(doc.title,doc.url,doc.checkedAt)]:[];return result;
@@ -81,6 +85,8 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
    result.facts=matches.map(m=>`${m.name}: ${m.item}, ${m.location}.`);result.cards=matches.map(m=>({title:m.name,detail:`${m.item} · ${m.location}`,href:MAP_URL,label:es?'Ver ubicación':'View location'}));
    result.answer=(es?'Opciones publicadas:':'Published options:')+'\n'+result.facts.map(f=>'• '+f).join('\n')+(category==='burger'?(es?'\nLa hamburguesa publicada es vegetariana; no tengo una hamburguesa de res confirmada.':'\nThe published burger is vegetarian; confirm ingredients at the stand.'):'');
   }
+  if(!result.answer&&!result.facts.length)result.answer=es?'No pude confirmar ese producto con todas tus preferencias en las fuentes publicadas. Revisa OrderNext o consulta al puesto.':'I could not verify that item with all your preferences in the published sources. Check OrderNext or ask the stand.';
+  if(!result.facts.length&&result.answer?.startsWith(es?'Opciones publicadas:':'Published options:'))result.answer=es?'No pude confirmar ese producto con todas tus preferencias en las fuentes publicadas.':'I could not verify that item with all your preferences in the published sources.';
   result.sources=[src('Q2 Stadium food and dietary guide',POLICY_URL,doc?.checkedAt),src('Q2 Stadium vendors',FOOD_URL)];
  } else {
   const labels:Record<string,Partial<Record<NonNullable<FanContext['dietary']>,string>>>={
@@ -92,12 +98,13 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
    'Little Patagonia':{vegetarian:'Published vegetarian empanada options; confirm the item'},
    'Eastside Eats':{vegan:'Popcorn',vegetarian:'Cheese nachos, popcorn or soft pretzels','gluten-aware':'Cheese nachos or popcorn (avoiding gluten)'}
   };
-  const foodItem=q.match(/\b(tacos?|pizza|nachos|bao|shawarma|barbecue|bbq|popcorn|chili dog|hot dog|empanadas?)\b/)?.[1];
+  const foodItem=q.match(/\b(hot chocolate|chocolate caliente|ice cream|helado|gelato|donuts?|coffee|cappuccino|churros?|sushi|ramen|lobster|steak|pasta|tacos?|pizza|nachos|bao|shawarma|barbecue|bbq|popcorn|chili dog|hot dog|empanadas?)\b/)?.[1];
   const named=k.vendors.filter(v=>q.includes(normalized(v.name)) || /verde vegan/.test(q)&&v.name.startsWith('Verde Vegan'));
   let matches=k.vendors.filter(v=> {
    if(!named.length && !labels[v.name] && /Bar|Draft|Heineken|Michelob/.test(v.name))return false;
    const detail=context.dietary?labels[v.name]?.[context.dietary]:v.description;
    if(context.dietary&&!detail)return false;
+   if(gluten&&!labels[v.name]?.['gluten-aware'])return false;
    if(named.length&&!named.some(n=>n.name===v.name))return false;
    if(foodItem){const text=normalized(v.name+' '+(detail||'')+' '+(context.dietary?'':Object.values(labels[v.name]||{}).join(' ')));return foodItem.startsWith('taco')?/taco|queso|quesobirria/.test(text):new RegExp(foodItem.replace(/s$/,'')).test(text);}
    return context.dietary||named.length||! /\b(sushi|lobster|steak|ramen|pasta)\b/.test(q);

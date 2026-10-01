@@ -1,13 +1,13 @@
 import { z } from 'zod';
 import { answerStream, prepare } from '@/lib/assistant';
 import { requestAllowed } from '@/lib/limits';
-import { safetyIntents } from '@/lib/safety';
+import { safetyIntents,cleanText } from '@/lib/safety';
 import { recordResponse } from '@/lib/diagnostics';
 
 export const maxDuration = 120;
 const inputSchema = z.object({
   messages: z.array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().max(7000) })).min(1).max(16),
-  context: z.object({ section: z.number().int().min(101).max(400).optional(), dietary: z.enum(['vegan', 'vegetarian', 'gluten-aware']).optional(), language: z.enum(['en', 'es']).optional(), origin: z.string().min(2).max(120).optional(), food: z.string().max(40).optional(), topic: z.string().max(30).optional(), kickoffTime: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/).optional(), travelMinutes: z.number().int().min(1).max(240).optional(), travelMode:z.enum(['parking','car','rideshare','rail','bus','bike','walk','all']).optional(), eventKind:z.enum(['match','other']).optional(), event: z.object({ title: z.string().max(150), startsAt: z.string().datetime({offset:true}).optional(), source: z.string().max(1000).url().optional() }).optional() }).default({}),
+  context: z.object({ avoidGluten:z.boolean().optional(), section: z.number().int().min(101).max(400).optional(), dietary: z.enum(['vegan', 'vegetarian', 'gluten-aware']).optional(), language: z.enum(['en', 'es']).optional(), origin: z.string().min(2).max(120).optional(), food: z.string().max(40).optional(), topic: z.string().max(30).optional(), kickoffTime: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/).optional(), travelMinutes: z.number().int().min(1).max(240).optional(), travelMode:z.enum(['parking','car','rideshare','rail','bus','bike','walk','all']).optional(), eventKind:z.enum(['match','other']).optional(), event: z.object({ title: z.string().max(150), startsAt: z.string().datetime({offset:true}).optional(), source: z.string().max(1000).url().refine(value=>{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&['www.austinfc.com','austinfc.com','www.q2stadium.com','q2stadium.com'].includes(u.hostname);},'Official event source required').optional() }).optional() }).default({}),
 });
 
 export async function POST(request: Request) {
@@ -17,6 +17,7 @@ export async function POST(request: Request) {
   if (input.messages.at(-1)?.role !== 'user') return Response.json({ error: 'Last message must be from the user' }, { status: 400 });
   if(input.messages.some(m=>m.role==='user'&&m.content.length>1500)) return Response.json({error:'Question too long'},{status:400});
   if(!safetyIntents(input.messages.at(-1)!.content).length&&!await requestAllowed(request))return Response.json({error:'Message limit reached. Please wait a minute and retry.'},{status:429,headers:{'Retry-After':'60'}});
+  input.messages=input.messages.map(m=>({...m,content:cleanText(m.content)}));
   const started = Date.now();
   const encoder = new TextEncoder();
   const stream = new ReadableStream({

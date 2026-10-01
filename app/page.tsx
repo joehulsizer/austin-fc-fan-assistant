@@ -8,7 +8,7 @@ import { sanitizeShare } from '@/lib/share';
 import { guestActions, isActionHref } from '@/lib/handoffs';
 import './style.css';
 
-type Message = { id:string; role:'user'|'assistant'; content:string; sources?:Source[]; cards?:Card[]; actions?:Action[]; route?:string; rating?:'up'|'down'; feedbackOpen?:boolean; feedbackSaved?:boolean; error?:boolean };
+type Message = { id:string; role:'user'|'assistant'; content:string; sources?:Source[]; cards?:Card[]; actions?:Action[]; route?:string; rating?:'up'|'down'; feedbackOpen?:boolean; feedbackSaved?:boolean; error?:boolean; retryQuestion?:string };
 const welcome:Message = {id:'welcome',role:'assistant',content:'Hey, welcome to Q2 Stadium. Ask me about food, getting here, stadium policies, tickets, or the weather. Share your section and I can narrow down the options.'};
 const suggestions = [
   {icon:Utensils,label:'Food near me',text:'I’m in section 123. Where can I get vegan food?'},
@@ -68,7 +68,7 @@ export default function Home(){
   async function processSend(text:string,isRetry=false){
     busyRef.current=true;const generation=epoch.current;
     const history=messagesRef.current.filter(m=>m.id!=='welcome'&&!m.error);
-    const conversation=isRetry?history:[...history,{id:crypto.randomUUID(),role:'user' as const,content:text}];
+    const conversation=isRetry&&history.at(-1)?.role==='user'&&history.at(-1)?.content===text?history:[...history,{id:crypto.randomUUID(),role:'user' as const,content:text}];
     const id=crypto.randomUUID();updateMessages([welcome,...conversation,{id,role:'assistant',content:''}]);
     setBusy(true);setRetryText(null);setDrawer(false);setShareUrl('');setShareCopied(false);
     const requestContext=contextRef.current;
@@ -77,17 +77,22 @@ export default function Home(){
     try{
       const response=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversation.slice(-16).map(({role,content})=>({role,content})),context:requestContext}),signal:controller.signal});
       if(!response.ok||!response.body){const detail=await response.json().catch(()=>({}));throw new Error(detail.error||'Service unavailable');}
-      const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='';
+      const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='';let completed=false,seenMeta=false;let nextContext=requestContext;
+      const consume=(line:string)=>{if(generation!==epoch.current)return;if(!line.trim())return;const event=JSON.parse(line);
+        if(event.type==='meta'){seenMeta=true;nextContext=event.context;updateMessages(old=>old.map(m=>m.id===id?{...m,sources:event.sources,cards:event.cards,actions:event.actions,route:event.route}:m));}
+        if(event.type==='delta'){if(!seenMeta)throw new Error('Invalid response stream. Please retry.');updateMessages(old=>old.map(m=>m.id===id?{...m,content:m.content+event.text}:m));}
+        if(event.type==='done')completed=true;
+        if(event.type==='error')throw new Error(event.message);
+      };
       while(true){
-        const part=await reader.read();if(part.done)break;buffer+=decoder.decode(part.value,{stream:true});
+        const part=await reader.read();if(part.done){buffer+=decoder.decode();break;}buffer+=decoder.decode(part.value,{stream:true});
         const lines=buffer.split('\n');buffer=lines.pop()||'';
-        for(const line of lines){if(generation!==epoch.current)return;if(!line)continue;const event=JSON.parse(line);
-          if(event.type==='meta'){updateContext(event.context);updateMessages(old=>old.map(m=>m.id===id?{...m,sources:event.sources,cards:event.cards,actions:event.actions,route:event.route}:m));}
-          if(event.type==='delta')updateMessages(old=>old.map(m=>m.id===id?{...m,content:m.content+event.text}:m));
-          if(event.type==='error')throw new Error(event.message);
-        }
+        for(const line of lines)consume(line);
       }
-    }catch(error){if(generation!==epoch.current)return;updateMessages(old=>old.map(m=>m.id===id?{...m,content:timedOut?(context.language==='es'?'La respuesta tardó demasiado. Inténtalo de nuevo o contacta a Guest Services.':'The response took too long. Retry or contact Guest Services.'):controller.signal.aborted?'Response stopped.':error instanceof Error?error.message:'Something went wrong. Please try again.',error:true,actions:guestActions(context.language==='es')}:m));if(timedOut||!controller.signal.aborted)setRetryText(text);}
+      if(buffer.trim())consume(buffer);
+      if(!completed||!seenMeta)throw new Error(requestContext.language==='es'?'La respuesta se interrumpió. Inténtalo de nuevo.':'The response was interrupted. Please retry.');
+      if(generation===epoch.current)updateContext(nextContext);
+    }catch(error){if(generation!==epoch.current)return;updateMessages(old=>old.map(m=>m.id===id?{...m,content:timedOut?(context.language==='es'?'La respuesta tardó demasiado. Inténtalo de nuevo o contacta a Guest Services.':'The response took too long. Retry or contact Guest Services.'):controller.signal.aborted?'Response stopped.':error instanceof Error?error.message:'Something went wrong. Please try again.',error:true,retryQuestion:text,sources:[],cards:[],actions:guestActions(context.language==='es')}:m));if(timedOut||!controller.signal.aborted)setRetryText(text);}
     finally{clearTimeout(responseTimeout);if(generation===epoch.current){busyRef.current=false;setBusy(false);abort.current=null;input.current?.focus();const next=queue.current.shift();setQueued(queue.current.map(q=>q.text));if(next)void processSend(next.text,next.retry);}}
   }
   async function rate(id:string,rating:'up'|'down',comment?:string){
@@ -117,6 +122,7 @@ export default function Home(){
           {!!m.cards?.length&&<div className="cards">{m.cards.slice(0,4).map((c,i)=><a key={i} href={internalGuideHref(c.href,c.title)} className="card"><strong>{c.title}</strong><small>{c.detail}</small><b>View here <ArrowRight size={14}/></b></a>)}</div>}
           {!!m.actions?.length&&<div className="handoffs" aria-label={context.language==='es'?'Acciones y ayuda':'Actions and support'}>{m.actions.filter(a=>isActionHref(a.href)).map((a,i)=><a key={i} href={a.href} target={a.href.startsWith('https:')?'_blank':undefined} rel="noopener noreferrer">{a.label}<ArrowRight size={14}/></a>)}</div>}
           {!!m.sources?.length&&<div className="sources"><span>Sources</span>{m.sources.slice(0,16).map((s,i)=><a key={i} href={internalGuideHref(s.url,s.title)} title={s.checkedAt?'Checked '+new Date(s.checkedAt).toLocaleString():undefined}>{s.title} <ArrowRight size={11}/>{s.checkedAt&&<time>checked {new Date(s.checkedAt).toLocaleDateString()}</time>}</a>)}</div>}
+          {m.error&&m.retryQuestion&&<button className="retry" onClick={()=>send(m.retryQuestion,true)}>Retry this question</button>}
           {m.role==='assistant'&&m.id!=='welcome'&&!busy&&!m.error&&<div className="feedback">Helpful? <button aria-label="Helpful answer" className={m.rating==='up'?'active':''} onClick={()=>rate(m.id,'up')}><ThumbsUp size={15}/></button><button aria-label="Unhelpful answer" className={m.rating==='down'?'active':''} onClick={()=>rate(m.id,'down')}><ThumbsDown size={15}/></button>{m.feedbackSaved&&<span>Saved</span>}</div>}
           {m.feedbackOpen&&<form className="feedback-form" onSubmit={e=>{e.preventDefault();rate(m.id,'down',feedbackText);}}><label htmlFor={'feedback-'+m.id}>What could be better? (optional)</label><textarea id={'feedback-'+m.id} maxLength={700} value={feedbackText} onChange={e=>setFeedbackText(e.target.value)}/><button type="submit">Send feedback</button></form>}
         </div></div>)}</div>

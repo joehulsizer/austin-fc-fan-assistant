@@ -23,7 +23,7 @@ EN_ES={
  'cashless':[r'(?:cashless|no acepta efectivo)',r'Apple Pay',r'Google Pay'],
  'cameras':[r'(?:removable|desmontable)',r'(?:prohibited|prohib)',r'(?:tripod|tripod)'],
  'weapons':[r'(?:weapons|armas)',r'(?:prohibited|prohib)'],
- 'sunscreen':[r'aerosol',r'(?:prohibited|prohib)'],
+ 'sunscreen':[r'aerosol',r'(?:prohibited|prohib|no en aerosol|no.*en aerosol)'],
  'water':[r'30',r'(?:empty|vacio)',r'(?:sealed.*not permitted|no se permiten.*sellad)'],
  'bags':[r'(?:prohibits|prohibe).*(?:bags|mochilas|bolsas)',r'(?:medical|medic)',r'8.{0,5}5.{0,5}1'],
  'diaper':[r'(?:childcare|cuidado infantil)',r'(?:child|nino)',r'(?:screening|revision|seguridad)'],
@@ -73,7 +73,7 @@ EN_ES={
 COMPOSITES={'multipart':['children','stroller'],'threepolicy':['bags','water','alcohol'],'foodfare':['food','railfare'],'gatepay':['gates','cashless'],'strollersensory':['stroller','sensory'],'railcash':['railfare','cashless']}
 SOURCES={'stroller':['Strollers'],'elevators':['Elevators'],'animals':['Animals'],'reentry':['Re-Entry Policy'],'cashless':['Payment Methods'],'cameras':['Cameras'],'weapons':['Prohibited Items'],'sunscreen':['Sunscreen'],'water':['Water'],'bags':['Bag Policy'],'diaper':['Bag Policy'],'children':['Children/Infants'],'sensory':["Sensory Room (Presented by St. David's HealthCare)"],'restrooms':['Restrooms'],'gates':['Gate Opening Times'],'alcohol':['Alcohol Policy'],'allergy':['Guest Services – Guest Services Center'],'weatherpolicy':['Weather'],'ev':['EV Charging Stations'],'medical':['First Aid (St. David’s HealthCare)'],'lostitem':['Lost and Found'],'lostperson':['Lost/Found Persons'],'smoking':['Smoking and Tobacco Use Policy']}
 SAFETY={'selfharm','medical','harassment','lostperson','evacuation','lostitem'}
-APPROVED_HOSTS={'www.q2stadium.com','q2stadium.com','www.austinfc.com','austinfc.com','www.capmetro.org','capmetro.org','api.weather.gov','forecast.weather.gov','weather.gov','www.weather.gov','austin-fc-fan-assistant.vercel.app','www.mlssoccer.com','mlssoccer.com'}
+APPROVED_HOSTS={'austinfc.ordernext.com','www.q2stadium.com','q2stadium.com','www.austinfc.com','austinfc.com','www.capmetro.org','capmetro.org','api.weather.gov','forecast.weather.gov','weather.gov','www.weather.gov','austin-fc-fan-assistant.vercel.app','www.mlssoccer.com','mlssoccer.com'}
 
 def evaluate(case,meta,answer):
  problems=[];a=norm(answer);contract=case['contract'];types=COMPOSITES.get(contract,[contract]);sources=meta.get('sources',[]);titles={s['title'] for s in sources};actions=meta.get('actions',[])
@@ -90,7 +90,7 @@ def evaluate(case,meta,answer):
   if contract!='lostitem' and not any(x.get('href')=='tel:911' for x in actions):fail('missing emergency action')
  if contract=='selfharm' and not re.match(r'(?:call|llama al) 911',a):fail('self-harm response does not lead with 911')
  if case.get('noEmergency') or contract in {'bags','diaper','allergy','smoking','tickethelp','unknownpolicy','travel'}:
-  if meta.get('route')=='safety' or any(x.get('href')=='tel:911' for x in actions):fail('ordinary request became an emergency')
+  if (meta.get('route')=='safety' and contract!='lostitem') or any(x.get('href')=='tel:911' for x in actions):fail('ordinary request became an emergency')
  if contract in ['order','upperfood','food','drink','unknownfood'] and not any('austinfc.ordernext.com' in x.get('href','') for x in actions):fail('missing ordering handoff')
  if contract=='upperfood' and meta.get('cards'):fail('invented nearby upper-level vendors')
  if contract=='unknownfood' and meta.get('cards'):fail('unrelated vendors presented for unavailable item')

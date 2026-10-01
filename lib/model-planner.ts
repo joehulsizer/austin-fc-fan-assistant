@@ -48,7 +48,7 @@ Separate multiple requests into intents with short standalone subqueries in the 
       if(!intents.some(i=>i.kind==='transport'))intents.push({kind:'transport',query,policy:undefined});
     }
     // Fixed, recognized requested policies must not disappear from the model's plan.
-    for(const known of fallback.filter(i=>i.policy||['ordering','benefits','refund','ticketing','account'].includes(i.kind)))if(!intents.some(i=>i.kind===known.kind&&i.policy===known.policy))intents.push({kind:known.kind as Exclude<Intent['kind'],'security'>,query:known.query,policy:known.policy});
+    for(const known of fallback.filter(i=>i.policy||['ordering','benefits','refund','ticketing','account','transport','weather','club'].includes(i.kind)))if(!intents.some(i=>i.kind===known.kind&&i.policy===known.policy))intents.push({kind:known.kind as Exclude<Intent['kind'],'security'>,query:known.query,policy:known.policy});
     // A model cannot invent an extra unspecified stadium request next to explicit
     // requests; this was stacking a generic dead end after a working OrderNext reply.
     if(fallback.some(i=>i.policy||i.kind!=='stadium'))for(let i=intents.length-1;i>=0;i--) {

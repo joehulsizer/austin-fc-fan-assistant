@@ -8,7 +8,7 @@ import { policyGrounding } from './policies';
 import { travelGrounding, travelModes } from './travel';
 import { liveRoute } from './routing';
 import { unsupportedLanguage } from './language';
-import { normalized } from './safety';
+import { normalized,cleanText } from './safety';
 import { reserveAI } from './limits';
 import { supportGrounding } from './support';
 import { foodGrounding } from './food';
@@ -28,7 +28,7 @@ export function distinctAnswerParts(parts: AnswerPart[]): AnswerPart[] {
 }
 
 export async function prepare(input: ChatInput): Promise<Grounding> {
-  const query = input.messages.at(-1)?.content?.trim() || '';
+  const query = cleanText(input.messages.at(-1)?.content?.trim() || '');
   let context:FanContext = {};
   for (const message of input.messages.slice(0, -1)) {
     if (message.role === 'user') context = detectContext(message.content, context);
@@ -48,16 +48,20 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
   if(context.section && /^\s*(?:i(?:'m| am|m) in|estoy en)\s*\d{3}(?:\s+tonight)?[.!]?\s*$/i.test(query))return fixed('clarification',context.language==='es'?`Sección ${context.section} guardada. ¿Qué pregunta tienes sobre comida, baños o tu visita?`:`Section ${context.section} saved. What question do you have about food, restrooms or your visit?`);
   const suppliedSection=query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin)\s*#?\s*(\d{3})\b/i);
   if(suppliedSection&&(Number(suppliedSection[1])<101||Number(suppliedSection[1])>400))return addHandoffs({route:'stadium',planner:'fixed',context:{...context,section:undefined},facts:[],sources:[{title:'Official stadium map',url:'https://www.q2stadium.com/stadium-maps/',checkedAt:knowledge.checkedAt}],cards:[],answer:context.language==='es'?`No puedo identificar la sección ${suppliedSection[1]} en la guía de secciones. Confirma el número en tu boleto; no voy a inventar puestos cercanos.`:`I cannot match section ${suppliedSection[1]} to the section guide. Please confirm the number on your ticket; I will not invent nearby stands.`});
+  if(/fire extinguisher|extintor/i.test(q))return addHandoffs({...fixed('fallback',context.language==='es'?'No puedo confirmar que se permita un extintor en la guía publicada. Consulta a Guest Services detrás de 124 antes de traerlo.':'I cannot confirm fire-extinguisher permission in the published guide. Ask Guest Services behind 124 before bringing it.',[{title:'Prohibited Items',url:'https://www.q2stadium.com/a-z-policy-guide/',checkedAt:knowledge.checkedAt}])});
   const mentioned = context.eventKind !== 'other' ? fixtureMentioned(query) : undefined;
   if (mentioned && /\b(match|game|kickoff|partido|there|stadium|q2|weather|rain|lluvia)\b/i.test(query)) {
     context = { ...context, eventKind: 'match', event: { title: mentioned.title, startsAt: mentioned.startsAt, source: mentioned.url || 'https://www.austinfc.com/schedule/' } };
   }
   const followUp = /\b(where (?:are|is) (?:those|they|them|it)|where can i find (?:those|them|it)|what about (?:that|it)|is (?:that|it) (?:vegan|vegetarian)|and (?:those|them))\b/i.test(query);
   const bareSection=/^\s*\d{3}[.!]?\s*$/.test(query);
+  const sectionCorrection=/^(?:actually|sorry|correction|en realidad|perdon)?[,.\s]*(?:section|sec\.?|seccion|secci[oó]n)?\s*#?\d{3}(?:[,.\s]+(?:not|no)\s*\d{3})?[.!]?$/i.test(query);
   const previousQuestion=[...input.messages.slice(0,-1)].reverse().find(m=>m.role==='user')?.content;
-  const retrievalQuery = bareSection && context.section && ['concessions','drinks','stadium','multi'].includes(context.topic||'') && previousQuestion ? `${previousQuestion} section ${context.section}`
+  const retrievalQuery = sectionCorrection && context.section && ['concessions','drinks'].includes(context.topic||'') ? `${context.topic==='drinks'?'drinks':'food'} ${context.food||''} section ${context.section}`
+    : ['ticketing','transaction'].includes(context.topic||'') && /(?:do (?:it|that) for me|do it for me)/i.test(query) ? `${query} transfer my ticket for me`
+    : bareSection && context.section && ['concessions','drinks','stadium','multi'].includes(context.topic||'') && previousQuestion ? `${previousQuestion} section ${context.section}`
     : followUp && context.food ? `${query} ${context.food}`
-    : context.topic === 'ticketing' && /\b(recipient|accept|receive|forward)\b/i.test(query) ? `${query} ticket transfer`
+    : context.topic === 'ticketing' && /\b(recipient|accept|receive|forward|claim|acepta|recibe|recibir|envio)\b/i.test(query) ? `${query} ticket transfer`
     : context.topic === 'transport' && /\b(leave|arrive|how long|what time)\b/i.test(query) ? `${query} travel to q2`
     : /\b(player|team|club)\b/i.test(query) && input.messages.slice(0,-1).some(m => m.role === 'user' && /\btryouts?\b/i.test(m.content)) ? `${query} tryout`
     : query;
@@ -82,7 +86,7 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
       const wantsEstimate=/when|leave|arriv|kickoff|start|how long|walk|cuando|salir|llegar|cuanto tarda|caminar|inicio|empieza/i.test(travelQuery)&&!/fare|umo|park.?and.?ride|pay|383|tarifa|pagar/i.test(travelQuery);
       result=travelGrounding(travelQuery,context,knowledge,wantsEstimate&&mode?await liveRoute(context,mode):undefined);
     }
-    else if(intent.kind==='ticketing') result=ticketGrounding(intents.length===1?query:intent.query,context,knowledge);
+    else if(intent.kind==='ticketing') result=ticketGrounding(intents.length===1?retrievalQuery:intent.query,context,knowledge);
     else if(intent.kind==='concessions'||intent.kind==='drinks') result=foodGrounding(intent.kind,intents.length===1?retrievalQuery:intent.query,context,knowledge);
     else if(intent.kind==='stadium' && amenityGrounding(intents.length===1?query:intent.query,context,knowledge)) result=amenityGrounding(intents.length===1?query:intent.query,context,knowledge)!;
     else if(intent.kind==='weather') result=await weatherGrounding(query,context);
@@ -225,7 +229,7 @@ Verified facts:\n${result.facts.join('\n').slice(0, 6500)}\nPrior conversation:\
       }
       if (emitted) return;
     } catch {
-      if (emitted) return;
+      if (emitted) throw new Error('Response interrupted before completion');
     }
   }
   yield fallback;

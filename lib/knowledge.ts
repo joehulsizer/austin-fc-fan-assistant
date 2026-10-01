@@ -3,6 +3,7 @@ import { foodGrounding, type Beverage } from './food';
 import { amenityGrounding } from './amenities';
 import { travelGrounding, travelModes } from './travel';
 import { ticketGrounding } from './ticketing';
+import {cleanText,normalized} from './safety';
 import { messageLanguage } from './language';
 import { parseOrigin } from './origin';
 import { catalogTopics } from './catalog';
@@ -35,6 +36,7 @@ export async function getKnowledge(): Promise<Snapshot> {
 }
 
 export function detectContext(query: string, previous: FanContext): FanContext {
+  query=cleanText(query);
   const context: FanContext = { ...previous };
   if (context.origin === 'ut-austin') context.origin = 'UT Austin';
   if (/(?:not sure|don.t know|don.t remember|haven.t got|no idea).{0,40}(?:section|seat|sitting)|(?:section|seat).{0,25}(?:unknown|not sure|don.t know)/i.test(query)) delete context.section;
@@ -49,11 +51,18 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   if(previous.travelMode && /\b(car|driving|drive|rideshare|uber|lyft|train|rail|bus|bike|bicycle|parking|tren|autobus|bicicleta)\b/i.test(query)) {
     const modes=travelModes(query,context);if(modes.length===1&&modes[0]!==previous.travelMode)delete context.travelMinutes;
   }
-  const noDiet = /\b(?:no dietary restrictions|not (?:vegan|vegetarian)|anything is fine|(?:ya )?no soy (?:vegan[oa]|vegetarian[oa])|sin restricciones alimentarias)\b/i.test(query);
-  if (noDiet) delete context.dietary;
-  else if (/\b(vegan|vegab|vegano|vegana)\b/i.test(query)) context.dietary = 'vegan';
-  else if (/\b(vegetarian|vegetariano|vegetariana|veggie)\b/i.test(query)) context.dietary = 'vegetarian';
-  else if (/\b(gluten|celiac|celiaco|celíaco)\b/i.test(query)) context.dietary = 'gluten-aware';
+  const dietText=normalized(query);
+  const askingAboutItem=/\b(?:is|are) (?:that|it|this|those).{0,25}(?:vegan|vegetarian|gluten)|(?:eso|esa|ese).{0,15}(?:vegano|vegana|vegetariano|gluten)/.test(dietText);
+  const noDiet=/no dietary restrictions|anything is fine|sin restricciones alimentarias/.test(dietText);
+  const denied=/\b(?:not|no soy|ya no soy)\s+(?:vegan|vegetarian|vegano|vegana|vegetariano|vegetariana)\b/.test(dietText);
+  if(noDiet){delete context.dietary;delete context.avoidGluten;}
+  else if(!askingAboutItem){
+    const positive=dietText.replace(/\b(?:not|no soy|ya no soy)\s+(?:vegan|vegetarian|vegano|vegana|vegetariano|vegetariana)\b/g,'');
+    if(denied)delete context.dietary;
+    if(/\b(vegan|vegab|vegano|vegana)\b/.test(positive))context.dietary='vegan';
+    else if(/\b(vegetarian|vegetariano|vegetariana|veggie)\b/.test(positive))context.dietary='vegetarian';
+    if(/\b(gluten|celiac|celiaco)\b/.test(positive)){context.avoidGluten=true;if(!context.dietary)context.dietary='gluten-aware';}
+  }
   const food = query.match(/\b(chicken|wings?|tenders?|burgers?|hamburgers?|pizza|tacos?|nachos|bao|barbecue|bbq|shawarma)\b/i);
   if (food) context.food = food[1].toLowerCase();
   context.language = messageLanguage(query, previous.language);

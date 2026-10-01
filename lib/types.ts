@@ -1,5 +1,6 @@
 export type FanContext = {
   section?: number;
+  avoidGluten?: boolean;
   dietary?: 'vegan' | 'vegetarian' | 'gluten-aware';
   language?: 'en' | 'es';
   origin?: string;
