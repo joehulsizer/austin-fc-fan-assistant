@@ -9,7 +9,7 @@ async function geocode(origin:string):Promise<{lat:number;lon:number;label:strin
   const key=`operations/geocode/${privateKey(origin.toLowerCase())}.json`,cached=await privateRead<{lat:number;lon:number;label:string}>(key);
   if(cached)return cached.value;
   if(!await reserveRouting('nominatim'))return;
-  if(/\d{1,6}\s+\w|my (?:home|house|address)|mi (?:casa|direccion)/i.test(origin))return;
+  if(/\d{1,6}\s+\w|\b(?:home|house|address|casa|direccion)\b/i.test(origin))return;
   const query=origin==='UT Austin'?'University of Texas at Austin':origin;
   const u=new URL(process.env.NOMINATIM_ENDPOINT||'https://nominatim.openstreetmap.org/search');
   u.search=new URLSearchParams({q:/texas|austin|antonio/i.test(query)?query:query+', Texas, USA',format:'jsonv2',countrycodes:'us',limit:'1'}).toString();

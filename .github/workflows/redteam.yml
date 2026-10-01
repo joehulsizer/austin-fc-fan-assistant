@@ -12,6 +12,11 @@ jobs:
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: python scripts/test_feed_live.py
+      - name: Verify private submission and approval workflow
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          KNOWLEDGE_SUBMIT_SECRET: ${{ secrets.KNOWLEDGE_SUBMIT_SECRET }}
+        run: python scripts/test_workflow_live.py
       - name: Original red-team cases on production
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
@@ -30,3 +35,4 @@ jobs:
             redteam-live-results.json
             feed-live-results.json
             october-live-results.json
+            workflow-live-results.json

@@ -29,6 +29,14 @@ const sections = [
 ];
 const date = (value: string) => new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 
+function publicPolicyBody(title:string,body:string) {
+  if(title.startsWith('Sensory Room'))return 'Check in at Guest Services behind section 124 for sensory room directions and kits.';
+  if(title==='Family Restrooms')return 'A family restroom is confirmed behind section 121. Baby changing stations are available in most general and club public restrooms. Ask staff for other family-restroom locations.';
+  if(title==='Restrooms')return body.replace(/Family restrooms are[^.]+\./,'A family restroom is confirmed behind section 121; ask staff for other family-restroom locations.');
+  if(title==='Food and Beverage')return body.replace(/Keso Tacos – 106 & 312/,'Kesos Tacos – section 312; ask Guest Services for the main-concourse stand');
+  return body;
+}
+
 export default async function Guide({ searchParams }: { searchParams: Promise<{ topic?: string; find?: string; section?: string; entry?: string }> }) {
   const params = await searchParams;
   const topic = sections.some(s => s.id === params.topic) ? params.topic! : 'food';
@@ -83,12 +91,12 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
         </div>
         <article className="guide-card"><h2>Bike</h2><p>Q2 publishes free Bike Valet on the east side for matchdays. Confirm availability for other events.</p></article>
         <h2 className="guide-subhead">Published transportation details</h2>
-        {travelDocs.map(d => <details className="guide-detail" key={d.id}><summary>{d.title}</summary><p>{d.title.startsWith('Sensory Room')?'Check in at Guest Services behind section 124 for sensory room directions and kits.':d.title==='Family Restrooms'?'A family restroom is confirmed behind section 121. Ask staff for other locations.':d.title==='Restrooms'?d.body.replace(/Family restrooms are[^.]+\./,'A family restroom is confirmed behind section 121; ask staff for other locations.'):d.body}</p><small>Q2 Stadium · checked {date(d.checkedAt)} CT</small></details>)}
+        {travelDocs.map(d => <details className="guide-detail" key={d.id}><summary>{d.title}</summary><p>{publicPolicyBody(d.title,d.body)}</p><small>Q2 Stadium · checked {date(d.checkedAt)} CT</small></details>)}
       </section>}
 
       {topic === 'policies' && <section>
         <div className="guide-callout">This local copy lets you read stadium rules without leaving the assistant. The official venue controls final policy and security decisions.</div>
-        {selectedPolicy && <article className="guide-feature" id="selected-policy"><div className="guide-kicker">SELECTED POLICY</div><h2>{selectedPolicy.title}</h2><p>{selectedPolicy.body}</p><small>Q2 Stadium policy guide · checked {date(selectedPolicy.checkedAt)} CT</small></article>}
+        {selectedPolicy && <article className="guide-feature" id="selected-policy"><div className="guide-kicker">SELECTED POLICY</div><h2>{selectedPolicy.title}</h2><p>{publicPolicyBody(selectedPolicy.title,selectedPolicy.body)}</p><small>Q2 Stadium policy guide · checked {date(selectedPolicy.checkedAt)} CT</small></article>}
         <h2 className="guide-subhead">All published policy topics</h2>
         <div className="guide-policy-list">{policyDocs.map(d => <Link key={d.id} href={`/guide?topic=policies&find=${encodeURIComponent(d.title)}`} className={selectedPolicy?.id === d.id ? 'active' : ''}>{d.title}<ArrowRight size={14}/></Link>)}</div>
       </section>}

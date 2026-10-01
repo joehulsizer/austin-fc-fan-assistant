@@ -34,9 +34,10 @@ export async function atomicUpdate<T>(path:string,initial:T,update:(value:T)=>T|
   throw new Error('Concurrent limit reservation unavailable');
 }
 export async function reserveAI(model:string,purpose:string):Promise<boolean> {
-  // Reserve more than the bounded inputs/output can cost, including one search.
+  // Conservative reservations for bounded input/output and official-source search.
+  // This is an application AI budget, not a cap on hosting/storage bills.
   // No refunds on failures: uncertain provider charges remain reserved.
-  const cents=purpose==='search'?5:model==='openai/gpt-5.4'?5:2;
+  const cents=purpose==='search'?20:model==='openai/gpt-5.4'?5:2;
   try {
     const r=await atomicUpdate(`operations/budget/${budgetDay()}.json`,{aiCalls:0,reservedCents:0,routingCalls:0},v=>v.aiCalls>=LIMITS.aiCallsPerDay||v.reservedCents+cents>LIMITS.aiReserveUsdPerDay*100?undefined:{...v,aiCalls:v.aiCalls+1,reservedCents:v.reservedCents+cents});
     if(!r)console.warn(JSON.stringify({event:'ai_budget_exhausted',purpose}));
