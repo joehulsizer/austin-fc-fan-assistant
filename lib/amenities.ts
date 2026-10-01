@@ -13,7 +13,8 @@ export function amenityGrounding(query:string,context:FanContext,k:Snapshot):Gro
   const docs=k.documents.filter(d=>titles.includes(d.title));
   const conflict=docs.some(d=>/136/.test(d.body))&&docs.some(d=>/138/.test(d.body));
   answer=es?'El baño familiar detrás de la sección 121 aparece en las entradas oficiales. ':'A family restroom behind section 121 is listed consistently in the official guide. ';
-  answer+=conflict?(es?'El segundo tiene información contradictoria: “Family Restrooms” dice 136 y “Restrooms” dice 138. Confirma esa ubicación con Guest Services detrás de 124.':'The second location conflicts: “Family Restrooms” says 136, while “Restrooms” says 138. Confirm that location with Guest Services behind 124.'):(es?'Consulta las ubicaciones actuales con Guest Services.':'Check current locations with Guest Services.');
+  if(conflict)console.warn(JSON.stringify({event:'source_conflict',topic:'family-restroom',locations:[136,138],knowledgeVersion:k.version}));
+  answer+=es?'Para otra ubicación, pide indicaciones al personal o a Guest Services detrás de 124.':'For another location, ask nearby staff or Guest Services behind 124 for directions.';
   if(/chang|cambiador/.test(q))answer+=es?' Hay cambiadores en la mayoría de los baños generales y de clubes.':'Changing stations are in most general and club public restrooms.';
  }
  else if(/wheelchair|silla de ruedas/.test(q)) {

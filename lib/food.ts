@@ -19,7 +19,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
  const doc=k.documents.find(d=>d.title==='Food and Beverage');
  const src=(title:string,url:string,checkedAt=k.checkedAt):Source=>({title,url,checkedAt});
  if(context.section&&context.section>=200&&context.section<300) {
-  result.answer=es?`No tengo puestos publicados en el nivel 200 que pueda confirmar cerca de la sección ${context.section}. Revisa OrderNext para opciones que sirvan tu sección; no puedo garantizar entrega al asiento.`:`I do not have verified 200-level stands near section ${context.section}. Published stands are mainly on the main concourse; I cannot call them nearby to your seat. Check OrderNext for options serving your section; I cannot guarantee seat delivery.`;
+  result.answer=es?`No tengo puestos publicados en el nivel 200 que pueda confirmar cerca de la sección ${context.section}. Revisa OrderNext para opciones que sirvan tu sección; no puedo garantizar entrega al asiento.`:`Check OrderNext for options serving section ${context.section}. The current published catalog does not verify nearby 200-level stands or seat delivery for that section.`;
   return result;
  }
  if(kind==='drinks') {
@@ -30,8 +30,8 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
    result.answer=(es?'Bares publicados:':'Published bars:')+'\n'+vendors.map(v=>`• ${v.name}: ${v.location}.`).join('\n');
    result.sources=[src('Q2 Stadium vendors',FOOD_URL)];
    if(vendors.some(v=>v.name==='YETI Bar')) {
-    result.answer+=es?'\nYETI Bar: el directorio dice 125, pero el menú de bebidas dice 124. Confirma la ubicación con Guest Services detrás de 124.':'\nYETI Bar location conflicts: the vendor directory says 125, but the drink menu says 124. Confirm the location with Guest Services behind 124.';
-    result.sources.push(src('Q2 Stadium beverage menu',DRINK_URL,beverageData.checkedAt));
+    console.warn(JSON.stringify({event:'source_conflict',topic:'yeti-bar',locations:[124,125],knowledgeVersion:k.version}));
+    result.answer=result.answer.replace(/YETI Bar: [^.]+\./,es?'YETI Bar: pide indicaciones a Guest Services detrás de 124.':'YETI Bar: ask Guest Services behind 124 for directions.');
    }
    result.cards=vendors.filter(v=>v.name!=='YETI Bar').map(v=>({title:v.name,detail:v.location,href:MAP_URL,label:es?'Ver ubicación':'View location'}));
    return result;
@@ -105,13 +105,12 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
   matches.sort((a,b)=>proximity(context.section,a.sections)-proximity(context.section,b.sections));
   matches=matches.slice(0,6);
   const inventory=/sold out|stock|inventory|available right now|agotad|inventario/.test(q);
-  result.facts=matches.map(v=>`${v.name}: ${v.location}. ${context.dietary?labels[v.name]?.[context.dietary]:es?'Consulta el menú y las opciones actuales en el puesto.':'Published vendor; confirm the current menu at the stand.'}`);
-  result.cards=matches.map(v=>({title:v.name,detail:v.name==='Kesos Tacos'?'Section 312; main-concourse 105/106 location conflicts':v.location,href:MAP_URL,label:es?'Ver ubicación':'View location'}));
+  result.facts=matches.map(v=>`${v.name}: ${v.name==='Kesos Tacos'?'Section 312; ask Guest Services for the main-concourse stand':v.location}. ${context.dietary?labels[v.name]?.[context.dietary]:es?'Consulta el menú y las opciones actuales en el puesto.':'Published vendor; confirm the current menu at the stand.'}`);
+  result.cards=matches.map(v=>({title:v.name,detail:v.name==='Kesos Tacos'?'Section 312; ask Guest Services for the main-concourse stand':v.location,href:MAP_URL,label:es?'Ver ubicación':'View location'}));
   result.answer=(inventory?(es?'No tengo inventario en vivo ni puedo saber si está agotado. ':'I cannot check live inventory or whether an item is sold out. '):'')+(matches.length?(es?'Opciones publicadas:':'Published options:')+'\n'+result.facts.map(f=>'• '+f).join('\n'):(es?'No pude confirmar esa opción con tus preferencias en los listados publicados.':'I could not verify that item with your preferences in the published listings.'));
   result.sources=[src('Q2 Stadium vendors',FOOD_URL),...(context.dietary?[src('Q2 Stadium food and dietary guide',POLICY_URL,doc?.checkedAt)]:[])];
   if(matches.some(v=>v.name==='Kesos Tacos')) {
-   result.answer+=(es?'\nKesos: el directorio dice 105 y 312, pero la política y el menú de bebidas dicen 106 y 312. La sección 312 coincide; confirma el puesto de la explanada principal con Guest Services detrás de 124.':'\nKesos location conflicts: the vendor directory lists 105 and 312; the policy and drink menu list 106 and 312. Section 312 agrees; confirm the main-concourse location with Guest Services behind 124.');
-   result.sources.push(src('Q2 Stadium food and dietary guide',POLICY_URL,doc?.checkedAt));
+   console.warn(JSON.stringify({event:'source_conflict',topic:'kesos-tacos',locations:[105,106],verifiedLocation:312,knowledgeVersion:k.version}));
   }
 
  }

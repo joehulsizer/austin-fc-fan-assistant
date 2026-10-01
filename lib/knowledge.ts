@@ -4,6 +4,8 @@ import { amenityGrounding } from './amenities';
 import { travelGrounding, travelModes } from './travel';
 import { ticketGrounding } from './ticketing';
 import { messageLanguage } from './language';
+import { parseOrigin } from './origin';
+import { catalogTopics } from './catalog';
 import type { Card, FanContext, Grounding, Source } from './types';
 
 type Doc = { id: string; title: string; body: string; url: string; checkedAt: string; links: { label: string; url: string }[] };
@@ -37,12 +39,12 @@ export function detectContext(query: string, previous: FanContext): FanContext {
   if (context.origin === 'ut-austin') context.origin = 'UT Austin';
   if (/(?:not sure|don.t know|don.t remember|haven.t got|no idea).{0,40}(?:section|seat|sitting)|(?:section|seat).{0,25}(?:unknown|not sure|don.t know)/i.test(query)) delete context.section;
   const section = query.match(/(?:section|sec\.?|secci[oó]n|secc\.?|sectoin|cerca de la)\s*#?\s*(\d{3})\b/i)
+    || query.match(/\b(?:i(?:'m| am|m) in|estoy en)\s*#?\s*(\d{3})\b/i)
+    || /^\s*(\d{3})[.!]?\s*$/.exec(query)
     || (/\b(food|eat|drinks?|beers?|tacos?|pizza|nachos|restrooms?|bathrooms?|comida|comer|bebidas?|cerveza|baños?)\b/i.test(query) ? query.match(/\b(?:near|by|around|cerca de)\s*#?\s*(\d{3})\b/i) : null);
   if (section) { if(Number(section[1])>=101&&Number(section[1])<=400)context.section=Number(section[1]);else delete context.section; }
-  const origin = query.match(/\b(?:from|starting at|leaving from|located at|i(?:'m| am|m) (?:at|near|in)|desde|salgo de|somos de|estoy en)\s+(.+?)(?=\s+(?:to|get to|for the|how do|where can|what time|and when|para el|hacia|y cuando)\b|[,.!?]|$)/i)?.[1]?.trim();
-  if (origin && !/^(?:section|sec\.?|secci[oó]n|here|there|the bar|the stand|the app|la app|app|my phone|mi telefono|my account|mi cuenta)\b/i.test(origin)) {
-    context.origin = /\b(?:university of texas(?: at austin)?|ut austin|ut campus|ut)\b/i.test(origin) ? 'UT Austin' : origin.slice(0, 120);
-  } else if (/\b(?:university of texas(?: at austin)?|ut austin|ut campus)\b/i.test(query) && /\b(?:travel|train|bus|stadium|q2|there|leave|arrive)\b/i.test(query)) context.origin = 'UT Austin';
+  const origin = parseOrigin(query,previous.topic==='transport');
+  if(origin)context.origin=origin;
   if(context.origin!==previous.origin)delete context.travelMinutes;
   if(previous.travelMode && /\b(car|driving|drive|rideshare|uber|lyft|train|rail|bus|bike|bicycle|parking|tren|autobus|bicicleta)\b/i.test(query)) {
     const modes=travelModes(query,context);if(modes.length===1&&modes[0]!==previous.travelMode)delete context.travelMinutes;
@@ -97,6 +99,7 @@ export function searchDocs(query: string, knowledge: Snapshot, count = 4): Doc[]
   const normalized = normalize(query);
   const stop = new Set('the a an i my me is are do does can could would will should it this that there here q2 stadium please tell about what where how when to at in on of for and or with from you your have has be get'.split(' '));
   const words = normalized.split(/[^a-z0-9]+/).filter(w => w.length > 2 && !stop.has(w));
+  const stem=(word:string)=>word.replace(/ies$/,'y').replace(/s$/,'');
   const aliases: Record<string, string> = {
     diaper: 'bag childcare', mochila: 'bag', bolsa: 'bag', bolso: 'bag',
     train: 'rail metro capmetro', tren: 'rail metro capmetro', estacionamiento: 'parking',
@@ -106,14 +109,23 @@ export function searchDocs(query: string, knowledge: Snapshot, count = 4): Doc[]
     sensory: 'sensory room', sensorial: 'sensory room',
     wheelchair: 'ada accessibility wheelchair', silla: 'wheelchair accessibility',
     transfer: 'ticket will call transfer', transferir: 'ticket will call transfer',
+    stroller:'strollers', elevator:'elevators', lift:'elevators', ascensor:'elevators',
+    dog:'animals', esa:'animals', pet:'animals', perro:'animals',
+    gun:'prohibited weapons', firearm:'prohibited weapons', tesla:'ev charging',
+    autistic:'sensory', quiet:'sensory', cashless:'payment methods', efectivo:'payment',
+    camera:'cameras', camara:'cameras', sunscreen:'sunscreen', sunblock:'sunscreen',
+    pram:'strollers', reentry:'re-entry', headphones:'headphones', infant:'children',
   };
-  const terms = new Set(words.flatMap(w => [w, ...(aliases[w]?.split(' ') || [])]));
+  const terms = new Set(words.flatMap(w => [stem(w), ...(aliases[stem(w)]?.split(' ').map(stem) || [])]));
+  const matched=catalogTopics(query);
+  const titleAliases:Record<string,string>={stroller:'Strollers',elevators:'Elevators',animals:'Animals',reentry:'Re-Entry Policy',ev:'EV Charging Stations',cashless:'Payment Methods',cameras:'Cameras',drones:'Drones',prohibited:'Prohibited Items',smoking:'Smoking and Tobacco Use Policy',tailgating:'Tailgating',sunscreen:'Sunscreen',children:'Children/Infants',restrooms:'Restrooms',phonecharge:'Phone Charging Stations',weatherpolicy:'Weather'};
+  if(matched.some(t=>titleAliases[t]))return knowledge.documents.filter(d=>matched.some(t=>titleAliases[t]===d.title)).slice(0,count);
   return knowledge.documents.map(d => {
-    const title = normalize(d.title), body = normalize(d.body);
+    const title = normalize(d.title).split(/[^a-z0-9]+/).map(stem), body = normalize(d.body).split(/[^a-z0-9]+/).map(stem);
     let score = 0;
     for (const term of terms) {
-      if (new RegExp(`\\b${term}\\b`).test(title)) score += 5;
-      if (new RegExp(`\\b${term}\\b`).test(body)) score += 1;
+      if (title.includes(term)) score += 5;
+      if (body.includes(term)) score += 1;
     }
     if (/parking|estacionamiento/.test(normalized) && d.id === 'parking') score += 12;
     if (/rail|train|tren|bus|rideshare|uber|metro/.test(normalized) && d.id === 'directions') score += 12;
