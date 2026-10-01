@@ -72,7 +72,7 @@ export default async function Guide({ searchParams }: { searchParams: Promise<{ 
       </section>}
 
       {topic === 'travel' && <section>
-        <TravelPlanner/>
+        <TravelPlanner/><p className="guide-provenance">Route estimates use © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> and OSRM, without live traffic. <a href="https://www.openstreetmap.org">Fix the map</a>. Public place lookup follows the <a href="https://operations.osmfoundation.org/policies/nominatim/">Nominatim usage policy</a>; personal addresses stay in Maps.</p>
         <figure className="guide-map" id="parking"><Image src={parking.mapUrl} width={parking.mapWidth} height={parking.mapHeight} sizes="(max-width: 768px) 100vw, 1200px" style={{width:'100%',height:'auto'}} alt="Q2 Stadium published parking map showing Red, Green, Light Blue, Orange, Teal and Pink lots"/><figcaption>Published parking map · checked {date(parking.checkedAt)} CT. Lot availability depends on the event.</figcaption></figure>
         <div className="guide-grid">{parking.lots.map(l=><article className="guide-card" key={l.color}><h2>{l.color} / {l.name}</h2><p>{l.address}</p><small>Use the lot named on your event parking pass; this map does not confirm availability.</small></article>)}</div>
         <div className="guide-grid guide-grid-two">

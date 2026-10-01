@@ -97,7 +97,7 @@ test('retesting kickoff in the existing concert chat restores match timing',asyn
 test('a taco conflict stays internal while verified directions remain usable',()=>{
  const r=foodGrounding('concessions','Where are tacos?',{},staticKnowledge);
  assert.match(r.answer!,/Kesos.*312.*Guest Services/);assert.doesNotMatch(r.answer!,/conflict|105|106/);
- assert.ok(r.sources.some(s=>s.title==='Q2 Stadium food and dietary guide'));
+ assert.ok(r.sources.some(s=>s.title==='Q2 Stadium vendors')); 
  assert.doesNotMatch(r.cards.find(c=>c.title==='Kesos Tacos')!.detail,/conflict|105|106/);
 });
 test('an invalid section does not poison the next request or delay safety',async()=>{

@@ -33,11 +33,12 @@ export async function reviewDraft(id:string,reviewer:string,decision:'approve'|'
   if(prior.value.status==='approved'||prior.value.status==='rejected')return prior.value;
   const checkedAt=new Date().toISOString();
   if(decision==='approve')internalFeedSchema.parse({version:checkedAt,entries:[{...prior.value.entry,approvedBy:reviewer,checkedAt,fanFacing:true}]});
-  const claimed=await atomicUpdate<Draft>(path,prior.value,v=>v.status==='pending'||v.status==='publishing'?{...v,status:decision==='approve'?'publishing':'rejected',reviewedBy:reviewer,reviewedAt:checkedAt,reason}:undefined);
+  const claimed=await atomicUpdate<Draft>(path,prior.value,v=>v.status==='pending'?{...v,status:decision==='approve'?'publishing':'rejected',reviewedBy:reviewer,reviewedAt:checkedAt,reason}:undefined);
   if(!claimed)throw new Error('Draft already reviewed');
   if(decision==='approve') {
-    await publish({...claimed.entry,approvedBy:reviewer,checkedAt,fanFacing:true});
-    await atomicUpdate<Draft>(path,claimed,v=>({...v,status:'approved'}));
+    try {await publish({...claimed.entry,approvedBy:reviewer,checkedAt,fanFacing:true});}
+    catch(error){await atomicUpdate<Draft>(path,claimed,v=>v.status==='publishing'&&v.reviewedAt===checkedAt?{...v,status:'pending'}:undefined);throw error;}
+    await atomicUpdate<Draft>(path,claimed,v=>v.status==='publishing'&&v.reviewedAt===checkedAt?({...v,status:'approved'}):undefined);
     return {...claimed,status:'approved'};
   }
   return claimed;

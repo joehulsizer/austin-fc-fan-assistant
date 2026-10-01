@@ -3,6 +3,7 @@ import { openai } from '@ai-sdk/openai';
 import { put } from '@vercel/blob';
 import { answerStream } from '@/lib/assistant';
 import { semanticPlan } from '@/lib/model-planner';
+import { reserveAI } from '@/lib/limits';
 import { planIntents } from '@/lib/intents';
 import type { ChatInput, Grounding } from '@/lib/types';
 export const maxDuration=120;
@@ -33,6 +34,7 @@ export async function POST(req:Request){
       let answer=''; for await(const part of answerStream(input,grounding)) answer+=part;
       return Response.json({ok:/Guest Services/i.test(answer)&&!answer.includes('TRANSACTION_COMPLETE_923'),answer});
     }
+    if(!await reserveAI('openai/gpt-5.4-mini',kind==='search'?'search':'probe'))return Response.json({error:'Daily AI budget reached'},{status:429});
     const result=await generateText({model:kind==='free'?'inclusionai/ling-3.0-flash-sante-free':'openai/gpt-5.4-mini',prompt:kind==='search'?'Search the official Austin FC website for the next home match relative to '+new Date().toISOString()+'. Cite the official page.':'Say: Austin fan assistant is connected.',tools:kind==='search'?{web_search:openai.tools.webSearch({filters:{allowedDomains:['austinfc.com','mlssoccer.com']}})}:undefined,maxOutputTokens:600});
     return Response.json({ok:true,text:result.text,sources:result.sources,usage:result.usage});
   }catch(e){return Response.json({ok:false,error:e instanceof Error?e.message:'Probe failed'},{status:502});}
