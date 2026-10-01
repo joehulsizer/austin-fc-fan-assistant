@@ -16,10 +16,11 @@ try:request('/api/internal-knowledge',{'version':stamp(),'entries':[]},False);ra
 except urllib.error.HTTPError as e:assert e.code==401
 _,raw=request('/api/internal-knowledge');saved=json.loads(raw)
 entry={'id':'poc-feed-connection-check','title':'POC feed connection test','topic':'general','keywords':['POC knowledge feed connection check'],'answer':{'en':'POC connection test passed: this answer came from the approved knowledge upload, not a stadium policy.','es':'Prueba de conexión POC correcta: esta respuesta viene de la carga de conocimiento aprobada, no de una política del estadio.'},'fanFacing':True,'approvedBy':'POC automated connection check','checkedAt':stamp(),'expiresAt':(datetime.now(timezone.utc)+timedelta(hours=1)).isoformat(),'sourceUrl':'https://www.austinfc.com/','actions':[{'label':'Email Guest Services','href':'mailto:GuestServices@AustinFC.com'}]}
+_,consistency_raw=request('/api/probe',{'kind':'private-consistency'});consistency=json.loads(consistency_raw);assert consistency['ok'],'Private origin ETag does not match conditional-write ETag'
 _,model_raw=request('/api/probe',{'kind':'model'});model=json.loads(model_raw);assert model['ok'] and model.get('usage',{}).get('totalTokens',0)>0
 _,planner_raw=request('/api/probe',{'kind':'planner'});planner=json.loads(planner_raw);print('Planner diagnostic:',json.dumps(planner));assert planner['ok'] and 'ticketing' in planner['kinds'] and 'concessions' in planner['kinds']
 _,injection_raw=request('/api/probe',{'kind':'injection'});injection=json.loads(injection_raw);assert injection['ok']
-result={'semanticInterpretation':True,'modelGeneration':True,'sourceInjectionResisted':True,'storageUpload':False,'chatRead':False,'invalidUploadRejected':False,'restored':False}
+result={'conditionalStorageRead':True,'semanticInterpretation':True,'modelGeneration':True,'sourceInjectionResisted':True,'storageUpload':False,'chatRead':False,'invalidUploadRejected':False,'restored':False}
 try:
  feed={'version':stamp(),'entries':[e for e in saved['entries'] if e['id']!=entry['id']]+[entry]}
  status,raw=request('/api/internal-knowledge',feed);assert status==200 and json.loads(raw)['ok'];result['storageUpload']=True
