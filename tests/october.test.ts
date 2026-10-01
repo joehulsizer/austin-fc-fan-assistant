@@ -80,3 +80,10 @@ test('ordinary vaping does not acquire a cannabis-parking caveat',async()=>{
  const r=await prepare({messages:[{role:'user',content:'Can I vape at Q2?'}],context:{}});
  assert.equal(r.route,'stadium');assert.match(r.answer!,/prohibited/);assert.doesNotMatch(r.answer!,/cannabis|parking|911/);
 });
+
+test('smoking policy wording never triggers an evacuation, while reported smoke still does',async()=>{
+ for(const question of ['Can I smoke?', 'Can we smoke some weed in the parking lot?', 'Is smoke allowed at Q2?', '¿Puedo fumar afuera?']){
+  const r=await prepare({messages:[{role:'user',content:question}],context:{}});assert.equal(r.route,'stadium');assert.ok(!r.actions?.some(a=>a.href==='tel:911'));
+ }
+ const r=await prepare({messages:[{role:'user',content:"There is smoke in section 118"}],context:{}});assert.equal(r.route,'safety');assert.match(r.answer!,/staff/);
+});
