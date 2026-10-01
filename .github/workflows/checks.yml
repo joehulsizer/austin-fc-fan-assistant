@@ -25,6 +25,8 @@ jobs:
       - run: npm run build
       - name: Validate embedded stadium map
         run: python3 -c "import xml.etree.ElementTree as ET; ET.parse('public/q2-stadium-map.svg')"
+      - name: Verify adversarial grader rejects known bad answers
+        run: python3 scripts/test_redteam_oracle.py
       - run: npm run test
         id: unit
         continue-on-error: true

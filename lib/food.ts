@@ -99,6 +99,12 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
    'Eastside Eats':{vegan:'Popcorn',vegetarian:'Cheese nachos, popcorn or soft pretzels','gluten-aware':'Cheese nachos or popcorn (avoiding gluten)'}
   };
   const foodItem=q.match(/\b(hot chocolate|chocolate caliente|ice cream|helado|gelato|donuts?|coffee|cappuccino|churros?|sushi|ramen|lobster|steak|pasta|tacos?|pizza|nachos|bao|shawarma|barbecue|bbq|popcorn|chili dog|hot dog|empanadas?)\b/)?.[1];
+  // Extract the requested menu item when it is not one of our known category aliases.
+  // Unrecognized nouns must not silently turn into a generic list of vendors.
+  const requested=q.match(/(?:where (?:can i |do i )?(?:get|buy|find)|where is (?:the )?|(?:donde|en donde) (?:puedo )?(?:venden|comprar|conseguir|encontrar)|can i get)\s+([^?!.]+)/)?.[1]
+   ?.split(/\b(?:near|at|in|around|from|cerca|en la seccion|en seccion|junto|by|stand|puesto)\b/)[0]
+   .replace(/\b(?:a|an|the|some|any|good|vegan|vegetarian|gluten.free|vegano|vegana|vegetariano|vegetariana|sin gluten|un|una|el|la)\b/g,'').replace(/\s+/g,' ').trim();
+  const unknownItem=!foodItem&&requested&&!/^(?:food|comida|something to eat|options?|opciones|concessions?|comer|snacks?|& wine bar)$/.test(requested)?requested:undefined;
   const named=k.vendors.filter(v=>q.includes(normalized(v.name)) || /verde vegan/.test(q)&&v.name.startsWith('Verde Vegan'));
   let matches=k.vendors.filter(v=> {
    if(!named.length && !labels[v.name] && /Bar|Draft|Heineken|Michelob/.test(v.name))return false;
@@ -106,6 +112,7 @@ export function foodGrounding(kind:'concessions'|'drinks',query:string,context:F
    if(context.dietary&&!detail)return false;
    if(gluten&&!labels[v.name]?.['gluten-aware'])return false;
    if(named.length&&!named.some(n=>n.name===v.name))return false;
+   if(unknownItem&&!normalized(v.name+' '+(detail||'')+' '+v.description).includes(unknownItem))return false;
    if(foodItem){const text=normalized(v.name+' '+(detail||'')+' '+(context.dietary?'':Object.values(labels[v.name]||{}).join(' ')));return foodItem.startsWith('taco')?/taco|queso|quesobirria/.test(text):new RegExp(foodItem.replace(/s$/,'')).test(text);}
    return context.dietary||named.length||! /\b(sushi|lobster|steak|ramen|pasta)\b/.test(q);
   });

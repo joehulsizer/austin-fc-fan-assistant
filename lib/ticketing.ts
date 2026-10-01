@@ -5,7 +5,7 @@ import { ticketActions } from './handoffs';
 import { normalized } from './safety';
 export function ticketGrounding(query:string,context:FanContext,k:Snapshot):Grounding {
  const q=normalized(query),es=context.language==='es';
- const phoneFailure=/\b(?:phone|cellphone|mobile|telefono|celular)\b.{0,40}(?:dead|died|empty|no power|no battery|apago|sin bateria|agotad)|(?:battery|bateria).{0,30}(?:dead|empty|agotad)/.test(q);
+ const phoneFailure=/\b(?:phone|cellphone|mobile|telefono|celular)\b.{0,40}(?:dead|died|empty|no power|no battery|no responde|not responding|frozen|apago|sin bateria|agotad)|(?:battery|bateria).{0,30}(?:dead|empty|agotad)/.test(q);
  const barcode=/barcode|bar code|codigo de barras/.test(q);
  const transact=/buy.{0,40}for (?:me|us)|purchase.{0,40}for (?:me|us)|(?:can|could) you.{0,25}(?:buy|purchase|sell|book|transfer)|^(?:please )?(?:buy|purchase|sell|book)\b|buy me|transfer for me|comprame|comprarme|compra.{0,25}por mi|(?:transfiere|transferir|envia|enviar).{0,70}(?:por mi|por favor)/.test(q);
  const transfer=/transfer|traspas|mand\w*|recipient|receive|accept|claim|sent|send|share|enviar|envio|envie|recibir|recibe|acepta/.test(q);

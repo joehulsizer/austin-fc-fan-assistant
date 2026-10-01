@@ -20,3 +20,5 @@ __pycache__/
 october-live-results.json
 workflow-live-results.json
 diagnostic-review-candidates.json
+
+expanded-redteam-results.json
