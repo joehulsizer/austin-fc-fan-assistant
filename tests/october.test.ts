@@ -99,3 +99,8 @@ test('approved member answers do not receive generic dead-end support buttons',(
  const result=addHandoffs({route:'benefits',context:{},answer:'The approved member answer.',facts:[],cards:[],sources:[{title:'Club knowledge: Member benefit',url:'https://www.austinfc.com/'}]});assert.deepEqual(result.actions,[]);
  const unavailable=addHandoffs({...result,sources:[],answer:'No approved benefit is available.'});assert.ok(unavailable.actions?.some(a=>a.href.startsWith('mailto:GuestServices')));
 });
+
+test('short greetings select their own language and Vietnamese receives the fixed scope reply',async()=>{
+ for(const [q,language] of [['Thanks','en'],['Gracias','es']]){const r=await prepare({messages:[{role:'user',content:q}],context:{language:language==='en'?'es':'en'}});assert.equal(r.context.language,language);assert.equal(r.route,'greeting');}
+ const r=await prepare({messages:[{role:'user',content:'Chỗ đỗ xe ở đâu?'}],context:{}});assert.equal(r.route,'language');assert.match(r.answer!,/English or Spanish/);
+});
