@@ -74,3 +74,14 @@ test('cycling deep links use documented Google and modern Apple Maps modes',()=>
   assert.equal(apple.pathname,'/directions');assert.equal(apple.searchParams.get('mode'),'cycling');
   assert.equal(apple.searchParams.get('source'),'UT Austin');assert.ok(!apple.searchParams.has('dirflg'));
 });
+
+test('approved policy and club entries are scoped to the request and cannot bleed into other parts',()=>{
+ const child={...entry,id:'child-review',title:'Child exception',topic:'stadium',policy:'children',keywords:['child ticket exception']};
+ const coach={...entry,id:'coach-review',title:'Coaching staff',topic:'club',keywords:['coaching staff']};
+ const feed=internalFeedSchema.parse({version:new Date(now).toISOString(),entries:[child,coach]});
+ assert.ok(lookupFeed('child ticket exception and stroller',{},feed,'stadium','children'));
+ assert.equal(lookupFeed('child ticket exception and stroller',{},feed,'stadium','stroller'),undefined);
+ assert.equal(lookupFeed('child ticket exception and parking',{},feed,'transport'),undefined);
+ assert.ok(lookupFeed('coaching staff',{},feed,'club'));
+ assert.throws(()=>internalFeedSchema.parse({version:new Date(now).toISOString(),entries:[{...child,policy:undefined}]}));
+});

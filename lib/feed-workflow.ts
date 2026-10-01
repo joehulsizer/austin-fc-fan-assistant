@@ -7,6 +7,7 @@ export const submissionSchema=z.object({submittedBy:z.string().min(3).max(120),e
 export type Draft={id:string;submittedBy:string;submittedAt:string;entry:z.infer<typeof submissionSchema>['entry'];status:'pending'|'publishing'|'approved'|'rejected';reviewedBy?:string;reviewedAt?:string;reason?:string};
 export async function submitDraft(value:unknown):Promise<Draft> {
   const input=submissionSchema.parse(value);
+  if((input.entry.topic==='stadium')!==!!input.entry.policy)throw new Error('Use a policy field only for a stadium entry');
   if(Date.parse(input.entry.expiresAt)<=Date.now())throw new Error('Expiry must be in the future');
   const draft:Draft={...input,id:crypto.randomUUID(),submittedAt:new Date().toISOString(),status:'pending'};
   await put(`knowledge/drafts/${draft.id}.json`,JSON.stringify(draft),{access:'private',...privateOptions(),addRandomSuffix:false,contentType:'application/json'});

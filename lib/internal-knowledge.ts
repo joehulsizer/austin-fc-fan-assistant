@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Policy } from './policies';
 import type { FanContext, Grounding } from './types';
 import { guestActions, isActionHref } from './handoffs';
 import { privateRead } from './limits';
@@ -10,7 +11,8 @@ export const internalFeedSchema = z.object({
   version:z.string().datetime({offset:true}),
   entries:z.array(z.object({
     id:z.string().regex(/^[a-z0-9-]{3,80}$/), title:text(160),
-    topic:z.enum(['benefits','ordering','concessions','transport','ticketing','general']),
+    topic:z.enum(['benefits','ordering','concessions','transport','ticketing','general','club','stadium','drinks']),
+    policy:z.enum(['bag','water','alcohol','gates','sensory','guest','stroller','elevators','animals','reentry','ev','cashless','cameras','drones','prohibited','smoking','tailgating','sunscreen','children','restrooms','phonecharge','weatherpolicy','vehicle','entrance','allergy']).optional(),
     keywords:z.array(text(100)).min(1).max(12),
     answer:z.object({en:text(2500),es:text(2500)}),
     // This feed contains approved public answers, never confidential operational notes.
@@ -21,6 +23,7 @@ export const internalFeedSchema = z.object({
 }).superRefine((feed, ctx)=>{
   const ids=new Set<string>();
   for(const [i,e] of feed.entries.entries()) {
+    if((e.topic==='stadium')!==!!e.policy)ctx.addIssue({code:'custom',message:'Stadium entries require a policy; other topics cannot set one',path:['entries',i,'policy']});
     if(ids.has(e.id))ctx.addIssue({code:'custom',message:'Duplicate entry ID',path:['entries',i,'id']});
     ids.add(e.id);
     if(Date.parse(e.expiresAt)<=Date.parse(e.checkedAt))ctx.addIssue({code:'custom',message:'Expiry must follow review',path:['entries',i,'expiresAt']});
@@ -53,10 +56,10 @@ function feedTerms(value:string):string[] {
   const stop=new Set(['a','an','the','is','are','do','does','can','i','my','of','for','in','at','to','how','what','where','el','la','los','las','un','una','en','de','del','para','por','que','como','hay']);
   return [...new Set(canonical.replace(/[^a-z0-9]+/g,' ').trim().split(/\s+/).filter(w=>w&&!stop.has(w)))];
 }
-export function lookupFeed(query:string,context:FanContext,feed:InternalFeed|undefined,topic?:string):Grounding|undefined {
+export function lookupFeed(query:string,context:FanContext,feed:InternalFeed|undefined,topic?:string,policy?:Policy):Grounding|undefined {
   if(!feed)return;
   const q=` ${normalized(query).replace(/[^a-z0-9]+/g,' ').trim()} `,terms=new Set(feedTerms(query));
-  const candidates=feed.entries.filter(e=>Date.parse(e.expiresAt)>Date.now()&&(!topic||e.topic===topic||e.topic==='general'));
+  const candidates=feed.entries.filter(e=>Date.parse(e.expiresAt)>Date.now()&&(policy?e.topic==='stadium'&&e.policy===policy:!e.policy&&(!topic||e.topic===topic||e.topic==='general'&&['stadium','general'].includes(topic))));
   const entry=candidates.map(e=>({e,score:Math.max(...e.keywords.map(k=>{
     if(q.includes(` ${normalized(k).replace(/[^a-z0-9]+/g,' ').trim()} `))return 100+k.length;
     const keys=feedTerms(k);return keys.length>=2&&keys.every(w=>terms.has(w))?keys.length*10:0;

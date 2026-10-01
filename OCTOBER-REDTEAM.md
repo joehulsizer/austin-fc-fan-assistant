@@ -54,6 +54,8 @@ Approved feed retrieval also accepts bilingual member synonyms and different wor
 
 1. Open `/admin/knowledge`. A submission user receives `KNOWLEDGE_SUBMIT_SECRET`; reviewers use the existing server-side reviewer key (`CRON_SECRET`). Keys are provisioned in Vercel and entered in the console password field; they stay in page memory, not URLs/local storage. The POC uses shared role keys, not individual authenticated accounts.
 2. Enter a name/role and edit the supplied JSON example: stable ID, title, topic, English/Spanish keyword phrases, English/Spanish public answer, official provenance URL, expiry and optional approved action links.
+Use `topic: "club"` for coaching staff, `concessions`/`drinks` for menus and `benefits` for STM benefits. A stadium-policy entry uses `topic: "stadium"` and its exact `policy` field (for example, `"children"`); this prevents a child-ticket answer from overriding a stroller or parking answer in a multipart request. General FAQ entries are restricted to unspecified stadium questions. Safety always takes priority.
+
 3. Submit a private draft. It is not used by fan chat. Submission credentials cannot view or approve the review queue.
 4. A different reviewer enters reviewer credentials and name, loads the queue, checks the facts, bilingual wording, provenance and expiry, then approves or rejects.
 5. Approval stamps review time and approver, writes an immutable public version and atomically updates the private approved feed and projects the public copy. Chat can read it within 60 seconds. Expired entries are excluded automatically; repeat an ID to update an existing answer through another review.
