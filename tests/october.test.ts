@@ -109,3 +109,9 @@ test('season-ticket wording in a food-benefit question does not invent a ticket 
  const r=await prepare({messages:[{role:'user',content:'Do season ticket members get a discount on food?'}],context:{}});assert.equal(r.route,'benefits');assert.doesNotMatch(r.answer||'',/Ticket HQ/);
  const multi=await prepare({messages:[{role:'user',content:'Do season ticket members get a discount on food and how do I transfer my ticket?'}],context:{}});assert.equal(multi.route,'multi');assert.match(multi.answer||'',/Send Tickets/);
 });
+
+test('a child’s missing ticket is ticket support while a missing child remains fixed safety',async()=>{
+ for(const q of ["My child's ticket is missing",'No encuentro el boleto de mi hijo']){const r=await prepare({messages:[{role:'user',content:q}],context:{}});assert.equal(r.route,'ticketing');assert.match(r.answer||'',/Ticket HQ/);assert.ok(!r.actions?.some(a=>a.href==='tel:911'));}
+ const lost=await prepare({messages:[{role:'user',content:"My child's ticket is missing and I cannot find my child"}],context:{}});assert.equal(lost.route,'safety');assert.match(lost.answer||'',/immediately/);
+ const refund=await prepare({messages:[{role:'user',content:'My child is sick. Can I refund my ticket?'}],context:{}});assert.equal(refund.route,'support');assert.match(refund.answer||'',/Ticket HQ/);assert.doesNotMatch(refund.answer||'',/lap|3.year.old/);
+});

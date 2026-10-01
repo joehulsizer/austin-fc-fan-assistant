@@ -12,7 +12,7 @@ export function planIntents(query: string, priorTopic?: string): Intent[] {
   if (refund) push('refund');
   else if (benefit) push('benefits');
   else if (ordering) push('ordering');
-  const policies = policyTopics(query);
+  const policies = policyTopics(query).filter(p=>p!=='children'||!(/refund|reembolso|missing|lost|barcode|perdi|no encuentro/.test(q))||/\b(?:age|ages|year.old|anos|edad|lap|regazo)\b|(?:need|necesita).{0,20}(?:ticket|boleto)/.test(q));
   policies.forEach(p=>push('stadium', query, p));
   const travel = /\b(parking|park|lots?|garages?|rideshare|uber|lyft|taxi|train|rail|red line|mckalla|transit|transport|transportation|bus|bike|bicycle|walk|walking|on foot|caminar|caminando|a pie|directions|route|fastest|estacionamiento|aparcar|tren|autobus|bicicleta|transporte|ruta)\b|(?:get|getting|go|travel) to (?:q2|the stadium|there)|getting (?:there|here)|coming from|llegar (?:al|a) (?:q2|estadio)|como llego|when should i leave|what time should i (?:leave|do it)|leave.by|salir|salimos|desde.{0,80}(?:q2|estadio|llegar)|student center|drop.?off|pick.?up/.test(q) || priorTopic==='transport' && /how long|arrive|leave|departure|cuanto tarda|salir|llegar/.test(q);
   if ((travel||/park.?and.?ride|fare|umo|pay.{0,30}(?:capmetro|train|bus)|tarifa|pagar.{0,30}(?:tren|autobus)/.test(q)) && !policies.some(p=>['tailgating','vehicle','ev','smoking','entrance','reentry'].includes(p)) && !(ordering&&/pick.?up/.test(q)&&!/uber|lyft|taxi|rideshare|drop.?off/.test(q))) push('transport');

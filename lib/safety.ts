@@ -8,7 +8,7 @@ export function safetyIntents(query: string): SafetyIntent[] {
   const q = normalized(query).replace(/\b(?:\d+|six|five|four|three|seven|eight|nine|ten)[ -]year[ -]old\b/g,'child').replace(/\b(?:pequeno|pequena|bebe)\b/g,'nino').replace(/(?:no veo|me separe de|se me perdio)/g,'perdi');
   const found: SafetyIntent[] = [];
   // Missing possessions/orders in another clause are not a missing person.
-  const personQuery=q.replace(/\b(?:lost|missing|perdi|perdido|perdida)\s+(?:(?:my|the|his|her|our|mi|el|la|su)\s+)?(?:food order|drink order|order|ticket|wallet|phone|keys|bag|pass|parking pass|passport|jacket|car|pedido|comida|boleto|cartera|telefono|llaves)\b/g,'');
+  const personQuery=q.replace(/\b(?:lost|missing|perdi|perdido|perdida)\s+(?:(?:my|the|his|her|our|mi|el|la|su)\s+)?(?:food order|drink order|order|ticket|wallet|phone|keys|bag|pass|parking pass|passport|jacket|car|pedido|comida|boleto|cartera|telefono|llaves)\b/g,'').replace(/\b(?:child|kid|son|daughter)'s\s+(?:tickets?|phone|wallet|bag|passport)\b/g,'item').replace(/\b(?:boleto|entrada|telefono|cartera|bolsa|pasaporte)\s+de\s+(?:(?:mi|el|la|su)\s+)?(?:hijo|hija|nino|nina)\b/g,'objeto');
   const medicalQuery=q.replace(/emergency exit|salida de emergencia/g,'');
   const smokingQuestion=/\b(?:can|may|allowed|permit|policy|rules|puedo|permite|permitido|politica)\b.{0,60}\b(?:smok(?:e|ing)|fumar|vap(?:e|ing))\b|\b(?:smok(?:e|ing)|fumar|vap(?:e|ing))\b.{0,40}\b(?:allowed|permitted|policy|permitido)\b/.test(q);
   const fireQuery=(smokingQuestion?q.replace(/\bsmoke\b/g,''):q).replace(/\b(?:wood.fired|fire.grilled|smoked (?:meat|bbq|chicken|brisket)|smok(?:e|ing)\s+(?:weed|cannabis|marijuana|tobacco|cigarettes?)|fumar\s+(?:marihuana|cannabis|tabaco))\b/g,'');
