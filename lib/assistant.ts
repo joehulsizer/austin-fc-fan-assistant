@@ -16,7 +16,7 @@ import { amenityGrounding } from './amenities';
 import { addHandoffs } from './handoffs';
 import { getInternalFeed, lookupFeed } from './internal-knowledge';
 import { clubGrounding, weatherGrounding } from './live';
-import { fixtureMentioned } from './schedule';
+import { fixtureMentioned,verifiedFixtureContext } from './schedule';
 import type { ChatInput, FanContext, Grounding } from './types';
 
 type AnswerPart = { query: string; result: Grounding };
@@ -34,7 +34,7 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     if (message.role === 'user') context = detectContext(message.content, context);
   }
   context = detectContext(query, {...context,...input.context});
-  if (context.event?.startsAt && new Date(context.event.startsAt).getTime() < Date.now()) context = { ...context, event: undefined };
+  if(context.event)context={...context,event:verifiedFixtureContext(context.event)};
   const knowledge = await getKnowledge();
   const safety = safetyGrounding(query, context, knowledge);
   if (safety) return addHandoffs({ ...safety, planner:'fixed', context: { ...context, topic: 'safety' } });

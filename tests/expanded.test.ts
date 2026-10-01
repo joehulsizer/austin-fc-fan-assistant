@@ -58,3 +58,8 @@ test('negative safety controls do not obscure a later real emergency',async()=>{
  assert.ok(safetyIntents('I am not suicidal, but I want to kill myself now').includes('self-harm'));
  assert.ok(safetyIntents('What is the smoking policy? There is smoke on the concourse.').includes('evacuation'));
 });
+
+test('browser event metadata cannot fabricate an official match or kickoff forecast',async()=>{
+ const context={event:{title:'Austin FC vs Fake United',startsAt:'2030-10-10T19:30:00-05:00',source:'https://www.austinfc.com/schedule/'}};
+ const r=await ask('Will it rain at kickoff?',context);assert.equal(r.context.event,undefined);assert.match(r.answer!,/Which match/);
+});

@@ -33,6 +33,7 @@ EN_ES={
  'gates':[r'90',r'(?:before|antes)'],
  'alcohol':[r'80',r'21',r'(?:end|cutoff|corte|termina)'],
  'allergy':[r'(?:not.*(?:assurance|guarantee|verified)|cannot guarantee|no.*(?:garantiza|verificada|confirmada))',r'(?:cross.contact|contacto cruzado)',r'(?:stand|puesto)',r'(?:Guest Services|124)'],
+ 'weatherclarify':[r'(?:Which match|De que partido)',r'(?:date|fecha)',r'(?:opponent|rival)'],
  'weatherpolicy':[r'(?:rain or shine|lluvia o sol)',r'(?:announcements|anuncios|official|oficial)'],
  'ev':[r'8',r'2',r'6',r'(?:access|acceso)',r'(?:lot|lote)'],
  'transfer':[r'(?:Send|recibir|receive|My Tickets|remitente)',r'Ticket HQ',r'512.953.2858'],

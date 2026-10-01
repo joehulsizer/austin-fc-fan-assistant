@@ -21,7 +21,7 @@ def ask(messages,context,offline=False):
 def single(case,offline=False):
  started=time.monotonic()
  try:
-  meta,answer=ask([{'role':'user','content':case['question']}],case.get('context',{}),offline)
+  meta,answer=ask(case.get('history',[])+[{'role':'user','content':case['question']}],case.get('context',{}),offline)
   failures=evaluate(case,meta,answer)
   return {**case,'pass':not failures,'failures':failures,'answer':answer,'meta':meta,'outage':offline,'latencyMs':round((time.monotonic()-started)*1000)}
  except Exception as e:return {**case,'pass':False,'failures':[str(e)],'outage':offline}
