@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {addHandoffs} from '../lib/handoffs';
 import {POST as chatPost} from '../app/api/chat/route';
 import assert from 'node:assert/strict';
 import cases from '../data/october-redteam.json';
@@ -92,4 +93,9 @@ test('smoking policy wording never triggers an evacuation, while reported smoke 
 test('oversized context URLs are rejected before any model planning or paid reservation',async()=>{
  const r=await chatPost(new Request('http://localhost/api/chat',{method:'POST',body:JSON.stringify({messages:[{role:'user',content:'Hi'}],context:{event:{title:'test',source:'https://www.austinfc.com/?q='+ 'x'.repeat(2000)}}}),headers:{'Content-Type':'application/json'}}));
  assert.equal(r.status,400);assert.equal((await r.json()).error,'Invalid chat request');
+});
+
+test('approved member answers do not receive generic dead-end support buttons',()=>{
+ const result=addHandoffs({route:'benefits',context:{},answer:'The approved member answer.',facts:[],cards:[],sources:[{title:'Club knowledge: Member benefit',url:'https://www.austinfc.com/'}]});assert.deepEqual(result.actions,[]);
+ const unavailable=addHandoffs({...result,sources:[],answer:'No approved benefit is available.'});assert.ok(unavailable.actions?.some(a=>a.href.startsWith('mailto:GuestServices')));
 });

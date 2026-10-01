@@ -41,7 +41,7 @@ export function addHandoffs(result: Grounding): Grounding {
   if (['concessions', 'drinks', 'ordering'].includes(result.route)) actions.push({ label: es ? 'Pedir comida en OrderNext' : 'Order food in OrderNext', href: ORDER_URL });
   if (['ticketing', 'transaction'].includes(result.route)) actions.push(...ticketActions(es));
   // A working support destination remains available for clarification, service failure, and unsupported requests.
-  if (!actions.length && (result.route==='safety'||result.route==='support'||result.route==='benefits'||result.route==='fallback'||/couldn.t (?:verify|confirm)|cannot (?:verify|confirm)|no pude (?:verificar|confirmar)|no encontr[eé]/i.test(result.answer||''))) actions = guestActions(es);
+  if (!actions.length && (result.route==='safety'||(result.route==='support'||result.route==='benefits')&&!result.sources.some(s=>s.title.startsWith('Club knowledge:'))||result.route==='fallback'||/couldn.t (?:verify|confirm)|cannot (?:verify|confirm)|no pude (?:verificar|confirmar)|no encontr[eé]/i.test(result.answer||''))) actions = guestActions(es);
   result.actions = actions.filter((a, i) => isActionHref(a.href) && actions.findIndex(b => b.href === a.href) === i);
   return result;
 }
