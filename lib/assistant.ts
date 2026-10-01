@@ -61,11 +61,14 @@ export async function prepare(input: ChatInput): Promise<Grounding> {
     : context.topic === 'transport' && /\b(leave|arrive|how long|what time)\b/i.test(query) ? `${query} travel to q2`
     : /\b(player|team|club)\b/i.test(query) && input.messages.slice(0,-1).some(m => m.role === 'user' && /\btryouts?\b/i.test(m.content)) ? `${query} tryout`
     : query;
-  const planning = await semanticPlan(retrievalQuery, context, planIntents(retrievalQuery, context.topic));
+  const initialIntents=planIntents(retrievalQuery,context.topic);
+  const feed=initialIntents.some(i=>i.kind==='security')?undefined:await getInternalFeed();
+  const reviewedFAQ=initialIntents.length===1&&initialIntents[0].kind==='stadium'&&!initialIntents[0].policy?lookupFeed(retrievalQuery,context,feed,'stadium'):undefined;
+  if(reviewedFAQ)return addHandoffs({...reviewedFAQ,planner:'fixed',context:{...context,topic:reviewedFAQ.route}});
+  const planning = await semanticPlan(retrievalQuery, context, initialIntents);
   const intents = planning.intents;
   // Resolve an explicitly requested match before the forecast which depends on it.
   if(intents.some(i=>i.kind==='club')&&intents.some(i=>i.kind==='weather')) intents.sort((a,b)=>Number(b.kind==='club')-Number(a.kind==='club'));
-  const feed = intents[0]?.kind === 'security' ? undefined : await getInternalFeed();
   let parts: AnswerPart[] = [];
   for(const intent of intents) {
     let result:Grounding;

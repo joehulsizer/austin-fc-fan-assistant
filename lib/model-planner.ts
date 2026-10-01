@@ -34,9 +34,11 @@ Separate multiple requests into intents with short standalone subqueries in the 
     const foodKnown=fallback.some(i=>i.kind==='concessions'),drinksKnown=fallback.some(i=>i.kind==='drinks');
     const amenitiesRequested=/restroom|bathroom|charging|headphones|sensory|sensorial|wheelchair|accessible|accessibility|guest servic|smoking|locker|banos?|quiet space|overstimulat/i.test(query);
     const requestedPolicies=policyTopics(query);
+    const ticketRequested=fallback.some(i=>i.kind==='ticketing')||/\b(?:tickets?|boletos?|entradas?|seatgeek|transfer|transferir|recipient|barcode)\b|(?:send|share|enviar).{0,30}\bpass\b/i.test(query);
     for(let i=intents.length-1;i>=0;i--) {
       const intent=intents[i];
-      if(intent.kind==='stadium' && (foodKnown||drinksKnown) && !fallback.some(x=>x.kind==='stadium') && !amenitiesRequested) intents.splice(i,1);
+      if(intent.kind==='ticketing'&&(foodKnown||drinksKnown)&&!ticketRequested)intents.splice(i,1);
+      else if(intent.kind==='stadium' && (foodKnown||drinksKnown) && !fallback.some(x=>x.kind==='stadium') && !amenitiesRequested) intents.splice(i,1);
       else if(intent.policy && (requestedPolicies.length && !requestedPolicies.includes(intent.policy) || intent.policy==='gates' && /\b(lot|garage|parking|estacionamiento)\b/i.test(query) && !/\b(gates?|puertas?|entry|entrance)\b/i.test(query))) intents.splice(i,1);
       else if(intent.kind==='concessions' && drinksKnown && !foodKnown && !/\b(food|eat|snacks?|meal|comida|comer|and|y)\b/i.test(query)) intents.splice(i,1);
     }
