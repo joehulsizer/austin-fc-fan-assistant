@@ -1,7 +1,13 @@
 import { get, put } from '@vercel/blob';
 import { createHash, createHmac } from 'node:crypto';
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 export const LIMITS={requestsPerMinute:30,sharesPerHour:10,feedbackPerHour:30,aiCallsPerDay:500,aiReserveUsdPerDay:10,routingCallsPerDay:200};
+export const EVALUATION_LIMITS={aiCallsPerDay:1000,aiReserveUsdPerDay:20,routingCallsPerDay:200};
+const evaluationScope=new AsyncLocalStorage<{offline:boolean}>();
+/** Only the authenticated red-team endpoint enters this separately capped test scope. */
+export function withEvaluationBudget<T>(offline:boolean,work:()=>T):T{return evaluationScope.run({offline},work);}
+export function budgetPath(day=budgetDay()){return `operations/${evaluationScope.getStore()?'evaluation-budget':'budget'}/${day}.json`;}
 export const budgetDay=()=>new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Chicago'}).format(new Date());
 const memory=new Map<string,{value:unknown;etag:string}>();
 export function privateOptions(){return {token:process.env.FEEDBACK_READ_WRITE_TOKEN,storeId:process.env.FEEDBACK_STORE_ID};}
@@ -40,15 +46,19 @@ export async function reserveAI(model:string,purpose:string):Promise<boolean> {
   // This is an application AI budget, not a cap on hosting/storage bills.
   // No refunds on failures: uncertain provider charges remain reserved.
   const cents=purpose==='search'?20:model==='openai/gpt-5.4'?5:2;
+  if(evaluationScope.getStore()?.offline)return false;
+  const limits=evaluationScope.getStore()?EVALUATION_LIMITS:LIMITS;
   try {
-    const r=await atomicUpdate(`operations/budget/${budgetDay()}.json`,{aiCalls:0,reservedCents:0,routingCalls:0},v=>v.aiCalls>=LIMITS.aiCallsPerDay||v.reservedCents+cents>LIMITS.aiReserveUsdPerDay*100?undefined:{...v,aiCalls:v.aiCalls+1,reservedCents:v.reservedCents+cents});
+    const r=await atomicUpdate(budgetPath(),{aiCalls:0,reservedCents:0,routingCalls:0},v=>v.aiCalls>=limits.aiCallsPerDay||v.reservedCents+cents>limits.aiReserveUsdPerDay*100?undefined:{...v,aiCalls:v.aiCalls+1,reservedCents:v.reservedCents+cents});
     if(!r)console.warn(JSON.stringify({event:'ai_budget_exhausted',purpose}));
     return !!r;
   }catch{console.warn(JSON.stringify({event:'ai_budget_store_unavailable',purpose}));return false;}
 }
 export async function reserveRouting(provider:string):Promise<boolean> {
+  if(evaluationScope.getStore()?.offline)return false;
+  const limits=evaluationScope.getStore()?EVALUATION_LIMITS:LIMITS;
   try {
-    const r=await atomicUpdate(`operations/budget/${budgetDay()}.json`,{aiCalls:0,reservedCents:0,routingCalls:0},v=>v.routingCalls>=LIMITS.routingCallsPerDay?undefined:{...v,routingCalls:v.routingCalls+1});
+    const r=await atomicUpdate(budgetPath(),{aiCalls:0,reservedCents:0,routingCalls:0},v=>v.routingCalls>=limits.routingCallsPerDay?undefined:{...v,routingCalls:v.routingCalls+1});
     if(!r)return false;
     if(provider==='google')return true;
     // Public OSM services allow at most one request/second. One global lease,
