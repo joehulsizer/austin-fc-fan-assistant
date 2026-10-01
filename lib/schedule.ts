@@ -54,6 +54,7 @@ export function requestedFixture(query:string,now=new Date()):{recognized:boolea
 // Browser context is a hint, not evidence of an official fixture. Rebuild it from our source snapshot.
 export function verifiedFixtureContext(event:{title:string;startsAt?:string;source?:string}|undefined,now=new Date()){
  if(!event?.startsAt)return undefined;
- const match=schedule.events.find(e=>e.home&&e.title===event.title&&Date.parse(e.startsAt)===Date.parse(event.startsAt)&&Date.parse(e.startsAt)>now.getTime());
+ const startsAt=event.startsAt;
+ const match=schedule.events.find(e=>e.home&&e.title===event.title&&Date.parse(e.startsAt)===Date.parse(startsAt)&&Date.parse(e.startsAt)>now.getTime());
  return match?{title:match.title,startsAt:match.startsAt,source:match.url||schedule.source}:undefined;
 }
