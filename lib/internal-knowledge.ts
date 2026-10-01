@@ -41,11 +41,26 @@ export async function getInternalFeed():Promise<InternalFeed|undefined> {
     return internalFeedSchema.parse(await r.json());
   } catch{return;}
 }
+function feedTerms(value:string):string[] {
+  const canonical=normalized(value)
+    .replace(/\bseason[ -]ticket(?: holders?)?s?\b|\b(?:stm|members?|membership|abonad[oa]s?|socios?)\b/g,'member')
+    .replace(/\b(?:foods?|comida|concessions?|concesiones)\b/g,'food')
+    .replace(/\b(?:discounts?|descuentos?)\b/g,'discount')
+    .replace(/\b(?:benefits?|beneficios?|perks?|ventajas?)\b/g,'benefit')
+    .replace(/\b(?:tickets?|boletos?|entradas?)\b/g,'ticket')
+    .replace(/\b(?:transfers?|transferir|traspasar|traspaso)\b/g,'transfer')
+    .replace(/\b(?:parking|estacionamiento|aparcar)\b/g,'parking');
+  const stop=new Set(['a','an','the','is','are','do','does','can','i','my','of','for','in','at','to','how','what','where','el','la','los','las','un','una','en','de','del','para','por','que','como','hay']);
+  return [...new Set(canonical.replace(/[^a-z0-9]+/g,' ').trim().split(/\s+/).filter(w=>w&&!stop.has(w)))];
+}
 export function lookupFeed(query:string,context:FanContext,feed:InternalFeed|undefined,topic?:string):Grounding|undefined {
   if(!feed)return;
-  const q=` ${normalized(query).replace(/[^a-z0-9]+/g,' ').trim()} `;
+  const q=` ${normalized(query).replace(/[^a-z0-9]+/g,' ').trim()} `,terms=new Set(feedTerms(query));
   const candidates=feed.entries.filter(e=>Date.parse(e.expiresAt)>Date.now()&&(!topic||e.topic===topic||e.topic==='general'));
-  const entry=candidates.map(e=>({e,score:Math.max(...e.keywords.map(k=>q.includes(` ${normalized(k).replace(/[^a-z0-9]+/g,' ').trim()} `)?k.length:0))})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score)[0]?.e;
+  const entry=candidates.map(e=>({e,score:Math.max(...e.keywords.map(k=>{
+    if(q.includes(` ${normalized(k).replace(/[^a-z0-9]+/g,' ').trim()} `))return 100+k.length;
+    const keys=feedTerms(k);return keys.length>=2&&keys.every(w=>terms.has(w))?keys.length*10:0;
+  }))})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score)[0]?.e;
   if(!entry)return;
   return {route:topic||entry.topic,context,facts:[],answer:entry.answer[context.language==='es'?'es':'en'],sources:[{title:`Club knowledge: ${entry.title}`,url:`https://austin-fc-fan-assistant.vercel.app/guide?topic=internal&entry=${entry.id}`,checkedAt:entry.checkedAt}],cards:[],actions:entry.actions};
 }
