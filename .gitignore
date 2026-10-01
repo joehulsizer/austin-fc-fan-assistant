@@ -19,3 +19,4 @@ __pycache__/
 *.pyc
 october-live-results.json
 workflow-live-results.json
+diagnostic-review-candidates.json
