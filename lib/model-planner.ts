@@ -43,6 +43,7 @@ Separate multiple requests into intents with short standalone subqueries in the 
       if(intent.kind==='ticketing'&&(foodKnown||drinksKnown)&&!ticketRequested)intents.splice(i,1);
       else if(intent.kind==='stadium' && (foodKnown||drinksKnown) && !fallback.some(x=>x.kind==='stadium') && !amenitiesRequested) intents.splice(i,1);
       else if(intent.policy && (requestedPolicies.length && !requestedPolicies.includes(intent.policy) || intent.policy==='gates' && /\b(lot|garage|parking|estacionamiento)\b/i.test(query) && !/\b(gates?|puertas?|entry|entrance)\b/i.test(query))) intents.splice(i,1);
+      else if(intent.kind==='drinks'&&foodKnown&&!drinksKnown&&!/\b(drinks?|beers?|wine|soda|sprite|coke|cocktails?|margarita|lager|ipa|ales?|stout|cider|juice|lemonade|refreshments?|thirst|bebidas?|cerveza|vino|refresco|jugo|limonada|sed)\b/i.test(query))intents.splice(i,1);
       else if(intent.kind==='concessions' && drinksKnown && !foodKnown && !/\b(food|eat|snacks?|meal|comida|comer|and|y)\b/i.test(query)) intents.splice(i,1);
     }
     if(fallback.some(i=>i.kind==='transport')) {

@@ -199,6 +199,9 @@ add('forecastcontrast-2','¿Habrá relámpagos mañana?','weatherforecast',langu
 add('forecastcontrast-3','¿Cuál es el pronóstico de tormentas para mañana?','weatherforecast',language='es',noEmergency=True)
 add('forecastcontrast-4','What is the weather forecast? There is lightning in the stadium and people are panicking.','evacuation',critical=True)
 
+add('holdout-currenttopic-0',"I'm still vegan but not sure where I'm sitting.",'food',context={'topic':'drinks','dietary':'vegan'})
+add('holdout-currenttopic-1','Soy vegetariano, pero no sé mi sección.','food',language='es',context={'topic':'drinks','dietary':'vegetarian'})
+
 # All variants have the same independent fact contract. No expected answers are learned from output.
 variants=[]
 for c in cases:
@@ -208,6 +211,7 @@ for c in cases:
   if question!=c['question']:variants.append({**c,'id':c['id']+'-'+name,'question':question,'mutation':name})
 cases.extend(variants)
 scenarios=[
+ {'id':'diet-after-drinks','turns':[{'question':'Vegan food near section 123?','contract':'food','equals':{'section':123,'dietary':'vegan'}},{'question':'What about drinks?','contract':'drink'},{'question':"I'm still vegan but not sure where I'm sitting.",'contract':'food','absentContext':['section'],'absentSources':['Q2 Stadium beverage menu']}]},
  {'id':'language-current-turn','turns':[{'question':'¿Puedo traer mochila?','contract':'bags','language':'es'},{'question':'Can I bring a stroller?','contract':'stroller','language':'en','absentSources':['Bag Policy']},{'question':'¿Y una botella vacía?','contract':'water','language':'es','absentSources':['Strollers']},{'question':'When do gates open?','contract':'gates','language':'en','absentSources':['Water']}]},
  {'id':'section-correction','turns':[{'question':"I'm in section 123. Where is vegan food?",'contract':'food','equals':{'section':123,'dietary':'vegan'}},{'question':'Actually section 118, not 123.','contract':'food','equals':{'section':118,'dietary':'vegan'}},{'question':'What about beer?','contract':'drink','equals':{'section':118}},{'question':"I don't know my section anymore. Where is food?",'contract':'food','absentContext':['section']}]},
  {'id':'diet-correction','turns':[{'question':'Vegan food near 118?','contract':'food','equals':{'dietary':'vegan','section':118}},{'question':"I'm vegetarian, not vegan. Can I get a burger?",'contract':'vegetarianburger','equals':{'dietary':'vegetarian'}},{'question':'I have no dietary restrictions now. Chicken please.','contract':'chicken','absentContext':['dietary']}]},

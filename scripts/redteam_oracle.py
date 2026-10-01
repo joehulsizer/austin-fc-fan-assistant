@@ -97,6 +97,7 @@ def evaluate(case,meta,answer):
  if case.get('noEmergency') or contract in {'bags','diaper','allergy','smoking','tickethelp','unknownpolicy','travel'}:
   if (meta.get('route')=='safety' and contract!='lostitem') or any(x.get('href')=='tel:911' for x in actions):fail('ordinary request became an emergency')
  if contract in ['order','upperfood','food','drink','unknownfood'] and not any('austinfc.ordernext.com' in x.get('href','') for x in actions):fail('missing ordering handoff')
+ if contract in {'food','drink'} and meta.get('route')!=('concessions' if contract=='food' else 'drinks'):fail('an unrelated extra intent replaced the single requested topic')
  if contract=='benefits' and meta.get('cards'):fail('benefit question became a vendor list')
  if contract=='dietcombination' and (meta.get('context',{}).get('dietary')!='vegan' or not meta.get('context',{}).get('avoidGluten')):fail('combined dietary needs lost')
  if contract=='dietcombination' and any(c.get('title')=='Bao’d Up' for c in meta.get('cards',[])):fail('offered an item without the requested gluten label')

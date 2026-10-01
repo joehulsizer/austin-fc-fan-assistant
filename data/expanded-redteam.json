@@ -2879,6 +2879,30 @@
       "context": {}
     },
     {
+      "id": "holdout-currenttopic-0",
+      "family": "holdout",
+      "question": "I'm still vegan but not sure where I'm sitting.",
+      "contract": "food",
+      "language": "en",
+      "critical": false,
+      "context": {
+        "topic": "drinks",
+        "dietary": "vegan"
+      }
+    },
+    {
+      "id": "holdout-currenttopic-1",
+      "family": "holdout",
+      "question": "Soy vegetariano, pero no sé mi sección.",
+      "contract": "food",
+      "language": "es",
+      "critical": false,
+      "context": {
+        "topic": "drinks",
+        "dietary": "vegetarian"
+      }
+    },
+    {
       "id": "stroller-0-upper",
       "family": "stroller",
       "question": "CAN I TAKE A PUSHCHAIR THROUGH SECURITY?",
@@ -6900,6 +6924,36 @@
     }
   ],
   "scenarios": [
+    {
+      "id": "diet-after-drinks",
+      "turns": [
+        {
+          "question": "Vegan food near section 123?",
+          "contract": "food",
+          "equals": {
+            "section": 123,
+            "dietary": "vegan"
+          },
+          "language": "en"
+        },
+        {
+          "question": "What about drinks?",
+          "contract": "drink",
+          "language": "en"
+        },
+        {
+          "question": "I'm still vegan but not sure where I'm sitting.",
+          "contract": "food",
+          "absentContext": [
+            "section"
+          ],
+          "absentSources": [
+            "Q2 Stadium beverage menu"
+          ],
+          "language": "en"
+        }
+      ]
+    },
     {
       "id": "language-current-turn",
       "turns": [
