@@ -64,3 +64,19 @@ test('relative dates and end of schedule never invent a match',()=>{
  assert.equal(requestedFixture('match after Nov 7',now).fixture,undefined);
  assert.equal(requestedFixture('match after Oct 9',now).fixture?.opponent,'Nashville SC');
 });
+test('transit fare tickets never acquire a stadium ticket-support answer',async()=>{
+ for(const question of ['How do I pay for a train ticket?','Can I use my credit card on CapMetro rail?','How do I pay my bus fare?']){
+  const r=await prepare({messages:[{role:'user',content:question}],context:{origin:'San Antonio'}});
+  assert.equal(r.route,'transport');assert.match(r.answer!,/Umo/);assert.match(r.answer!,/Tap to Pay is not available on Rail/);assert.doesNotMatch(r.answer!,/Ticket HQ|San Antonio/);
+ }
+});
+test('outside food and phone-wallet payment return policies rather than vendors',async()=>{
+ const outside=await prepare({messages:[{role:'user',content:'Can I bring my own food or a sandwich?'}],context:{}});
+ assert.equal(outside.route,'stadium');assert.match(outside.answer!,/Outside food.*not permitted/);assert.equal(outside.cards.length,0);
+ const pay=await prepare({messages:[{role:'user',content:'Do the concessions take Apple Pay?'}],context:{}});
+ assert.equal(pay.route,'stadium');assert.match(pay.answer!,/cashless/);
+});
+test('ordinary vaping does not acquire a cannabis-parking caveat',async()=>{
+ const r=await prepare({messages:[{role:'user',content:'Can I vape at Q2?'}],context:{}});
+ assert.equal(r.route,'stadium');assert.match(r.answer!,/prohibited/);assert.doesNotMatch(r.answer!,/cannabis|parking|911/);
+});

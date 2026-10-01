@@ -11,5 +11,5 @@ export function messageLanguage(query: string, previous: 'en' | 'es' = 'en'): 'e
 export function unsupportedLanguage(query:string):boolean {
   const q=query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   return /\b(?:in|en|em)\s+(?:portuguese|portugues|vietnamese|vietnamita|french|frances|german|aleman|italian|italiano|chinese|mandarin|arabic)\b/.test(q)|| /[\u0400-\u052f\u0600-\u06ff\u0900-\u097f\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/.test(q)
-    || /\b(onde|posso|voce|voces|obrigado|obrigada|estacionamento|ingresso|ingressos|crianca|bonjour|ou est|puis.je|billets|danke|wo ist|kann ich|toi|khong|o dau|cho toi|san van dong)\b/.test(q);
+    || /\b(onde|posso|voce|voces|obrigado|obrigada|estacionamento|ingresso|ingressos|crianca|bonjour|ou est|ou sont|puis.je|billets|danke|wo ist|wie komme|kann ich|toi|khong|o dau|cho toi|san van dong)\b/.test(q);
 }
