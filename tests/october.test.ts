@@ -7,7 +7,7 @@ import {prepare,groundedFallback,answerStream} from '../lib/assistant';
 import {detectContext,searchDocs,staticKnowledge} from '../lib/knowledge';
 import {sanitizeShare} from '../lib/share';
 import {atomicUpdate,requestAllowed,LIMITS} from '../lib/limits';
-import {requestedFixture} from '../lib/schedule';
+import {requestedFixture,fixtureSource} from '../lib/schedule';
 import type {FanContext,ChatInput} from '../lib/types';
 type Case={id:string;question:string;route:string;all:string[];none:string[];prior?:string[];sources?:string[];unorderedSources?:boolean;noGuest?:boolean;no911?:boolean;noOrigin?:boolean;origin?:string;section?:number;mode?:string;planner?:string;language?:string;action?:string;starts?:string};
 for(const c of cases as Case[])test(`October report: ${c.id}`,async()=>{
@@ -19,7 +19,19 @@ for(const c of cases as Case[])test(`October report: ${c.id}`,async()=>{
  input.messages.push({role:'user',content:c.question});const result=await prepare(input);
  const answer=groundedFallback(c.question,result);
  assert.equal(result.route,c.route,answer);
- for(const pattern of c.all)assert.match(answer,new RegExp(pattern,'i'),answer);
+ for(const pattern of c.all) {
+  if(c.id==='match-saturday'&&pattern==='schedule') {
+   // A dated fixture answer carries its schedule handoff in a card; the prose
+   // need not repeat "schedule" when that Saturday has a confirmed fixture.
+   assert.ok(result.cards.some(card=>card.href==='https://www.austinfc.com/schedule/'));
+   const fixture=requestedFixture(c.question).fixture;
+   if(fixture) {
+    assert.ok(answer.includes(fixture.title),answer);
+    assert.equal(result.context.event?.startsAt,fixture.startsAt);
+    assert.ok(result.sources.some(source=>source.url===fixtureSource(fixture).url));
+   } else assert.match(answer,/no confirmed.*match.*schedule/i);
+  } else assert.match(answer,new RegExp(pattern,'i'),answer);
+ }
  for(const pattern of c.none)assert.doesNotMatch(answer,new RegExp(pattern,'i'),answer);
  if(c.starts)assert.match(answer,new RegExp('^'+c.starts,'i'));
  if(c.planner)assert.equal(result.planner,c.planner);
