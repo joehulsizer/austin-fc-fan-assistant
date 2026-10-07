@@ -9,7 +9,7 @@ export function parseOrigin(query:string,travelFollowup=false):string|undefined 
   if(/\b(?:aus|austin(?:-bergstrom)? (?:airport|aeropuerto)|airport|aeropuerto)\b/.test(q))return 'Austin-Bergstrom International Airport (AUS)';
   if(/\b(?:the domain|el domain|domain)\b/.test(q)&&! /to the domain|hacia el domain/.test(q))return 'The Domain, Austin, TX';
   if(/\b(?:ut austin|ut campus|university of texas(?: at austin)?|ut)\b/.test(q))return 'UT Austin';
-  const candidate=query.match(/\b(?:from|starting at|leaving from|located at|staying at|i(?:'m| am|m) (?:at|near|in)|desde|salgo de|somos de|estoy en|vengo de)\s+(.+?)(?=\s+(?:to|get to|for the|how do|where can|what time|and when|kickoff|with my|with the|can we|need|want|tonight|para el|hacia|y cuando|con mi)\b|[,!?;:]|$)/i)?.[1]?.trim();
+  const candidate=query.match(/\b(?:from|starting at|leaving from|located at|staying at|i(?:'m| am|m) (?:at|near|in)|desde|salgo de|somos de|estoy en|vengo de)\s+(.+?)(?=\s+(?:to|get to|for the|how do|how long (?:is|does|will|would|should|to)|where can|what time|and when|kickoff|with my|with the|can we|need|want|tonight|para el|hacia|y cuando|con mi)\b|[,!?;:]|$)/i)?.[1]?.trim();
   if(!candidate||/^\d{3}\b|^(?:section|sec\.?|seccion|here|there|the bar|the stand|the app|la app|app|my phone|mi telefono|my account|mi cuenta|guest|official)\b/i.test(normalized(candidate)))return;
   return candidate.replace(/[.\s]+$/,'').slice(0,120);
 }

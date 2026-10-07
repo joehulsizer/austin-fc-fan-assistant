@@ -71,12 +71,13 @@ export function detectContext(query: string, previous: FanContext): FanContext {
     if(context.eventKind==='other'){delete context.event;delete context.kickoffTime;delete context.travelMinutes;}
     context.eventKind = 'match';
   }
-  const clock = query.match(/(?:kickoff|start(?:s)?|inicio|empieza|comienza)(?:\s+(?:is|at|a las|es|del partido))*\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?/i);
+  const clock = query.match(/(?:kickoff|start(?:s)?|inicio|empieza|comienza)(?:\s+(?:is|at|a las|es|del partido))*\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?(?=$|[\s,.!?])/i)
+    || query.match(/(?<![\d:])\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?\s+kickoff\b/i);
   const meridiem = clock?.[3]?.toLowerCase();
   if (clock && Number(clock[1]) <= (meridiem ? 12 : 23) && (!meridiem || Number(clock[1]) >= 1) && Number(clock[2] || 0) < 60) {
     let hour = Number(clock[1]);
     if (meridiem?.startsWith('a') && hour === 12) hour = 0;
-    else if ((meridiem?.startsWith('p') || !meridiem) && hour < 12) hour += 12;
+    else if ((meridiem?.startsWith('p') || !meridiem && !clock[1].startsWith('0')) && hour < 12) hour += 12;
     context.kickoffTime = `${String(hour).padStart(2,'0')}:${clock[2] || '00'}`;
   }
   const duration = query.match(/(?:trip|travel|drive|ride|journey|maps|viaje|trayecto|tarda)(?:\s+(?:takes|is|says|shows|about|de|dura|indica))*\s+(\d{1,3})\s*(?:minutes?|mins?|minutos?)/i) || query.match(/(\d{1,3})\s*(?:minutes?|mins?|minutos?)\s*(?:trip|travel|drive|ride|journey|viaje|trayecto)/i) || (previous.topic==='transport' && /^\s*(\d{1,3})\s*(?:minutes?|mins?|minutos?)[.!?]?\s*$/i.exec(query));
