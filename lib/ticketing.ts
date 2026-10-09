@@ -8,7 +8,7 @@ export function ticketGrounding(query:string,context:FanContext,k:Snapshot):Grou
  const phoneFailure=/\b(?:phone|cellphone|mobile|telefono|celular)\b.{0,40}(?:dead|died|empty|no power|no battery|no responde|not responding|frozen|apago|sin bateria|agotad)|(?:battery|bateria).{0,30}(?:dead|empty|agotad)/.test(q);
  const barcode=/barcode|bar code|codigo de barras/.test(q);
  const transact=/buy.{0,40}for (?:me|us)|purchase.{0,40}for (?:me|us)|(?:can|could) you.{0,25}(?:buy|purchase|sell|book|transfer)|^(?:please )?(?:buy|purchase|sell|book)\b|buy me|transfer for me|comprame|comprarme|compra.{0,25}por mi|(?:transfiere|transferir|envia|enviar).{0,70}(?:por mi|por favor)/.test(q);
- const transfer=/transfer|traspas|mand\w*|recipient|receive|accept|claim|sent|send|share|enviar|envio|envie|recibir|recibe|acepta/.test(q);
+ const transfer=/\b(?:pasar(?:le|les)?|paso|compartir|comparto|regalar)\b.{0,40}\b(?:boletos?|entradas?)\b|transfer|traspas|mand\w*|recipient|receive|accept|claim|sent|send|share|enviar|envio|envie|recibir|recibe|acepta/.test(q);
  const hq=k.documents.find(d=>d.title==='SeatGeek Ticket HQ');
  const matchday=phoneFailure||barcode||/gate|puerta|barcode|bar code|screenshot|captura|phone.{0,20}(?:dead|died)|telefono.{0,20}bateria|at (?:the )?stadium|right now|ahora/.test(q);
  const contact=es?'SeatGeek Ticket HQ: 512-953-2858 o tickethq@austinfc.com.':'SeatGeek Ticket HQ: 512-953-2858 or tickethq@austinfc.com.';

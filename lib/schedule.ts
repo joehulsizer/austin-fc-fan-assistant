@@ -20,6 +20,10 @@ export function fixtureMentioned(query: string, now: Date = new Date()): Fixture
       (event.opponent === 'Nashville SC' && /nashville/i.test(query))));
 }
 
+export function publishedScheduleSource() {
+  return {title:'Austin FC published schedule',url:schedule.source,checkedAt:schedule.checkedAt};
+}
+
 export function fixtureSource(event: Fixture) {
   return { title: event.url ? 'Austin FC next-match report' : 'Austin FC published schedule', url: event.url || schedule.source, checkedAt: schedule.checkedAt };
 }
