@@ -9,6 +9,7 @@ import {privateRead,budgetPath} from '../lib/limits';
 import {internalFeedSchema} from '../lib/internal-knowledge';
 import {submissionSchema} from '../lib/feed-workflow';
 import {isActionHref} from '../lib/handoffs';
+import {messageLanguage} from '../lib/language';
 import type {ChatInput} from '../lib/types';
 
 const safety = new Set(['selfharm','medical','lostperson','harassment','evacuation']);
@@ -81,6 +82,18 @@ test('Spanish Kesos directions stay Spanish in both the answer and location card
  const card=r.cards.find(c=>c.title==='Kesos Tacos');assert.ok(card);
  assert.match(card.detail!,/Sección 312; consulta a Guest Services/);
  assert.doesNotMatch(card.detail!,/ask Guest Services|main-concourse stand/);
+});
+
+test('every authored English/Spanish story overrides the opposite previous language',()=>{
+ for(const c of data.cases.filter(c=>c.family!=='mutation')){
+  assert.equal(messageLanguage(c.question,c.language==='en'?'es':'en'),c.language,c.question);
+ }
+});
+
+test('an English incident after Spanish gets a fixed English emergency response',async()=>{
+ const r=await prepare({messages:[{role:'user',content:'Hay un hombre con un cuchillo en la sección 118'},{role:'assistant',content:'Avisa al personal.'},{role:'user',content:'A man keeps putting his hands on me'}],context:{language:'es'}});
+ assert.equal(r.route,'safety');assert.equal(r.planner,'fixed');assert.equal(r.context.language,'en');
+ assert.match(r.answer!,/^For immediate danger, call 911/);
 });
 
 
