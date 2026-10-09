@@ -73,6 +73,16 @@ test('weapon incident sources do not claim an unrelated weather fact',async()=>{
  assert.equal(r.route,'safety');assert.ok(!r.sources.some(s=>s.title==='Weather'));
 });
 
+test('Spanish Kesos directions stay Spanish in both the answer and location card',async()=>{
+ const r=await prepare({messages:[{role:'user',content:'¿Dónde está Kesos Tacos?'}],context:{}});
+ assert.equal(r.context.language,'es');
+ assert.match(r.answer!,/consulta a Guest Services por el puesto de la explanada principal/);
+ assert.doesNotMatch(r.answer!,/ask Guest Services|main-concourse stand/);
+ const card=r.cards.find(c=>c.title==='Kesos Tacos');assert.ok(card);
+ assert.match(card.detail!,/Sección 312; consulta a Guest Services/);
+ assert.doesNotMatch(card.detail!,/ask Guest Services|main-concourse stand/);
+});
+
 
 test('Spanish, encoded-boundary and English instructions are rejected before feed approval',()=>{
  const now=Date.now();
