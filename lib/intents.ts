@@ -1,10 +1,11 @@
 import { policyTopics, type Policy } from './policies';
 import { normalized } from './safety';
+import { isInstructionAttack } from './security';
 export type Intent = { kind: 'ordering' | 'benefits' | 'refund' | 'transport' | 'weather' | 'club' | 'ticketing' | 'concessions' | 'drinks' | 'stadium' | 'security' | 'account'; query: string; policy?: Policy };
 export function planIntents(query: string, priorTopic?: string): Intent[] {
   const q = normalized(query).replace(/\ba lot of\b/g,'many'), intents: Intent[] = [];
   const push = (kind: Intent['kind'], subquery = query, policy?:Policy) => { if (!intents.some(i=>i.kind===kind&&i.policy===policy)) intents.push({kind,query:subquery,policy}); };
-  if (/system prompt|developer (?:message|prompt)|ignore (?:all|previous|your)|print (?:your|the) (?:instructions|prompt)|api key|secret token|reveal (?:your|the)|ignora.{0,40}(?:instrucciones|reglas)|(?:prompt|instrucciones|mensaje) (?:del sistema|ocultas|del desarrollador)|claves? (?:api|privadas?|secretas?)|revela.{0,25}credenciales|revela.{0,35}(?:mensaje|clave|instrucciones)|pretend you are ticket hq/.test(q)) {push('security'); return intents;}
+  if (isInstructionAttack(query)) {push('security'); return intents;}
   const ordering = /(?:send|bring)[^.!?;]{0,80}to (?:my|our) seat|(?:trae\w*|traigan|manda\w*)[^.!?;]{0,70}(?:a (?:mi|nuestro)|al) asiento/.test(q) || /\bordernext\b/.test(q) || /\b(order|ordering|deliver\w*|delivery|ordernext|pedido|pedir|pide|entreg\w*)\b/.test(q) && /\b(food|beer|hot dog|drink|seat|concession|mobile|comida|cerveza|asiento|comer|bebida)\b/.test(q);
   const benefit = /\b(stm|season ticket|season.?ticket|members?|membership|abonados?|socios?)\b/.test(q) && /\b(discounts?|benefits?|cheaper|perks?|savings|food|drinks?|beer|comida|bebidas?|descuentos?|beneficios?)\b/.test(q);
   const refund = /refund|charged|paid.{0,35}(?:never|didn.t|missing)|never received|didn.t receive|missing order|payment (?:failed|error)|reembolso|cobraron|devolucion/.test(q);
