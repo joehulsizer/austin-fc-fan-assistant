@@ -3,7 +3,7 @@ import { reserveAI } from './limits';
 import { openai } from '@ai-sdk/openai';
 import type { FanContext, Grounding } from './types';
 import { getKnowledge } from './knowledge';
-import { nextFixture, fixtureSource, requestedFixture } from './schedule';
+import { nextFixture, fixtureSource, requestedFixture, publishedScheduleSource } from './schedule';
 
 const NWS_URL = 'https://api.weather.gov/gridpoints/EWX/157,96/forecast/hourly';
 const WEATHER_SOURCE = 'https://forecast.weather.gov/MapClick.php?lat=30.3877&lon=-97.7194';
@@ -114,7 +114,7 @@ export async function clubGrounding(query: string, context: FanContext): Promise
   }
   if (/copa america/i.test(query)) {
     base.answer = spanish ? 'No pude verificar un evento de Copa América en Q2 Stadium con las fuentes actuales. Revisa el calendario oficial de eventos.' : 'I could not verify a Copa América event at Q2 Stadium from the current sources. Check the official event schedule for confirmed events.';
-    base.sources = [{ title: 'Q2 Stadium events', url: 'https://www.q2stadium.com/events/' }];
+    base.sources = [{ title: 'Q2 Stadium events', url: 'https://www.q2stadium.com/events/', checkedAt:(await getKnowledge()).checkedAt }];
     base.cards = [{ title: 'Q2 Stadium events', detail: 'Confirmed event information', href: 'https://www.q2stadium.com/events/', label: 'View events' }];
     return base;
   }
@@ -144,7 +144,7 @@ export async function clubGrounding(query: string, context: FanContext): Promise
   if (requested.recognized || /\b(next|upcoming|pr[oó]ximo|siguiente)\b/i.test(query) && /\b(match|game|fixture|partido|home|casa|q2|opponent|rival)\b/i.test(query)) {
     const homeOnly = true;
     const match = requested.recognized?requested.fixture:nextFixture(new Date(), homeOnly);
-    base.sources = [{ title: 'Austin FC published schedule', url: SCHEDULE_URL }];
+    base.sources = [publishedScheduleSource()];
     if (!match) {
       base.answer = spanish ? `No hay un partido de Austin FC en Q2 confirmado en el calendario disponible${requested.label?` para ${requested.label}`:''}. Consulta el calendario oficial para nuevas fechas.` : `There is no confirmed Austin FC match at Q2 in the available schedule${requested.label?` for ${requested.label}`:''}. Check the official schedule for newly announced dates.`;
       return base;
@@ -202,7 +202,7 @@ export async function clubGrounding(query: string, context: FanContext): Promise
   } catch {
     console.warn(JSON.stringify({ event: 'club_retrieval_failed' }));
     base.answer = spanish ? 'No pude verificar en vivo el próximo partido o la información actual del club. Consulta el calendario oficial de Austin FC; no quiero darte una fecha o rival desactualizados.' : 'I could not verify live match or current club information right now. Please use Austin FC’s official schedule; I don’t want to give you an outdated date or opponent.';
-    base.sources = [{ title: 'Austin FC schedule', url: SCHEDULE_URL }];
+    base.sources = [publishedScheduleSource()];
     return base;
   }
 }

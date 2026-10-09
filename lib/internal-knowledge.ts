@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isInstructionAttack } from './security';
 import type { Policy } from './policies';
 import type { FanContext, Grounding } from './types';
 import { guestActions, isActionHref } from './handoffs';
@@ -6,7 +7,7 @@ import { privateRead } from './limits';
 export const APPROVED_FEED_PATH='knowledge/internal/approved.json';
 import { normalized } from './safety';
 const operatingInstruction = /ignore (?:all|previous|your)|system prompt|developer message|reveal.{0,20}(?:secret|token|key)|ignora.{0,30}instrucciones|<\/?(?:system|script)|javascript:/i;
-const text = (max:number) => z.string().min(3).max(max).refine(v=>!operatingInstruction.test(v),'Use fan-facing facts, not operating instructions');
+const text = (max:number) => z.string().min(3).max(max).refine(v=>!operatingInstruction.test(v)&&!isInstructionAttack(v),'Use fan-facing facts, not operating instructions');
 export const internalFeedSchema = z.object({
   version:z.string().datetime({offset:true}),
   entries:z.array(z.object({
